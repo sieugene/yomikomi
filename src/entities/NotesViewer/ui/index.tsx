@@ -1,5 +1,5 @@
 "use client";
-import { ParseApkgData } from "@/lib/apkgParser";
+import { ParseApkgData } from "@/shared/lib/apkgParser";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { VariableSizeList as List } from "react-window";
 import { HtmlWithImageHandling } from "./HtmlWithImageHandling";

@@ -12,8 +12,10 @@
     "rebuild-sqlite3": "cd node_modules/sqlite3 && pnpm exec node-gyp rebuild"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.800.0",
     "@prisma/client": "^6.7.0",
     "adm-zip": "^0.5.16",
+    "mime-types": "^3.0.1",
     "next": "15.3.1",
     "protobufjs": "^7.5.0",
     "react": "^19.0.0",
@@ -28,6 +30,7 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/adm-zip": "^0.5.7",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

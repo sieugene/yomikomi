@@ -1,4 +1,5 @@
 "use client";
+import { API_ENDPOINTS } from "@/shared/api";
 import { useEffect, useRef, useState } from "react";
 
 const globalFailedImagesCache = new Set<string>();
@@ -11,15 +12,19 @@ export const HtmlWithImageHandling = ({
   noteId: string;
   onImageLoad?: () => void;
 }) => {
-  const [removeFailedImages, setRemoveFailedImages] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const processHtml = (html: string): string => {
-    if (!removeFailedImages) {
-      return html;
-    }
+    return html.replace(
+      /<img[^>]*src=["']([^"']+)["'][^>]*>/gi,
+      (match, src) => {
+        const filename = src.split("/").pop();
+        if (!filename) return match;
 
-    return html.replace(/<img[^>]*>/gi, "");
+        const newSrc = API_ENDPOINTS.media(filename);
+        return match.replace(src, newSrc);
+      }
+    );
   };
 
   useEffect(() => {
