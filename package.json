@@ -6,22 +6,34 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate": "npx prisma migrate dev",
+    "studio": "npx prisma studio",
+    "rebuild-sqlite3": "cd node_modules/sqlite3 && pnpm exec node-gyp rebuild"
   },
   "dependencies": {
+    "@prisma/client": "^6.7.0",
+    "adm-zip": "^0.5.16",
+    "next": "15.3.1",
+    "protobufjs": "^7.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.3.1"
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
+    "unzipit": "^1.4.3",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "typescript": "^5",
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/adm-zip": "^0.5.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.3.1",
-    "@eslint/eslintrc": "^3"
+    "prisma": "^6.7.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
