@@ -1,9 +1,15 @@
 "use client";
+import { NotesViewer } from "@/entities/NotesViewer/ui";
+import { ParseApkgData } from "@/lib/apkgParser";
+import { DumpData } from "@/shared/data/dump.data";
 import { useState } from "react";
 
 export default function UploadPage() {
+  const [data, setData] = useState<ParseApkgData>({
+    mediaMap: {},
+    notes: DumpData,
+  });
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState("");
 
   const handleUpload = async () => {
     if (!file) return;
@@ -13,9 +19,8 @@ export default function UploadPage() {
       method: "POST",
       body: form,
     });
-    const json = await res.json();
-    console.log(json);
-    setStatus(`Imported: ${json.notes} cards`);
+    const json = (await res.json()) as ParseApkgData;
+    setData(json);
   };
 
   return (
@@ -30,7 +35,7 @@ export default function UploadPage() {
       >
         Upload
       </button>
-      <p className="mt-2">{status}</p>
+      <NotesViewer notes={data.notes} />
     </div>
   );
 }
