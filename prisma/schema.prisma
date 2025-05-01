@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/infrastructure/database/generated"
@@ -12,16 +9,17 @@ datasource db {
 }
 
 model Note {
-  id        String   @id
-  fields    String // serialized JSON
+  id        String   @id @default(uuid())
+  fields    Json
   createdAt DateTime @default(now())
-  media     Media[]
+  updatedAt DateTime @updatedAt
 }
 
 model Media {
-  id     String  @id
+  id     String  @id @default(uuid())
   path   String
   type   String
-  note   Note?   @relation(fields: [noteId], references: [id])
-  noteId String?
+  originalName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

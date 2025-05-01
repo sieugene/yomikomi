@@ -16,6 +16,7 @@ export async function parseApkg(apkgPath: string, outputDir: string) {
   const db = await deck.dbOpen();
   const notesRaw = await db.getNotes();
   const models = await db.getModels();
+
   const notes = Object.values(notesRaw).map((note) => {
     const model = models[note.mid];
     const fieldNames: string[] = model.flds.map((f: any) => f.name);
