@@ -1,14 +1,16 @@
 "use client";
-import { ParseApkgData } from "@/shared/lib/apkgParser";
-import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useMemo, useRef, useState, useCallback, useEffect } from "react";
 import { VariableSizeList as List } from "react-window";
 import { HtmlWithImageHandling } from "./HtmlWithImageHandling";
+import { ParseApkgData } from "@/shared/lib/apkgParser";
+import { FormattedImportData } from "@/features/Upload/hooks/useUpload";
 
 type Props = {
-  notes: ParseApkgData["notes"];
+  data: FormattedImportData[];
 };
 
-export function NotesViewer({ notes }: Props) {
+export function NotesViewer({ data }: Props) {
   const [search, setSearch] = useState("");
   const [field, setField] = useState("all");
   const listRef = useRef<List>(null);
@@ -16,16 +18,16 @@ export function NotesViewer({ notes }: Props) {
 
   const filteredNotes = useMemo(() => {
     const keyword = search.toLowerCase().trim();
-    if (!keyword) return notes;
+    if (!keyword) return data;
 
-    return notes.filter((note) =>
+    return data.filter(({ note }) =>
       field === "all"
         ? Object.values(note.fields).some((val) =>
             val.toLowerCase().includes(keyword)
           )
         : (note.fields[field]?.toLowerCase() ?? "").includes(keyword)
     );
-  }, [search, field, notes]);
+  }, [search, field, data]);
 
   const getItemSize = (index: number) => {
     return itemHeights.current.get(index) ?? 200;
@@ -58,8 +60,8 @@ export function NotesViewer({ notes }: Props) {
       return () => observer.disconnect();
     }, [index]);
 
-    const note = data[index];
-    const noteId = note.id as string;
+    const dataByIndex: FormattedImportData = data[index];
+    const noteId = dataByIndex.note.id;
 
     const handleImageLoad = () => {
       const el = ref.current;
@@ -72,10 +74,11 @@ export function NotesViewer({ notes }: Props) {
     return (
       <div style={{ ...style, padding: "0.5rem" }} key={noteId}>
         <div ref={ref} className="p-2 border bg-white shadow">
-          {Object.entries(note.fields).map(([name, value]) => (
+          {Object.entries(dataByIndex.note.fields).map(([name, value]) => (
             <div key={name} className="mb-2">
               <strong>{name}:</strong>
               <HtmlWithImageHandling
+                media={dataByIndex.media}
                 html={value as string}
                 key={noteId}
                 onImageLoad={handleImageLoad}
@@ -104,7 +107,7 @@ export function NotesViewer({ notes }: Props) {
           className="border px-2 py-1"
         >
           <option value="all">By all fields</option>
-          {Object.keys(notes[0]?.fields ?? {}).map((f) => (
+          {Object.keys(data[0]?.note?.fields ?? {}).map((f) => (
             <option key={f} value={f}>
               {f}
             </option>

@@ -6,13 +6,22 @@ import { lookup } from "mime-types";
 import { NextRequest, NextResponse } from "next/server";
 import path, { join } from "path";
 import { v4 as uuidv4 } from "uuid";
+import { prisma } from "@/infrastructure/database/prisma";
+import { Note } from "@/infrastructure/database/generated";
+
+export type ImportRouteResponse = {
+  createdNote: Note;
+}[];
 
 export async function POST(req: NextRequest) {
   const data = await req.formData();
   const file = data.get("file") as File;
   if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
 
-  const filePath = join("/tmp", Date.now().toString(), file.name);
+  const now = Date.now().toString();
+  const filePath = join("/tmp", now, file.name);
+  const tempDir = join("/tmp", `${now}-dir`);
+
   const fileStream = file.stream();
   const reader = fileStream.getReader();
   const chunks: Uint8Array[] = [];
@@ -25,42 +34,60 @@ export async function POST(req: NextRequest) {
   }
 
   const fileBuffer = Buffer.concat(chunks);
-
   mkdirSync(path.dirname(filePath), { recursive: true });
   writeFileSync(filePath, fileBuffer);
-
-  const tempDir = join("/tmp", Date.now().toString());
   mkdirSync(tempDir, { recursive: true });
 
   const { notes, mediaMap } = await parseApkg(filePath, tempDir);
 
-  const uuid = uuidv4();
-  // Upload Media
-  const uploadedMedia: Record<string, string> = {};
-  for (const [index, fileName] of Object.entries(mediaMap)) {
-    const mediaFilePath = path.join(tempDir, index);
-    if (!existsSync(mediaFilePath)) continue;
+  await Promise.all(
+    Object.entries(mediaMap).map(async ([index, fileName]) => {
+      const mediaFilePath = path.join(tempDir, index);
+      if (!existsSync(mediaFilePath)) return;
 
-    const fileBuffer = readFileSync(mediaFilePath);
-    const uploadKey = `${uuid}-${fileName}`;
-    const mimeType = lookup(fileName) || "application/octet-stream";
+      const uuid = uuidv4();
+      const buffer = readFileSync(mediaFilePath);
+      const uploadKey = `${uuid}-${fileName}`;
+      const mimeType = lookup(fileName) || "application/octet-stream";
 
-    try {
-      await StorageService.upload({
-        Key: uploadKey,
-        Body: fileBuffer,
-        ContentType: mimeType,
+      try {
+        await StorageService.upload({
+          Key: uploadKey,
+          Body: buffer,
+          ContentType: mimeType,
+        });
+
+        await prisma.media.create({
+          data: {
+            id: `${uuid}-${index}`,
+            path: `${ENV.get("STORAGE_S3_ENDPOINT")}/anki-media/${uploadKey}`,
+            type: mimeType,
+            originalName: fileName,
+          },
+        });
+      } catch (error) {
+        console.error("Upload failed", error);
+      }
+    })
+  );
+
+  const createdNotes: ImportRouteResponse = await Promise.all(
+    notes.map(async (note) => {
+      const createdNote = await prisma.note.create({
+        data: {
+          id: `${note.id}`,
+          fields: JSON.stringify(note.fields),
+        },
       });
 
-      uploadedMedia[index] = `${ENV.get(
-        "STORAGE_S3_ENDPOINT"
-      )}/anki-media/${uploadKey}`;
-    } catch (error) {
-      console.error("error while uploading media", error);
-    }
-  }
-  // Clear temp
-  rmSync(tempDir, { recursive: true, force: true });
+      return {
+        createdNote,
+      };
+    })
+  );
 
-  return NextResponse.json({ notes, uploadedMedia });
+  rmSync(tempDir, { recursive: true, force: true });
+  rmSync(filePath, { force: true });
+
+  return NextResponse.json(createdNotes);
 }

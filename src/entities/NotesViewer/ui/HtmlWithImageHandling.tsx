@@ -1,4 +1,5 @@
 "use client";
+import { FormattedImportData } from "@/features/Upload/hooks/useUpload";
 import { API_ENDPOINTS } from "@/shared/api";
 import { useEffect, useRef, useState } from "react";
 
@@ -7,9 +8,11 @@ const globalFailedImagesCache = new Set<string>();
 export const HtmlWithImageHandling = ({
   html,
   onImageLoad,
+  media,
 }: {
   html: string;
   noteId: string;
+  media: FormattedImportData["media"];
   onImageLoad?: () => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -18,11 +21,12 @@ export const HtmlWithImageHandling = ({
     return html.replace(
       /<img[^>]*src=["']([^"']+)["'][^>]*>/gi,
       (match, src) => {
-        const filename = src.split("/").pop();
+        const filename = src.split("/").pop() as string;
         if (!filename) return match;
-
-        const newSrc = API_ENDPOINTS.media(filename);
-        return match.replace(src, newSrc);
+        // TODO !!!
+        const link = media.find((a) => a.originalName === filename);
+        // const newSrc = API_ENDPOINTS.media(filename);
+        return match.replace(src, link?.path || "");
       }
     );
   };
