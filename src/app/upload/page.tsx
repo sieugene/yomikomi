@@ -1,8 +1,9 @@
 "use client";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
-import { ParseApkgData } from "@/lib/apkgParser";
+import { ParseApkgData } from "@/shared/lib/apkgParser";
 import { DumpData } from "@/shared/data/dump.data";
 import { useState } from "react";
+import { API_ENDPOINTS } from "@/shared/api";
 
 export default function UploadPage() {
   const [data, setData] = useState<ParseApkgData>({
@@ -15,7 +16,7 @@ export default function UploadPage() {
     if (!file) return;
     const form = new FormData();
     form.append("file", file);
-    const res = await fetch("/api/import", {
+    const res = await fetch(API_ENDPOINTS.import, {
       method: "POST",
       body: form,
     });
