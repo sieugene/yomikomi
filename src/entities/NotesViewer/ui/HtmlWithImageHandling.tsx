@@ -1,7 +1,6 @@
 "use client";
-import { FormattedImportData } from "@/features/Upload/hooks/useUpload";
-import { API_ENDPOINTS } from "@/shared/api";
-import { useEffect, useRef, useState } from "react";
+import { FormattedImportData } from "@/features/Collection/types";
+import { useEffect, useRef } from "react";
 
 const globalFailedImagesCache = new Set<string>();
 

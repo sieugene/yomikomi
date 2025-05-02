@@ -1,9 +1,9 @@
 "use client";
-import { NotesViewer } from "@/entities/NotesViewer/ui";
-import { useNotes, useUpload } from "@/features/Upload/hooks/useUpload";
+import { Collections } from "@/features/Collection/ui/Collections";
+import { useUpload } from "@/features/Upload/hooks/useUpload";
 
 export default function UploadPage() {
-  const { data } = useNotes();
+  // const { data } = useCollection();
   const { handleUpload, setFile } = useUpload();
 
   return (
@@ -18,7 +18,8 @@ export default function UploadPage() {
       >
         Upload
       </button>
-      <NotesViewer data={data} />
+      <Collections />
+      {/* <NotesViewer data={data} /> */}
     </div>
   );
 }
