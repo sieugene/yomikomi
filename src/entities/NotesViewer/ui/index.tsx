@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState, useCallback, useEffect } from "react";
+import { FormattedImportData } from "@/features/Collection/types";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { VariableSizeList as List } from "react-window";
 import { HtmlWithImageHandling } from "./HtmlWithImageHandling";
-import { ParseApkgData } from "@/shared/lib/apkgParser";
-import { FormattedImportData } from "@/features/Upload/hooks/useUpload";
 
 type Props = {
   data: FormattedImportData[];
@@ -96,7 +95,7 @@ export function NotesViewer({ data }: Props) {
       <div className="mb-4 flex gap-2">
         <input
           type="text"
-          placeholder="Поиск..."
+          placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border px-2 py-1 w-full max-w-md"
