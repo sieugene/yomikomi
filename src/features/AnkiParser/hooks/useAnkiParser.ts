@@ -57,9 +57,10 @@ export const useAnkiParser = () => {
             collectionId,
             createdAt,
             updatedAt,
-            originalName: media,
-            path: media,
+            originalName: media.fileName,
+            path: media.fileName,
             type: "image",
+            getBlob: media.getBlob,
           };
           return item;
         }),

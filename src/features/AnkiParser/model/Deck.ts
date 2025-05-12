@@ -1,5 +1,10 @@
-import JSZip from "jszip";
+import JSZip, { file } from "jszip";
 import type { SqlJsStatic, Database } from "sql.js";
+
+type Media = {
+  fileName: string;
+  getBlob: () => Promise<string>;
+};
 
 export class Deck {
   private db: Database | null = null;
@@ -120,21 +125,34 @@ export class Deck {
     const col = await this.getCollection();
     return col.models || {};
   }
-  async getMedia(mediaFileName = "media"): Promise<Record<string, string>> {
+  async getMedia(mediaFileName = "media"): Promise<Media[]> {
     const zip = await JSZip.loadAsync(this.zipFile);
     const mediaFileEntry = zip.file(mediaFileName);
     if (!mediaFileEntry)
       throw new Error(`Media file not found: ${mediaFileName}`);
 
     const buf = await mediaFileEntry.async("string");
-
+    let mediaArray: Record<string, string> = {};
     try {
-      return JSON.parse(buf);
-    } catch (e) {
-      console.warn("Failed to parse media as JSON, trying as Proxy Buffer...");
+      mediaArray = JSON.parse(buf);
+    } catch (error) {
+      console.warn(
+        "Failed to parse media as JSON, trying as Proxy Buffer...",
+        error
+      );
     }
 
-    console.error("Decoding as protobuf is not yet implemented");
-    return {};
+    return Object.keys(mediaArray).map((key) => {
+      const media: Media = {
+        fileName: mediaArray[key],
+        getBlob: async () => {
+          const file = await zip.file(key);
+          const blob = await file?.async("blob");
+          if (blob) return URL.createObjectURL(blob);
+          return "";
+        },
+      };
+      return media;
+    });
   }
 }
