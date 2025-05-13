@@ -1,10 +1,10 @@
 "use client";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
 import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
-import { useAnkiParser } from "@/features/AnkiParser/hooks/useAnkiParser";
+import { useOfflineParse } from "@/features/AnkiParser/hooks/useOfflineParse";
 
 const Page = () => {
-  const { handleUpload, setFile, data } = useAnkiParser();
+  const { upload, setFile, data } = useOfflineParse();
 
   return (
     <div className="p-4">
@@ -14,7 +14,7 @@ const Page = () => {
       />
       <button
         className="ml-2 px-4 py-1 bg-blue-600 text-white"
-        onClick={handleUpload}
+        onClick={upload}
       >
         Upload
       </button>

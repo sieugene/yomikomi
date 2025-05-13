@@ -1,23 +1,20 @@
 "use client";
-import JSZip from "jszip";
-import { useSqlJs } from "../context/SqlJsProvider";
-import { useState } from "react";
 import { FormattedImportData } from "@/features/Collection/types";
+import { useState } from "react";
+import { useSqlJs } from "../context/SqlJsProvider";
 import { Deck } from "../model/Deck";
+import { Extractor } from "../model/Extractor";
 
 export const useAnkiParser = () => {
   const [data, setData] = useState<FormattedImportData[]>([]);
-  const [file, setFile] = useState<File | null>(null);
   const { sqlClient } = useSqlJs();
 
-  const handleUpload = async () => {
-    if (!file) {
-      throw new Error("No file selected");
-    }
+  const handleUpload = async (extractor: Extractor) => {
     if (!sqlClient) {
       throw new Error("SQL client is not initialized");
     }
-    const deck = new Deck(sqlClient, file);
+
+    const deck = new Deck(sqlClient, extractor);
     await deck.init();
 
     const mediaMap = await deck.getMedia();
@@ -69,5 +66,5 @@ export const useAnkiParser = () => {
     });
     setData(formatted);
   };
-  return { handleUpload, setFile, data };
+  return { handleUpload, data };
 };
