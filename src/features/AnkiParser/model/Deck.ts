@@ -1,7 +1,8 @@
-import JSZip, { file } from "jszip";
-import type { SqlJsStatic, Database } from "sql.js";
+import type { Database, SqlJsStatic } from "sql.js";
+import type { Extractor } from "./Extractor";
+import { DB_FILES } from '../lib/constants';
 
-type Media = {
+export type Media = {
   fileName: string;
   getBlob: () => Promise<string>;
 };
@@ -9,14 +10,14 @@ type Media = {
 export class Deck {
   private db: Database | null = null;
 
-  constructor(private sqlClient: SqlJsStatic, private zipFile: File) {}
+  constructor(private sqlClient: SqlJsStatic, private extractor: Extractor) {}
 
   async init(): Promise<void> {
-    const zip = await JSZip.loadAsync(this.zipFile);
-    const dbFile = await zip.file("collection.anki21")?.async("uint8array");
-    if (!dbFile) throw new Error("No collection.anki21 file found in the zip");
+    const dbFile = await this.extractor.extractFile(DB_FILES.LEGACY);
+    if (!dbFile)
+      throw new Error(`No ${DB_FILES.LEGACY} file found in the archive`);
 
-    this.db = new this.sqlClient.Database(dbFile);
+    this.db = new this.sqlClient.Database(new Uint8Array(dbFile));
   }
 
   async getNotes(): Promise<Record<string, any>> {
@@ -96,13 +97,10 @@ export class Deck {
   async getCollection(): Promise<any> {
     if (!this.db) throw new Error("Database not initialized");
     const res = this.db.exec("SELECT * FROM col");
-
     const columns = res[0]?.columns;
-
     const values = res[0]?.values[0];
 
     const collection: { [key: string]: any } = {};
-
     columns.forEach((column, index) => {
       if (
         column === "conf" ||
@@ -111,8 +109,7 @@ export class Deck {
         column === "dconf" ||
         column === "tags"
       ) {
-        // @ts-ignore
-        collection[column] = JSON.parse(values[index] || "{}");
+        collection[column] = JSON.parse((values as any)[index] || "{}");
       } else {
         collection[column] = values[index];
       }
@@ -125,34 +122,25 @@ export class Deck {
     const col = await this.getCollection();
     return col.models || {};
   }
-  async getMedia(mediaFileName = "media"): Promise<Media[]> {
-    const zip = await JSZip.loadAsync(this.zipFile);
-    const mediaFileEntry = zip.file(mediaFileName);
-    if (!mediaFileEntry)
-      throw new Error(`Media file not found: ${mediaFileName}`);
 
-    const buf = await mediaFileEntry.async("string");
+  async getMedia(mediaFileName = "media"): Promise<Media[]> {
+    const mediaFile = await this.extractor.extractText(mediaFileName);
+    if (!mediaFile) throw new Error(`Media file not found: ${mediaFileName}`);
+
     let mediaArray: Record<string, string> = {};
     try {
-      mediaArray = JSON.parse(buf);
+      mediaArray = JSON.parse(mediaFile);
     } catch (error) {
-      console.warn(
-        "Failed to parse media as JSON, trying as Proxy Buffer...",
-        error
-      );
+      console.warn("Failed to parse media as JSON", error);
     }
 
-    return Object.keys(mediaArray).map((key) => {
-      const media: Media = {
-        fileName: mediaArray[key],
-        getBlob: async () => {
-          const file = await zip.file(key);
-          const blob = await file?.async("blob");
-          if (blob) return URL.createObjectURL(blob);
-          return "";
-        },
-      };
-      return media;
-    });
+    return Object.keys(mediaArray).map((key) => ({
+      fileName: mediaArray[key],
+      getBlob: async () => {
+        const file = await this.extractor.extractFile(key);
+        if (file) return URL.createObjectURL(new Blob([file]));
+        return "";
+      },
+    }));
   }
 }
