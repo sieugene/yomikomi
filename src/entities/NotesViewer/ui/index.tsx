@@ -68,12 +68,19 @@ export function NotesViewer({ data }: Props) {
 
       {paginatedNotes.map(({ note, media }) => (
         <div key={note.id} className="mb-4 p-4 border bg-white shadow">
-          {Object.entries(note.fields).map(([name, value]) => (
-            <div key={name} className="mb-2">
-              <strong>{name}:</strong>
-              <HtmlWithImageHandling media={media} html={value} noteId={note.id} />
-            </div>
-          ))}
+          {Object.entries(note.fields).map((fields) => {
+            const [name, value] = fields;
+            return (
+              <div key={`${note.id}-${name}`} className="mb-2">
+                <strong>{name}:</strong>
+                <HtmlWithImageHandling
+                  media={media}
+                  html={value}
+                  noteId={note.id}
+                />
+              </div>
+            );
+          })}
         </div>
       ))}
 
@@ -85,7 +92,9 @@ export function NotesViewer({ data }: Props) {
         >
           Previous
         </button>
-        <span>Page {page} of {totalPages}</span>
+        <span>
+          Page {page} of {totalPages}
+        </span>
         <button
           onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
           disabled={page === totalPages}

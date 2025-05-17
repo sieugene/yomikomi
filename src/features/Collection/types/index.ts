@@ -1,8 +1,8 @@
+import { Media as DeckMedia } from "@/features/AnkiParser/model/Deck";
 import { Media, Note } from "@/infrastructure/database/generated";
 
-type LocalOrRemoteMedia = Media & {
-  getBlob?: () => Promise<string>;
-};
+type LocalOrRemoteMedia = Media &
+  Partial<Pick<DeckMedia, "getBlob" | "revokeBlob">>;
 export type FormattedImportData = {
   note: Omit<Note, "fields"> & {
     fields: Record<string, string>;

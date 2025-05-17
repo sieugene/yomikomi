@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import { parseAnkiMediaJson } from "../../lib/parseAnkiMediaJson";
 import { Extractor } from "../Extractor";
 
 export class JSZipExtractor implements Extractor {
@@ -17,9 +18,15 @@ export class JSZipExtractor implements Extractor {
     return file ? file.async("arraybuffer") : null;
   }
 
-  async extractText(fileName: string): Promise<string | null> {
+  async extractMedia(fileName: string): Promise<Record<string, string>> {
     const file = this.zip.file(fileName);
-    return file ? file.async("string") : null;
+    if (!file) {
+      throw new Error(`File ${fileName} not found`);
+    }
+    const mediaFile = await file.async("string");
+    if (!mediaFile) throw new Error(`Failed to prepare media file to string`);
+    const mediaArray = parseAnkiMediaJson(mediaFile);
+    return mediaArray;
   }
 
   async listFiles(): Promise<string[]> {
