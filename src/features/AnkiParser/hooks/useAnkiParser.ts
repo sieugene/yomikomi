@@ -5,7 +5,7 @@ import { useSqlJs } from "../context/SqlJsProvider";
 import { Deck } from "../model/Deck";
 import { Extractor } from "../model/Extractor";
 
-export const useAnkiParser = () => {
+export const useAnkiParser = (type: string) => {
   const [data, setData] = useState<FormattedImportData[]>([]);
   const { sqlClient } = useSqlJs();
 
@@ -14,7 +14,7 @@ export const useAnkiParser = () => {
       throw new Error("SQL client is not initialized");
     }
 
-    const deck = new Deck(sqlClient, extractor);
+    const deck = new Deck(type, sqlClient, extractor);
     await deck.init();
 
     const mediaMap = await deck.getMedia();

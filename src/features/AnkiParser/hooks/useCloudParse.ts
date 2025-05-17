@@ -3,7 +3,7 @@ import { MegaCloudExtractor } from "../model/extractors/MegaCloudExtractor";
 import { useAnkiParser } from "./useAnkiParser";
 
 export const useCloudParse = () => {
-  const { data, handleUpload } = useAnkiParser();
+  const { data, handleUpload } = useAnkiParser("cloud");
   const [url, setUrl] = useState<string>("");
 
   const upload = async () => {

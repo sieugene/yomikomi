@@ -3,7 +3,7 @@ import { useAnkiParser } from "./useAnkiParser";
 import { JSZipExtractor } from "../model/extractors/JSZipExtractor";
 
 export const useOfflineParse = () => {
-  const { data, handleUpload } = useAnkiParser();
+  const { data, handleUpload } = useAnkiParser("offline");
   const [file, setFile] = useState<File | null>(null);
 
   const upload = async () => {
