@@ -1,6 +1,7 @@
 import type { Database, SqlJsStatic } from "sql.js";
 import type { Extractor } from "./Extractor";
 import { DB_FILES } from "../lib/constants";
+import FileManager from "./FileManager";
 
 export type Media = {
   fileName: string;
@@ -10,8 +11,13 @@ export type Media = {
 
 export class Deck {
   private db: Database | null = null;
+  private fileManager = new FileManager();
 
-  constructor(private sqlClient: SqlJsStatic, private extractor: Extractor) {}
+  constructor(
+    private deckName: string,
+    private sqlClient: SqlJsStatic,
+    private extractor: Extractor
+  ) {}
 
   async init(): Promise<void> {
     const dbFile = await this.extractor.extractFile(DB_FILES.LEGACY);
@@ -126,25 +132,43 @@ export class Deck {
 
   async getMedia(mediaFileName = "media"): Promise<Media[]> {
     const mediaArray = await this.extractor.extractMedia(mediaFileName);
-    const fileCache: Record<string, string> = {};
 
-    return Object.keys(mediaArray).map((key) => ({
-      fileName: mediaArray[key],
-      getBlob: async () => {
-        if (!fileCache[key]) {
-          const file = await this.extractor.extractFile(key);
-          if (file) {
-            fileCache[key] = URL.createObjectURL(new Blob([file]));
-          } else {
-            fileCache[key] = "";
-          }
-        }
-        return fileCache[key];
-      },
-      revokeBlob: () => {
-        URL.revokeObjectURL(fileCache[key]);
-        fileCache[key] = "";
-      },
-    }));
+    return Promise.all(
+      Object.keys(mediaArray).map(async (key) => {
+        const fileName = mediaArray[key];
+        const itemKey = `${this.deckName}-${fileName}-${key}`;
+
+        return {
+          fileName,
+          getBlob: async () => {
+            try {
+              const hasFile = await this.fileManager
+                .hasFile(itemKey)
+                .catch((e) => null);
+
+              if (!hasFile) {
+                const file = await this.extractor.extractFile(key);
+                if (file) {
+                  await this.fileManager.saveFile(
+                    new File([file], fileName),
+                    itemKey
+                  );
+                }
+              }
+              const { url } = await this.fileManager.getFileUrl(itemKey);
+              return url;
+            } catch (error) {
+              console.error(error);
+              return "";
+            }
+          },
+          revokeBlob: () => {
+            if (itemKey) {
+              this.fileManager.revokeFileUrl(itemKey);
+            }
+          },
+        };
+      })
+    );
   }
 }
