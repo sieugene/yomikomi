@@ -1,4 +1,5 @@
-import { File } from "megajs";
+import { File, MutableFile } from "megajs";
+import { parseAnkiMediaJson } from "../../lib/parseAnkiMediaJson";
 import { Extractor } from "../Extractor";
 
 export class MegaCloudExtractor implements Extractor {
@@ -21,19 +22,26 @@ export class MegaCloudExtractor implements Extractor {
   }
 
   async extractFile(fileName: string): Promise<ArrayBuffer | null> {
-    if (!this.selectedFile) {
-      throw new Error("No file selected");
-    }
-    const file = this.selectedFile.find((node) => node.name === fileName);
-    if (!file) {
-      throw new Error(`File ${fileName} not found`);
-    }
+    const file = await this.findFileByName(fileName);
     const data = (await file.downloadBuffer({})) as unknown as ArrayBuffer;
     return data;
   }
 
-  async extractText(fileName: string): Promise<string | null> {
-    return `{}`;
+  async extractMedia(fileName: string): Promise<Record<string, string>> {
+    const file = await this.findFileByName(fileName);
+    const readableStream = await file.download({});
+
+    const mediaFile = await new Promise<string>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      readableStream.on("data", (chunk: Buffer<ArrayBufferLike>) =>
+        chunks.push(chunk)
+      );
+      readableStream.on("end", () =>
+        resolve(Buffer.concat(chunks).toString("utf-8"))
+      );
+      readableStream.on("error", (error: any) => reject(error));
+    });
+    return parseAnkiMediaJson(mediaFile);
   }
 
   async listFiles(): Promise<string[]> {
@@ -42,5 +50,16 @@ export class MegaCloudExtractor implements Extractor {
         !!file.name ? file.name : ""
       ) || []
     );
+  }
+
+  private async findFileByName(fileName: string): Promise<MutableFile> {
+    if (!this.selectedFile) {
+      throw new Error("No file selected");
+    }
+    const file = this.selectedFile.find((node) => node.name === fileName);
+    if (!file) {
+      throw new Error(`File ${fileName} not found`);
+    }
+    return file as MutableFile;
   }
 }

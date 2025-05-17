@@ -1,10 +1,11 @@
 import type { Database, SqlJsStatic } from "sql.js";
 import type { Extractor } from "./Extractor";
-import { DB_FILES } from '../lib/constants';
+import { DB_FILES } from "../lib/constants";
 
 export type Media = {
   fileName: string;
   getBlob: () => Promise<string>;
+  revokeBlob: () => void;
 };
 
 export class Deck {
@@ -124,22 +125,25 @@ export class Deck {
   }
 
   async getMedia(mediaFileName = "media"): Promise<Media[]> {
-    const mediaFile = await this.extractor.extractText(mediaFileName);
-    if (!mediaFile) throw new Error(`Media file not found: ${mediaFileName}`);
-
-    let mediaArray: Record<string, string> = {};
-    try {
-      mediaArray = JSON.parse(mediaFile);
-    } catch (error) {
-      console.warn("Failed to parse media as JSON", error);
-    }
+    const mediaArray = await this.extractor.extractMedia(mediaFileName);
+    const fileCache: Record<string, string> = {};
 
     return Object.keys(mediaArray).map((key) => ({
       fileName: mediaArray[key],
       getBlob: async () => {
-        const file = await this.extractor.extractFile(key);
-        if (file) return URL.createObjectURL(new Blob([file]));
-        return "";
+        if (!fileCache[key]) {
+          const file = await this.extractor.extractFile(key);
+          if (file) {
+            fileCache[key] = URL.createObjectURL(new Blob([file]));
+          } else {
+            fileCache[key] = "";
+          }
+        }
+        return fileCache[key];
+      },
+      revokeBlob: () => {
+        URL.revokeObjectURL(fileCache[key]);
+        fileCache[key] = "";
       },
     }));
   }

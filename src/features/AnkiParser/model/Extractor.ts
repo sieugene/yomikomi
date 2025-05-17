@@ -1,5 +1,5 @@
 export interface Extractor {
   extractFile(fileName: string): Promise<ArrayBuffer | null>;
-  extractText(fileName: string): Promise<string | null>;
+  extractMedia(fileName: string): Promise<Record<string, string>>;
   listFiles(): Promise<string[]>;
 }
