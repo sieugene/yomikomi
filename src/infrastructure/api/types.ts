@@ -2,6 +2,10 @@ import { Note, Prisma } from "@/infrastructure/database/generated";
 import { GetObjectCommandOutput } from "@aws-sdk/client-s3";
 import { NextRequest } from "next/server";
 
+// Main
+export type ServiceStatus = "online" | "offline";
+export type Services = "database" | "minio";
+
 // Collection
 export type CollectionWithNotesAndMedia = Prisma.CollectionGetPayload<{
   include: {
@@ -35,4 +39,16 @@ export type ApiResponse = {
   };
   Import: ImportRouteResponse;
   Media: GetMediaResponse;
+  Health: {
+    GET: HealthResponse;
+  };
+};
+
+// Health
+export type HealthResponse = {
+  status: number;
+  services: {
+    database: ServiceStatus;
+    minio: ServiceStatus;
+  };
 };

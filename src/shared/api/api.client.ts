@@ -7,6 +7,7 @@ const API_ENDPOINTS = {
   notes: "/api/notes",
   collection: (collectionId: string) => `/api/collection/${collectionId}`,
   collections: `/api/collection`,
+  health: "/api/health",
 };
 
 class Api {
@@ -50,6 +51,16 @@ class Api {
       throw new Error("Failed to get all collections");
     }
     const json = (await response.json()) as ApiResponse["Collection"]["All"];
+    return json;
+  }
+
+  // Health
+  async getHealth() {
+    const response = await fetch(API_ENDPOINTS.health);
+    if (!response.ok) {
+      throw new Error("Failed to get health");
+    }
+    const json = (await response.json()) as ApiResponse["Health"]["GET"];
     return json;
   }
 }

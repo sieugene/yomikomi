@@ -5,7 +5,7 @@ import { ENV } from "@/shared/env";
 import { StorageService } from "@/infrastructure/storage/storage";
 
 async function GET(
-  req: NextRequest,
+  _: NextRequest,
   context: { params: Promise<GetMediaQueryParams> }
 ): Promise<NextResponse<ApiResponse["Media"]>> {
   const params = await context.params;
