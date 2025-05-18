@@ -3,6 +3,7 @@ import {
   S3Client,
   PutObjectCommand,
   PutObjectCommandInput,
+  HeadBucketCommand,
 } from "@aws-sdk/client-s3";
 
 class Storage {
@@ -24,6 +25,12 @@ class Storage {
         Bucket: ENV.get("STORAGE_S3_BUCKET"),
         ...input,
       })
+    );
+  }
+
+  async checkBucketHealth() {
+    await this.client.send(
+      new HeadBucketCommand({ Bucket: ENV.get("STORAGE_S3_BUCKET") })
     );
   }
 }

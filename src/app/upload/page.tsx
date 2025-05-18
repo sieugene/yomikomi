@@ -3,7 +3,6 @@ import { Collections } from "@/features/Collection/ui/Collections";
 import { useUpload } from "@/features/Upload/hooks/useUpload";
 
 export default function UploadPage() {
-  // const { data } = useCollection();
   const { handleUpload, setFile } = useUpload();
 
   return (
@@ -19,7 +18,6 @@ export default function UploadPage() {
         Upload
       </button>
       <Collections />
-      {/* <NotesViewer data={data} /> */}
     </div>
   );
 }

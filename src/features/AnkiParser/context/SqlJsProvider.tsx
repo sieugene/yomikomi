@@ -6,8 +6,7 @@ import {
   createContext,
   ReactNode,
   useContext,
-  useEffect,
-  useState,
+  useState
 } from "react";
 import type { SqlJsStatic } from "sql.js";
 

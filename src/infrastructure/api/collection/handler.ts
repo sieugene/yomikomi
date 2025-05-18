@@ -3,7 +3,7 @@ import { prisma } from "@/infrastructure/database/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 async function getByCollectionId(
-  req: NextRequest,
+  _: NextRequest,
   context: { params: Promise<{ collectionId: string }> }
 ): Promise<
   NextResponse<ApiResponse["Collection"]["ById"] | { error: string }>
