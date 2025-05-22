@@ -1,6 +1,6 @@
 import { Deck, Unpack } from "./parser";
 
-type AwaitedReturnType<T> = T extends (...args: any[]) => Promise<infer R>
+type AwaitedReturnType<T> = T extends (...args: unknown[]) => Promise<infer R>
   ? R
   : never;
 export type ParseApkgData = AwaitedReturnType<typeof parseApkg>;
@@ -28,7 +28,7 @@ export async function parseApkg(apkgPath: string, outputDir: string) {
       fields[name] = values[idx] ?? "";
     });
     return {
-      id: note.id,
+      id: note.id as string,
       fields,
     };
   });

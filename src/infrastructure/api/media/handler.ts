@@ -24,7 +24,7 @@ async function GET(
       return new NextResponse("No content", { status: 404 });
     }
 
-    return new NextResponse(Body as any, {
+    return new NextResponse(Body as unknown as BodyInit, {
       headers: {
         "Content-Type": ContentType || "application/octet-stream",
         "Cache-Control": "public, max-age=31536000",

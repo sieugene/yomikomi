@@ -39,7 +39,7 @@ export class MegaCloudExtractor implements Extractor {
       readableStream.on("end", () =>
         resolve(Buffer.concat(chunks).toString("utf-8"))
       );
-      readableStream.on("error", (error: any) => reject(error));
+      readableStream.on("error", (error: unknown) => reject(error));
     });
     return parseAnkiMediaJson(mediaFile);
   }

@@ -36,9 +36,9 @@ async function getByCollectionId(
   }
 }
 
-async function getAll(
-  req: NextRequest
-): Promise<NextResponse<ApiResponse["Collection"]["All"] | { error: string }>> {
+async function getAll(): Promise<
+  NextResponse<ApiResponse["Collection"]["All"] | { error: string }>
+> {
   try {
     const collections = await prisma.collection.findMany();
 

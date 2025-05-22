@@ -76,7 +76,7 @@ export function NotesViewer({ data }: Props) {
                 <HtmlWithImageHandling
                   media={media}
                   html={value}
-                  noteId={note.id}
+                  noteId={note.id!}
                 />
               </div>
             );

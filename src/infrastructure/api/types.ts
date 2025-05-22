@@ -35,7 +35,7 @@ export type GetMediaResponse = GetObjectCommandOutput["Body"];
 export type ApiResponse = {
   Collection: {
     ById: CollectionWithNotesAndMedia;
-    All: Prisma.CollectionGetPayload<{}>[];
+    All: Prisma.CollectionGetPayload<object>[];
   };
   Import: ImportRouteResponse;
   Media: GetMediaResponse;

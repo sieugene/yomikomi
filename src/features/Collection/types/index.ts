@@ -4,7 +4,7 @@ import { Media, Note } from "@/infrastructure/database/generated";
 type LocalOrRemoteMedia = Media &
   Partial<Pick<DeckMedia, "getBlob" | "revokeBlob">>;
 export type FormattedImportData = {
-  note: Omit<Note, "fields"> & {
+  note: Partial<Omit<Note, "fields">> & {
     fields: Record<string, string>;
   };
   media: LocalOrRemoteMedia[];
