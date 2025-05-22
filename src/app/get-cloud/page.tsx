@@ -12,7 +12,9 @@ const Page = () => {
         type="url"
         placeholder="Enter a url"
         onChange={(event) => {
-          event.target.value && setUrl(event.target.value);
+          if (event.target.value) {
+            setUrl(event.target.value);
+          }
         }}
         value={url}
       />

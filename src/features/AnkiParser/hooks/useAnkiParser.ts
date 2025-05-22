@@ -23,9 +23,9 @@ export const useAnkiParser = (type: string) => {
     const models = await deck.getModels();
 
     const notes = Object.values(notesRaw).map((note) => {
-      const model = models[note.mid];
+      const model = models[note.mid] as { flds: { name: string }[] };
 
-      const fieldNames: string[] = model.flds.map((f: any) => f.name);
+      const fieldNames: string[] = model.flds.map((f) => f.name);
       const values = note.flds.split("\x1f");
       const fields: Record<string, string> = {};
       fieldNames.forEach((name, idx) => {
@@ -43,7 +43,8 @@ export const useAnkiParser = (type: string) => {
 
       const importData: FormattedImportData = {
         note: {
-          ...note,
+          fields: note.fields,
+          id: note.id.toString(),
           collectionId,
           createdAt,
           updatedAt,

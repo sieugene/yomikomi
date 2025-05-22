@@ -48,6 +48,7 @@ export const HtmlWithImageHandling = ({
 
   useEffect(() => {
     staticRender();
+    /* eslint-disable @typescript-eslint/no-unused-vars */
   }, []);
 
   return (

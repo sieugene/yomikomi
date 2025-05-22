@@ -170,6 +170,7 @@ export default class FileManager {
     if (!this.db) await this.init();
     const allFiles = await this.listFiles();
     const current = allFiles.find((a) => a.key === itemKey);
-    return current?.id;
+
+    return current?.key;
   }
 }

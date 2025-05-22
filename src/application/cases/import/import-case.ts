@@ -91,7 +91,10 @@ export class ImportCase {
   }
 
   private async createNotes(
-    notes: any[],
+    notes: {
+      id: string;
+      fields: Record<string, string>;
+    }[],
     collectionId: string
   ): Promise<ImportRouteResponse> {
     return await Promise.all(
