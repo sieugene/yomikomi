@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/infrastructure/database/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Collection {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes Note[]
+  media Media[]
+}
+
+model Note {
+  id           String     @id @default(uuid())
+  fields       Json
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  collectionId String
+}
+
+model Media {
+  id           String     @id @default(uuid())
+  path         String
+  type         String
+  originalName String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  collection   Collection @relation(fields: [collectionId], references: [id])
+  collectionId String
+}
