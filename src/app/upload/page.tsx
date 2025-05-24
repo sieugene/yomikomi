@@ -1,9 +1,11 @@
 "use client";
 import { Collections } from "@/features/Collection/ui/Collections";
 import { useUpload } from "@/features/Upload/hooks/useUpload";
+import { useState } from "react";
 
 export default function UploadPage() {
-  const { handleUpload, setFile } = useUpload();
+  const [file, setFile] = useState<File | null>(null);
+  const { handleUpload } = useUpload();
 
   return (
     <div className="p-4">
@@ -13,7 +15,7 @@ export default function UploadPage() {
       />
       <button
         className="ml-2 px-4 py-1 bg-blue-600 text-white"
-        onClick={handleUpload}
+        onClick={() => handleUpload(file)}
       >
         Upload
       </button>

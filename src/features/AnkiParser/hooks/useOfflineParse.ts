@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { useAnkiParser } from "./useAnkiParser";
 import { JSZipExtractor } from "../model/extractors/JSZipExtractor";
+import { useAnkiParser } from "./useAnkiParser";
 
 export const useOfflineParse = () => {
   const { data, handleUpload } = useAnkiParser("offline");
-  const [file, setFile] = useState<File | null>(null);
 
-  const upload = async () => {
+  const upload = async (file: File | null) => {
     if (!file) {
       throw new Error("File is not selected");
     }
@@ -15,5 +13,5 @@ export const useOfflineParse = () => {
     await handleUpload(extractor);
   };
 
-  return { file, setFile, data, upload };
+  return { data, upload };
 };

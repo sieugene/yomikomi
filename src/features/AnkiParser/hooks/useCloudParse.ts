@@ -1,12 +1,10 @@
-import { useState } from "react";
 import { MegaCloudExtractor } from "../model/extractors/MegaCloudExtractor";
 import { useAnkiParser } from "./useAnkiParser";
 
 export const useCloudParse = () => {
   const { data, handleUpload } = useAnkiParser("cloud");
-  const [url, setUrl] = useState<string>("");
 
-  const upload = async () => {
+  const upload = async (url: string) => {
     if (!url) {
       throw new Error("Url is required");
     }
@@ -15,5 +13,5 @@ export const useCloudParse = () => {
     await handleUpload(extractor);
   };
 
-  return { setUrl, url, data, upload };
+  return { data, upload };
 };
