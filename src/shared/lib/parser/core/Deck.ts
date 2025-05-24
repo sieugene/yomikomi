@@ -1,13 +1,13 @@
-import protobuf from 'protobufjs';
-import { DB_FILES } from '../constants';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-import DbNotFoundError from './errors/DbNotFoundError';
-import Anki21bDb from './db/Anki21bDb';
-import Anki21Db from './db/Anki21Db';
-import Anki2Db from './db/Anki2Db';
-import Db from './db/Db';
+import protobuf from "protobufjs";
+import { DB_FILES } from "../constants";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
+import DbNotFoundError from "./errors/DbNotFoundError";
+import Anki21bDb from "./db/Anki21bDb";
+import Anki21Db from "./db/Anki21Db";
+import Anki2Db from "./db/Anki2Db";
+import Db from "./db/Db";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,7 +17,7 @@ export default class Deck {
   public anki21: Db | null = null; // old db version
   public anki21b: Db | null = null; // latest db version
 
-  folder = '';
+  folder = "";
 
   constructor(folder: string) {
     this.folder = folder;
@@ -27,15 +27,18 @@ export default class Deck {
   /**
    * Set db instances depending on files
    */
-  private setDatabases() {
+  private async setDatabases() {
+    const sqlite3 = await import("sqlite3");
+
     let file = path.join(this.folder, DB_FILES.anki21b);
-    if (fs.existsSync(file)) this.anki21b = new Anki21bDb(file);
+    if (fs.existsSync(file))
+      this.anki21b = new Anki21bDb(file, sqlite3.Database);
 
     file = path.join(this.folder, DB_FILES.anki21);
-    if (fs.existsSync(file)) this.anki21 = new Anki21Db(file);
+    if (fs.existsSync(file)) this.anki21 = new Anki21Db(file, sqlite3.Database);
 
     file = path.join(this.folder, DB_FILES.anki2);
-    if (fs.existsSync(file)) this.anki2 = new Anki2Db(file);
+    if (fs.existsSync(file)) this.anki2 = new Anki2Db(file, sqlite3.Database);
   }
 
   /**
@@ -52,7 +55,7 @@ export default class Deck {
    * @returns current database
    */
   public async dbOpen(): Promise<Db> {
-    if (!this.db) throw new DbNotFoundError('Database not found');
+    if (!this.db) throw new DbNotFoundError("Database not found");
 
     await this.db.open();
 
@@ -66,8 +69,9 @@ export default class Deck {
    * @returns Json media list
    */
   async getMedia(mediaFile?: any): Promise<Record<string, string>> {
-    const file = mediaFile || path.join(this.folder, 'media');
-    if (!fs.existsSync(file)) throw new Error('Media file not found by path: ' + file);
+    const file = mediaFile || path.join(this.folder, "media");
+    if (!fs.existsSync(file))
+      throw new Error("Media file not found by path: " + file);
 
     const buf = fs.readFileSync(file);
 
@@ -75,20 +79,22 @@ export default class Deck {
     try {
       return JSON.parse(buf.toString());
     } catch (e) {
-      console.log('Failed to parse media as json...');
+      console.log("Failed to parse media as json...");
     }
 
-    console.log('Trying to open media file as Proxy Buffer');
+    console.log("Trying to open media file as Proxy Buffer");
 
     // trying to decode media file as buffer message
     let entries = [];
     try {
-      const root = protobuf.loadSync(__dirname + '/../protos/import_export.proto');
-      const MediaEntries = root.lookupType('anki.import_export.MediaEntries');
+      const root = protobuf.loadSync(
+        __dirname + "/../protos/import_export.proto"
+      );
+      const MediaEntries = root.lookupType("anki.import_export.MediaEntries");
       const message = MediaEntries.decode(buf);
       entries = message.toJSON().entries || [];
     } catch (e: any) {
-      throw new Error('Error during decode Proxy message: ' + e?.message);
+      throw new Error("Error during decode Proxy message: " + e?.message);
     }
 
     const res: Record<string, string> = {};

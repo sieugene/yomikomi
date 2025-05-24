@@ -1,12 +1,12 @@
-import { Database } from 'sqlite';
-import sqlite3 from 'sqlite3';
-import INote from '../interfaces/INote';
+import { Database } from "sqlite";
+import sqlite3 from "sqlite3";
+import INote from "../interfaces/INote";
 
 export default abstract class Db extends Database {
-  constructor(filename: string) {
+  constructor(filename: string, driver: typeof sqlite3.Database) {
     super({
       filename,
-      driver: sqlite3.Database,
+      driver,
     });
   }
 
@@ -19,14 +19,28 @@ export default abstract class Db extends Database {
    * @returns list of INote objects
    */
   async getNotes(): Promise<Record<string, INote>> {
-    const noteRows = await this.all('SELECT * from notes');
-    const cardRows = await this.all('SELECT * from cards');
+    const noteRows = await this.all("SELECT * from notes");
+    const cardRows = await this.all("SELECT * from cards");
 
     const notes: Record<string, INote> = {};
     for (const row of noteRows) {
-      const { id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data } = row; // note
+      const { id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data } =
+        row; // note
 
-      notes[id] = <INote>{ id, guid, mid, mod, usn, tags, flds, sfld, csum, flags, data, cards: [] };
+      notes[id] = <INote>{
+        id,
+        guid,
+        mid,
+        mod,
+        usn,
+        tags,
+        flds,
+        sfld,
+        csum,
+        flags,
+        data,
+        cards: [],
+      };
     }
 
     for (const row of cardRows) {
@@ -83,7 +97,7 @@ export default abstract class Db extends Database {
    * @returns collection json
    */
   async getCollection(): Promise<any> {
-    const res = await this.get('SELECT * FROM col');
+    const res = await this.get("SELECT * FROM col");
     res.conf = JSON.parse(res.conf);
     res.models = JSON.parse(res.models);
     res.decks = JSON.parse(res.decks);
@@ -93,8 +107,8 @@ export default abstract class Db extends Database {
   }
 
   async getDeckConfig(): Promise<any> {
-    const res = await this.get('SELECT * FROM deck_config');
-    res.config = Buffer.from(res.config, 'hex').toString('utf-8');
+    const res = await this.get("SELECT * FROM deck_config");
+    res.config = Buffer.from(res.config, "hex").toString("utf-8");
     return res;
   }
 
