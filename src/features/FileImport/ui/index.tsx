@@ -7,16 +7,17 @@ import {
   FC,
   SetStateAction,
   useCallback,
-  useState,
+  useMemo,
 } from "react";
 
 type Props = {
   setFile: Dispatch<SetStateAction<File | null>>;
   disabled: boolean;
+  selectedFile: File | null;
 };
 
-export const FileImport: FC<Props> = ({ setFile, disabled }) => {
-  const [fileName, setFileName] = useState("");
+export const FileImport: FC<Props> = ({ setFile, disabled, selectedFile }) => {
+  const fileName = useMemo(() => selectedFile?.name || "", [selectedFile]);
 
   const onDrop = useCallback(
     (e: DragEvent<HTMLDivElement>) => {
@@ -24,7 +25,6 @@ export const FileImport: FC<Props> = ({ setFile, disabled }) => {
       e.preventDefault();
       const file = e.dataTransfer.files[0];
       if (file) {
-        setFileName(file.name);
         setFile(file);
       }
     },
@@ -36,7 +36,6 @@ export const FileImport: FC<Props> = ({ setFile, disabled }) => {
     if (e.target.files?.length) {
       const file = e.target.files[0];
       if (file) {
-        setFileName(file.name);
         setFile(file);
       }
     }

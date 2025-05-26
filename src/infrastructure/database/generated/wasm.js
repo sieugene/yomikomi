@@ -129,6 +129,7 @@ exports.Prisma.CollectionScalarFieldEnum = {
 
 exports.Prisma.NoteScalarFieldEnum = {
   id: 'id',
+  noteId: 'noteId',
   fields: 'fields',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',

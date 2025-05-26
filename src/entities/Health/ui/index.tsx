@@ -1,10 +1,11 @@
 "use client";
-import React from "react";
-import { useHealth } from "../hooks/useHealth";
-import { ServiceStatus } from "@/infrastructure/api/types";
+import React, { FC } from "react";
+import { HealthResponse, ServiceStatus } from "@/infrastructure/api/types";
 
-export const Health = () => {
-  const { health } = useHealth();
+type Props = {
+  health: HealthResponse | null;
+};
+export const Health: FC<Props> = ({ health }) => {
   const getStatusIndicator = (serviceName: string, status: ServiceStatus) => {
     const isActive = status === "online";
     return (

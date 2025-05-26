@@ -32,7 +32,7 @@ export default class FileManager {
         const db = (event.target as IDBOpenDBRequest).result;
         if (!db.objectStoreNames.contains(this.storeName)) {
           db.createObjectStore(this.storeName, {
-            keyPath: "key", // используем ключ "key" из StoredFile
+            keyPath: "key",
             autoIncrement: false,
           });
         }
