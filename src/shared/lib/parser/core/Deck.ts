@@ -8,6 +8,7 @@ import Anki21bDb from "./db/Anki21bDb";
 import Anki21Db from "./db/Anki21Db";
 import Anki2Db from "./db/Anki2Db";
 import Db from "./db/Db";
+import type { sqlite3 } from "sqlite3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,26 +20,23 @@ export default class Deck {
 
   folder = "";
 
-  constructor(folder: string) {
+  constructor(folder: string, sqlite3Db: sqlite3["Database"]) {
     this.folder = folder;
-    this.setDatabases();
+    this.setDatabases(sqlite3Db);
   }
 
   /**
    * Set db instances depending on files
    */
-  private async setDatabases() {
-    const sqlite3 = await import("sqlite3");
-
+  private setDatabases(sqlite3Db: sqlite3["Database"]) {
     let file = path.join(this.folder, DB_FILES.anki21b);
-    if (fs.existsSync(file))
-      this.anki21b = new Anki21bDb(file, sqlite3.Database);
+    if (fs.existsSync(file)) this.anki21b = new Anki21bDb(file, sqlite3Db);
 
     file = path.join(this.folder, DB_FILES.anki21);
-    if (fs.existsSync(file)) this.anki21 = new Anki21Db(file, sqlite3.Database);
+    if (fs.existsSync(file)) this.anki21 = new Anki21Db(file, sqlite3Db);
 
     file = path.join(this.folder, DB_FILES.anki2);
-    if (fs.existsSync(file)) this.anki2 = new Anki2Db(file, sqlite3.Database);
+    if (fs.existsSync(file)) this.anki2 = new Anki2Db(file, sqlite3Db);
   }
 
   /**

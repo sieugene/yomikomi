@@ -97,21 +97,28 @@ export class ImportCase {
     }[],
     collectionId: string
   ): Promise<ImportRouteResponse> {
-    return await Promise.all(
+    const createdNotes = await Promise.all(
       notes.map(async (note) => {
-        const createdNote = await prisma.note.create({
-          data: {
-            id: `${note.id}`,
-            fields: JSON.stringify(note.fields),
-            collectionId: collectionId,
-          },
-        });
-
-        return {
-          createdNote,
-        };
+        try {
+          const uuid = uuidv4();
+          const createdNote = await prisma.note.create({
+            data: {
+              noteId: `${note.id}`,
+              id: uuid,
+              fields: JSON.stringify(note.fields),
+              collectionId: collectionId,
+            },
+          });
+          return createdNote;
+        } catch (error) {
+          console.error(`Note creation failed :: ${note?.id}`, error);
+          return null;
+        }
       })
     );
+    return createdNotes
+      .filter((note): note is Note => note !== null)
+      .map((note) => ({ createdNote: note }));
   }
 
   private async cleanup() {

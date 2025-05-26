@@ -24,11 +24,12 @@ export class HealthCase {
 
     try {
       await this.checkMinio();
-      this.services.database = "online";
+      this.services.minio = "online";
     } catch (error) {
       console.error("MinIO health check error:", error);
       this.services.minio = "offline";
     }
+
     return {
       services: this.services,
       status: Object.values(this.services).includes("offline") ? "error" : "ok",

@@ -20,6 +20,7 @@ model Collection {
 
 model Note {
   id           String     @id @default(uuid())
+  noteId       String
   fields       Json
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt

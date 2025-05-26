@@ -5,11 +5,11 @@ type AwaitedReturnType<T> = T extends (...args: unknown[]) => Promise<infer R>
   : never;
 export type ParseApkgData = AwaitedReturnType<typeof parseApkg>;
 export async function parseApkg(apkgPath: string, outputDir: string) {
+  const sqlite3 = (await import("sqlite3")).default;
   const unpacker = new Unpack();
 
   await unpacker.unpack(apkgPath, outputDir);
-
-  const deck = new Deck(outputDir);
+  const deck = new Deck(outputDir, sqlite3.Database);
 
   const mediaMap = await deck.getMedia();
 

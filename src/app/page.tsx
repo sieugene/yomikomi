@@ -1,4 +1,5 @@
 "use client";
+import { useHealth } from "@/entities/Health/hooks/useHealth";
 import { Health } from "@/entities/Health/ui";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
 import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
@@ -12,6 +13,8 @@ import { useMemo, useState } from "react";
 type SubmitType = "local" | "backend" | "link";
 
 const Home = () => {
+  const { health, servicesIsActive } = useHealth();
+
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -31,21 +34,22 @@ const Home = () => {
     try {
       if (type === "local" && file) {
         await offlineUpload(file);
-        setImportsData({ id: Date.now(), type: "file", name: file.name });
+        setImportsData({ type: "file", name: file.name + " (local)" });
+        setFile(null);
       }
 
       if (type === "backend" && file) {
         await backendUpload(file);
         setImportsData({
-          id: Date.now(),
           type: "file",
           name: file.name + " (backend)",
         });
+        setFile(null);
       }
 
       if (type === "link" && url.trim()) {
         await cloudUpload(url);
-        setImportsData({ id: Date.now(), type: "link", name: url.trim() });
+        setImportsData({ type: "link", name: url.trim() });
         setUrl("");
       }
     } finally {
@@ -55,19 +59,22 @@ const Home = () => {
 
   const urlNotEmpty = !!url.trim();
   const isLocalDisabled = !file || urlNotEmpty;
-  // TODO const isBackendDisabled = !file;
-  const isBackendDisabled = true;
+  const isBackendDisabled = !servicesIsActive || !file;
   const isUrlInputDisabled = !!file;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex flex-col items-center justify-center p-6">
-      <Health />
+      <Health health={health} />
 
       <h1 className="mt-12 text-4xl font-extrabold text-indigo-900 mb-8">
         Import Anki Deck
       </h1>
 
-      <FileImport setFile={setFile} disabled={urlNotEmpty} />
+      <FileImport
+        setFile={setFile}
+        disabled={urlNotEmpty}
+        selectedFile={file}
+      />
 
       <label
         htmlFor="cloudLink"
