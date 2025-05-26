@@ -20,7 +20,11 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { imports, setImportsData } = useImports();
 
-  const { upload: offlineUpload, data: offlineData } = useOfflineParse();
+  const {
+    upload: offlineUpload,
+    data: offlineData,
+    getLastCacheFile,
+  } = useOfflineParse();
   const { handleUpload: backendUpload } = useUpload();
   const { upload: cloudUpload, data: cloudData } = useCloudParse();
   const viewerData = useMemo(() => {
@@ -52,6 +56,17 @@ const Home = () => {
         setImportsData({ type: "link", name: url.trim() });
         setUrl("");
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGetLastCache = async () => {
+    setIsLoading(true);
+    try {
+      await getLastCacheFile();
+    } catch (error) {
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -98,6 +113,14 @@ const Home = () => {
       </div>
 
       <div className="flex flex-col items-center mt-6 space-y-3">
+        <button
+          type="button"
+          className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isLoading}
+          onClick={handleGetLastCache}
+        >
+          Get last cached (local)
+        </button>
         <button
           type="button"
           className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
