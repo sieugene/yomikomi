@@ -1,7 +1,7 @@
 import type { Database, SqlJsStatic } from "sql.js";
 import type { Extractor } from "./Extractor";
 import { DB_FILES } from "../lib/constants";
-import FileManager from "./FileManager";
+import { FileStoreManager } from "@/features/StoreManager/model/FileStoreManager";
 
 export type Media = {
   fileName: string;
@@ -63,7 +63,7 @@ export type Collection = {
 
 export class Deck {
   private db: Database | null = null;
-  private fileManager = new FileManager();
+  private fileManager = new FileStoreManager();
 
   constructor(
     private deckName: string,
@@ -246,7 +246,7 @@ export class Deck {
           getBlob: async () => {
             try {
               const hasFile = await this.fileManager
-                .hasFile(itemKey)
+                .has(itemKey)
                 .catch(() => null);
 
               if (!hasFile) {
