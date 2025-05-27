@@ -20,6 +20,9 @@ export class MegaCloudExtractor implements Extractor {
       console.error("Error initializing MegaCloudExtractor:", error);
     }
   }
+  public getCurrentFile() {
+    return null;
+  }
 
   async extractFile(fileName: string): Promise<ArrayBuffer | null> {
     const file = await this.findFileByName(fileName);
