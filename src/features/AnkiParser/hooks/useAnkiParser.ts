@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useSqlJs } from "../context/SqlJsProvider";
 import { Deck } from "../model/Deck";
 import { Extractor } from "../model/Extractor";
+import { useStoreCollection } from "@/features/Collection/context/StoreCollectionContext";
 
 export const useAnkiParser = (type: string) => {
+  const { add } = useStoreCollection();
   const [data, setData] = useState<FormattedImportData[]>([]);
   const { sqlClient } = useSqlJs();
 
-  const handleUpload = async (extractor: Extractor) => {
+  const handleUpload = async (extractor: Extractor, readMode = false) => {
     if (!sqlClient) {
       throw new Error("SQL client is not initialized");
     }
@@ -65,6 +67,10 @@ export const useAnkiParser = (type: string) => {
       };
       return importData;
     });
+    if (!readMode) {
+      await add(extractor.getCurrentFile()!);
+    }
+
     setData(formatted);
   };
   return { handleUpload, data };

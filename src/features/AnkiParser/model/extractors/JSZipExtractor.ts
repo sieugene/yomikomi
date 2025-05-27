@@ -9,6 +9,10 @@ export class JSZipExtractor implements Extractor {
     this.zip = new JSZip();
   }
 
+  public getCurrentFile() {
+    return this.file;
+  }
+
   async init(): Promise<void> {
     await this.zip.loadAsync(this.file);
   }

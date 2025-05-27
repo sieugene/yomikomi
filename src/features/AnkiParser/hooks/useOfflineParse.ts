@@ -1,38 +1,36 @@
-import { FileStoreManager } from "@/features/StoreManager/model/FileStoreManager";
+import { useStoreCollection } from "@/features/Collection/context/StoreCollectionContext";
 import { JSZipExtractor } from "../model/extractors/JSZipExtractor";
 import { useAnkiParser } from "./useAnkiParser";
 
-const CACHE_CARD = "anki-deck-test";
-const FILE_STORE = new FileStoreManager();
-
 export const useOfflineParse = () => {
+  const { getStoreManager } = useStoreCollection();
   const { data, handleUpload } = useAnkiParser("offline");
 
   const upload = async (file: File | null) => {
     if (!file) {
       throw new Error("File is not selected");
     }
-    await FILE_STORE.saveFile(file, "anki-deck-test");
 
     const extractor = new JSZipExtractor(file);
     await extractor.init();
+
     await handleUpload(extractor);
   };
 
-  const getLastCacheFile = async () => {
-    const fileIsExist = await FILE_STORE.has(CACHE_CARD);
+  const getCacheFile = async (id: string) => {
+    const fileStore = getStoreManager();
+    const fileIsExist = await fileStore.has(id);
     if (fileIsExist) {
-      const file = await FILE_STORE.getAsFile(CACHE_CARD);
+      const file = await fileStore.getAsFile(id);
       if (file) {
         const extractor = new JSZipExtractor(file);
         await extractor.init();
-        await handleUpload(extractor);
+        await handleUpload(extractor, true);
       }
-      throw new Error("Cannot find file");
     } else {
       throw new Error("Cannot find file");
     }
   };
 
-  return { data, upload, getLastCacheFile };
+  return { data, upload, getCacheFile };
 };
