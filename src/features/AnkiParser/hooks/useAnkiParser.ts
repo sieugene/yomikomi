@@ -11,7 +11,7 @@ export const useAnkiParser = (type: string) => {
   const [data, setData] = useState<FormattedImportData[]>([]);
   const { sqlClient } = useSqlJs();
 
-  const handleUpload = async (extractor: Extractor, readMode = false) => {
+  const handleUpload = async (extractor: Extractor, fastCacheFile?: File) => {
     if (!sqlClient) {
       throw new Error("SQL client is not initialized");
     }
@@ -67,8 +67,8 @@ export const useAnkiParser = (type: string) => {
       };
       return importData;
     });
-    if (!readMode) {
-      await add(extractor.getCurrentFile()!);
+    if (!fastCacheFile) {
+      await add(fastCacheFile!);
     }
 
     setData(formatted);
