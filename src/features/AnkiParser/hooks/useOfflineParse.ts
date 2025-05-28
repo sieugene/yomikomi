@@ -14,7 +14,7 @@ export const useOfflineParse = () => {
     const extractor = new JSZipExtractor(file);
     await extractor.init();
 
-    await handleUpload(extractor);
+    await handleUpload(extractor, file);
   };
 
   const getCacheFile = async (id: string) => {
@@ -25,7 +25,7 @@ export const useOfflineParse = () => {
       if (file) {
         const extractor = new JSZipExtractor(file);
         await extractor.init();
-        await handleUpload(extractor, true);
+        await handleUpload(extractor);
       }
     } else {
       throw new Error("Cannot find file");

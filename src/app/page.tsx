@@ -5,6 +5,7 @@ import { NotesViewer } from "@/entities/NotesViewer/ui";
 import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
 import { useCloudParse } from "@/features/AnkiParser/hooks/useCloudParse";
 import { useOfflineParse } from "@/features/AnkiParser/hooks/useOfflineParse";
+import { FAST_MEMORY_CLOUD_FILE_NAME } from "@/features/AnkiParser/lib/constants";
 import {
   StoreCollectionProvider,
   useStoreCollection,
@@ -30,7 +31,11 @@ const Home = () => {
     getCacheFile,
   } = useOfflineParse();
   const { handleUpload: backendUpload } = useUpload();
-  const { upload: cloudUpload, data: cloudData } = useCloudParse();
+  const {
+    upload: cloudUpload,
+    data: cloudData,
+    getCacheFile: getCloudCacheFile,
+  } = useCloudParse();
   const viewerData = useMemo(() => {
     if (offlineData.length) return offlineData;
     if (cloudData.length) return cloudData;
@@ -62,10 +67,16 @@ const Home = () => {
     }
   };
 
-  const handleGetCacheFile = async (id: string) => {
+  const handleGetCacheFile = async (id: string, name: string) => {
     setIsLoading(true);
     try {
-      await getCacheFile(id);
+      // TODO: refactor this
+      if (name === FAST_MEMORY_CLOUD_FILE_NAME) {
+        await getCloudCacheFile(id);
+        return;
+      } else {
+        await getCacheFile(id);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -157,7 +168,7 @@ const Home = () => {
             ? state.data.map(({ id, name }) => (
                 <li
                   onClick={() => {
-                    handleGetCacheFile(id);
+                    handleGetCacheFile(id, name);
                   }}
                   key={id}
                   className="flex items-center bg-white rounded-lg shadow p-4 border border-indigo-200 cursor-pointer"

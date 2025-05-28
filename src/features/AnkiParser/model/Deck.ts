@@ -72,11 +72,23 @@ export class Deck {
   ) {}
 
   async init(): Promise<void> {
-    const dbFile = await this.extractor.extractFile(DB_FILES.LEGACY);
-    if (!dbFile)
-      throw new Error(`No ${DB_FILES.LEGACY} file found in the archive`);
+    const itemKey = `${this.deckName}-db-file-${DB_FILES.LEGACY}`;
+    await this.syncCacheFile(itemKey, DB_FILES.LEGACY, this.deckName);
+    const dbFile = await this.fileManager.getAsFile(itemKey);
+    if (!dbFile) {
+      throw new Error(`Failed to retrieve database file for key: ${itemKey}`);
+    }
+    const arrayBuffer =
+      dbFile instanceof ArrayBuffer
+        ? dbFile
+        : (await dbFile.arrayBuffer?.()) ?? null;
+    if (!arrayBuffer) {
+      throw new Error(
+        `Database file is not a valid ArrayBuffer for key: ${itemKey}`
+      );
+    }
 
-    this.db = new this.sqlClient.Database(new Uint8Array(dbFile));
+    this.db = new this.sqlClient.Database(new Uint8Array(arrayBuffer));
   }
 
   async getNotes(): Promise<Record<number, Note>> {
@@ -245,19 +257,7 @@ export class Deck {
           fileName,
           getBlob: async () => {
             try {
-              const hasFile = await this.fileManager
-                .has(itemKey)
-                .catch(() => null);
-
-              if (!hasFile) {
-                const file = await this.extractor.extractFile(key);
-                if (file) {
-                  await this.fileManager.saveFile(
-                    new File([file], fileName),
-                    itemKey
-                  );
-                }
-              }
+              await this.syncCacheFile(itemKey, key, fileName);
               const { url } = await this.fileManager.getFileUrl(itemKey);
 
               return url;
@@ -274,5 +274,22 @@ export class Deck {
         };
       })
     );
+  }
+
+  private async syncCacheFile(
+    itemKey: string,
+    extractFileName: string,
+    fileName: string
+  ) {
+    const hasFile = await this.fileManager.has(itemKey).catch(() => null);
+    if (!hasFile) {
+      const dbFile = await this.extractor.extractFile(extractFileName);
+      if (!dbFile)
+        throw new Error(
+          `syncCacheFile :: Cannot find file: ${extractFileName} `
+        );
+      await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
+    }
+    return hasFile;
   }
 }
