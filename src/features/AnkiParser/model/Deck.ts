@@ -46,6 +46,7 @@ export class Deck {
       dbFile instanceof ArrayBuffer
         ? dbFile
         : (await dbFile.arrayBuffer?.()) ?? null;
+      console.log("DB file size:", arrayBuffer?.byteLength, "Type:", typeof arrayBuffer);
     if (!arrayBuffer) {
       throw new Error(
         `Database file is not a valid ArrayBuffer for key: ${itemKey}`
@@ -113,14 +114,14 @@ export class Deck {
     fileName: string
   ) {
     const hasFile = await this.fileManager.has(itemKey).catch(() => null);
-    if (!hasFile) {
+    // if (!hasFile) {
       const dbFile = await this.extractor.extractFile(extractFileName);
       if (!dbFile)
         throw new Error(
           `syncCacheFile :: Cannot find file: ${extractFileName} `
         );
       await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
-    }
+    // }
     return hasFile;
   }
 }
