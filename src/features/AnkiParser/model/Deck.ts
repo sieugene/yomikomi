@@ -26,7 +26,7 @@ export class Deck {
   async init(): Promise<void> {
     let TARGET_DB_V = DB_FILES.LEGACY;
     const files = await this.extractor.listFiles();
-  
+
     if (files.includes(DB_FILES.MODERN)) {
       TARGET_DB_V = DB_FILES.MODERN;
     } else if (files.includes(DB_FILES.LEGACY)) {
@@ -38,7 +38,7 @@ export class Deck {
     const itemKey = `${this.deckName}-db-file-${TARGET_DB_V}`;
     await this.syncCacheFile(itemKey, TARGET_DB_V, this.deckName);
     const dbFile = await this.fileManager.getAsFile(itemKey);
-  
+
     if (!dbFile) {
       throw new Error(`Failed to retrieve database file for key: ${itemKey}`);
     }
@@ -46,7 +46,12 @@ export class Deck {
       dbFile instanceof ArrayBuffer
         ? dbFile
         : (await dbFile.arrayBuffer?.()) ?? null;
-      console.log("DB file size:", arrayBuffer?.byteLength, "Type:", typeof arrayBuffer);
+    console.log(
+      "DB file size:",
+      arrayBuffer?.byteLength,
+      "Type:",
+      typeof arrayBuffer
+    );
     if (!arrayBuffer) {
       throw new Error(
         `Database file is not a valid ArrayBuffer for key: ${itemKey}`
@@ -115,12 +120,10 @@ export class Deck {
   ) {
     const hasFile = await this.fileManager.has(itemKey).catch(() => null);
     // if (!hasFile) {
-      const dbFile = await this.extractor.extractFile(extractFileName);
-      if (!dbFile)
-        throw new Error(
-          `syncCacheFile :: Cannot find file: ${extractFileName} `
-        );
-      await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
+    const dbFile = await this.extractor.extractFile(extractFileName);
+    if (!dbFile)
+      throw new Error(`syncCacheFile :: Cannot find file: ${extractFileName} `);
+    await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
     // }
     return hasFile;
   }
