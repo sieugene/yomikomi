@@ -6,6 +6,7 @@ import { Db } from "./db/Db";
 import Anki21bDb from "./db/Anki21bDb";
 import Anki21Db from "./db/Anki21Db";
 import Anki2Db from "./db/Anki2Db";
+import FakeDb from "./db/FakeDb";
 
 type Media = {
   fileName: string;
@@ -57,16 +58,23 @@ export class Deck {
         `Database file is not a valid ArrayBuffer for key: ${itemKey}`
       );
     }
+    try {
+      switch (TARGET_DB_V) {
+        case DB_FILES.MODERN:
+          this.db = new Anki21bDb(this.sqlClient, arrayBuffer);
+          break;
+        case DB_FILES.LEGACY:
+          this.db = new Anki21Db(this.sqlClient, arrayBuffer);
+          break;
+        case DB_FILES.OLD:
+          this.db = new Anki2Db(this.sqlClient, arrayBuffer);
+          break;
+      }
 
-    switch (TARGET_DB_V) {
-      case DB_FILES.MODERN:
-        this.db = new Anki21bDb(this.sqlClient, arrayBuffer);
-        break;
-      case DB_FILES.LEGACY:
-        this.db = new Anki21Db(this.sqlClient, arrayBuffer);
-        break;
-      case DB_FILES.OLD:
-        this.db = new Anki2Db(this.sqlClient, arrayBuffer);
+      await this.db.getModels();
+    } catch (e) {
+      console.warn("Failed to parse DB file, using FakeDb fallback", e);
+      this.db = new FakeDb() as Db;
     }
   }
 
