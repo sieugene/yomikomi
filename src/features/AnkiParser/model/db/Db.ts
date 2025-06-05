@@ -55,7 +55,6 @@ export type Collection = {
 export class Db {
   protected db: Database;
   constructor(private sqlClient: SqlJsStatic, dbFile: ArrayBuffer) {
-
     this.db = new this.sqlClient.Database(new Uint8Array(dbFile));
   }
 
@@ -203,7 +202,6 @@ export class Db {
         }
       }
     });
-
     return collection;
   }
 
