@@ -1,7 +1,6 @@
 import { Db } from "./Db";
 
 export default class Anki21bDb extends Db {
-
   private async getFields(ntid: string) {
     return this.db.exec(`SELECT * FROM fields WHERE ntid = ${ntid}`);
   }

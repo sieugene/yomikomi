@@ -14,6 +14,9 @@ importers:
       '@bokuweb/zstd-wasm':
         specifier: ^0.0.27
         version: 0.0.27
+      '@dweb-browser/zstd-wasm':
+        specifier: ^1.2.1
+        version: 1.2.1
       '@prisma/client':
         specifier: ^6.7.0
         version: 6.7.0(prisma@6.7.0(typescript@5.8.3))(typescript@5.8.3)
@@ -286,6 +289,9 @@ packages:
 
   '@bokuweb/zstd-wasm@0.0.27':
     resolution: {integrity: sha512-GDm2uOTK3ESjnYmSeLQifJnBsRCWajKLvN32D2ZcQaaCIJI/Hse9s74f7APXjHit95S10UImsRGkTsbwHmrtmg==}
+
+  '@dweb-browser/zstd-wasm@1.2.1':
+    resolution: {integrity: sha512-N20L7w71TuHprD86RNtXSGZfz5yB49RfaYj3UvT0bTs/xvoKtmJOzMm0loK+jGKrbUXCA0mndGaUfvt+lJqmmg==}
 
   '@emnapi/core@1.4.3':
     resolution: {integrity: sha512-4m62DuCE07lw01soJwPiBGC0nAww0Q+RY70VZ+n49yDIO13yyinhbWCeNnaob0lakDtWQzSdtNWzJeOJt2ma+g==}
@@ -3541,6 +3547,8 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@bokuweb/zstd-wasm@0.0.27': {}
+
+  '@dweb-browser/zstd-wasm@1.2.1': {}
 
   '@emnapi/core@1.4.3':
     dependencies:

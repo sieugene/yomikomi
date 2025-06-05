@@ -3,6 +3,9 @@ import { Extractor } from "../Extractor";
 import protobuf from "protobufjs";
 import { PROTO_IMPORT_EXPORT } from "@/shared/lib/parser/protos";
 import { init as ZstdInit, decompress } from "@bokuweb/zstd-wasm";
+import initDWebZstd, {
+  decompress as ZstdWasmDecompress,
+} from "@dweb-browser/zstd-wasm";
 
 export class JSZipExtractor implements Extractor {
   private zip: JSZip;
@@ -26,7 +29,18 @@ export class JSZipExtractor implements Extractor {
   async extractFile(fileName: string): Promise<ArrayBuffer | null> {
     this.ensureSafePath(fileName);
     const file = this.zip.file(fileName);
-    return file ? file.async("arraybuffer") : null;
+    try {
+      if (file) {
+        const arrayBuffer = await file.async("arraybuffer");
+        const compressed = new Uint8Array(arrayBuffer);
+        await initDWebZstd("/zstd/zstd_wasm_bg.wasm");
+        const input = ZstdWasmDecompress(compressed);
+
+        return input as unknown as ArrayBuffer;
+      }
+    } catch (error) {
+      return file ? file.async("arraybuffer") : null;
+    }
   }
 
   private isZstdCompressed(buf: Uint8Array): boolean {
