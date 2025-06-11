@@ -1,0 +1,56 @@
+{
+  "options": {
+    "java_multiple_files": true
+  },
+  "nested": {
+    "anki": {
+      "nested": {
+        "import_export": {
+          "nested": {
+            "MediaEntries": {
+              "fields": {
+                "entries": {
+                  "rule": "repeated",
+                  "type": "MediaEntry",
+                  "id": 1
+                }
+              },
+              "nested": {
+                "MediaEntry": {
+                  "oneofs": {
+                    "_legacyZipFilename": {
+                      "oneof": [
+                        "legacyZipFilename"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "name": {
+                      "type": "string",
+                      "id": 1
+                    },
+                    "size": {
+                      "type": "uint32",
+                      "id": 2
+                    },
+                    "sha1": {
+                      "type": "bytes",
+                      "id": 3
+                    },
+                    "legacyZipFilename": {
+                      "type": "uint32",
+                      "id": 255,
+                      "options": {
+                        "proto3_optional": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -17,16 +17,16 @@ export class HealthCase {
     try {
       await this.checkDatabase();
       this.services.database = "online";
-    } catch (error) {
-      console.error("Database health check error:", error);
+    } catch {
+      console.error("Database health check error");
       this.services.database = "offline";
     }
 
     try {
       await this.checkMinio();
       this.services.minio = "online";
-    } catch (error) {
-      console.error("MinIO health check error:", error);
+    } catch {
+      console.error("MinIO health check error");
       this.services.minio = "offline";
     }
 
