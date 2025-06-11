@@ -24,7 +24,7 @@ export default class FakeDb {
     };
   }
 
-  async getModels(): Promise<Record<number, any>> {
+  async getModels(): Promise<Record<number, unknown>> {
     return {
       [0]: {
         id: 0,

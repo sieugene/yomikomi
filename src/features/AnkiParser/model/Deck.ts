@@ -8,7 +8,7 @@ import Anki21Db from "./db/Anki21Db";
 import Anki2Db from "./db/Anki2Db";
 import FakeDb from "./db/FakeDb";
 
-type Media = {
+export type Media = {
   fileName: string;
   getBlob: () => Promise<string>;
   revokeBlob: () => void;
@@ -127,11 +127,15 @@ export class Deck {
     fileName: string
   ) {
     const hasFile = await this.fileManager.has(itemKey).catch(() => null);
+
+    // TODO it's kill media for modern decks
     // if (!hasFile) {
-    const dbFile = await this.extractor.extractFile(extractFileName);
-    if (!dbFile)
-      throw new Error(`syncCacheFile :: Cannot find file: ${extractFileName} `);
-    await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
+      const dbFile = await this.extractor.extractFile(extractFileName);
+      if (!dbFile)
+        throw new Error(
+          `syncCacheFile :: Cannot find file: ${extractFileName} `
+        );
+      await this.fileManager.saveFile(new File([dbFile], fileName), itemKey);
     // }
     return hasFile;
   }

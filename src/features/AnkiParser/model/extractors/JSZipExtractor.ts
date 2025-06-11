@@ -2,10 +2,11 @@ import JSZip from "jszip";
 import { Extractor } from "../Extractor";
 import protobuf from "protobufjs";
 import { PROTO_IMPORT_EXPORT } from "@/shared/lib/parser/protos";
-import { init as ZstdInit, decompress } from "@bokuweb/zstd-wasm";
-import initDWebZstd, {
-  decompress as ZstdWasmDecompress,
-} from "@dweb-browser/zstd-wasm";
+import initDWebZstdModule, { decompress } from "@dweb-browser/zstd-wasm";
+
+const initDWebZstd = initDWebZstdModule as unknown as (
+  wasmPath: string
+) => Promise<void>;
 
 export class JSZipExtractor implements Extractor {
   private zip: JSZip;
@@ -18,8 +19,9 @@ export class JSZipExtractor implements Extractor {
     await this.zip.loadAsync(this.file);
   }
 
+  // TODO
   private async initZstd(): Promise<void> {
-    await ZstdInit();
+    await initDWebZstd("/zstd/zstd_wasm_bg.wasm");
   }
 
   async listFiles(): Promise<string[]> {
@@ -33,47 +35,23 @@ export class JSZipExtractor implements Extractor {
       if (file) {
         const arrayBuffer = await file.async("arraybuffer");
         const compressed = new Uint8Array(arrayBuffer);
-        await initDWebZstd("/zstd/zstd_wasm_bg.wasm");
-        const input = ZstdWasmDecompress(compressed);
+        await this.initZstd();
+        const input = decompress(compressed);
 
         return input as unknown as ArrayBuffer;
       }
-    } catch (error) {
+    } catch {
       return file ? file.async("arraybuffer") : null;
     }
+    return null;
   }
 
-  private isZstdCompressed(buf: Uint8Array): boolean {
-    return (
-      buf.length >= 4 &&
-      buf[0] === 0x28 &&
-      buf[1] === 0xb5 &&
-      buf[2] === 0x2f &&
-      buf[3] === 0xfd
-    );
-  }
-
-  private async decompressZstdIfNeeded(buf: Uint8Array): Promise<Uint8Array> {
-    if (this.isZstdCompressed(buf)) {
-      console.log("Detected Zstandard compressed data, decompressing...");
-
-      try {
-        await this.initZstd();
-        const decompressed = decompress(buf);
-        console.log(
-          `Decompressed ${buf.length} bytes -> ${decompressed.length} bytes`
-        );
-        return decompressed;
-      } catch (e) {
-        console.error("Zstd decompression failed:", e);
-        throw new Error(
-          `Zstandard decompression failed: ${
-            e instanceof Error ? e.message : String(e)
-          }`
-        );
-      }
+  private async decompressIfNeeded(buf: Uint8Array): Promise<Uint8Array> {
+    try {
+      return decompress(buf);
+    } catch {
+      return buf;
     }
-    return buf;
   }
 
   async extractMedia(fileName: string): Promise<Record<string, string>> {
@@ -87,9 +65,7 @@ export class JSZipExtractor implements Extractor {
     let buf: Uint8Array;
     try {
       buf = await file.async("uint8array");
-      console.log(`Extracted ${fileName} (${buf.length} bytes)`);
-
-      buf = await this.decompressZstdIfNeeded(buf);
+      buf = await this.decompressIfNeeded(buf);
     } catch (e) {
       console.error("Failed to process media file:", e);
       return {};
@@ -122,7 +98,7 @@ export class JSZipExtractor implements Extractor {
       }
 
       return result;
-    } catch (e: any) {
+    } catch (e) {
       console.error(
         `Protobuf decode failed for ${fileName}. First bytes:`,
         Array.from(buf.slice(0, 16))
@@ -135,23 +111,6 @@ export class JSZipExtractor implements Extractor {
   private ensureSafePath(fileName: string): void {
     if (fileName.includes("..") || fileName.startsWith("/")) {
       throw new Error(`Suspicious file path detected: ${fileName}`);
-    }
-  }
-
-  async validateZipStructure(): Promise<void> {
-    const files = await this.listFiles();
-    const requiredFiles = [
-      "collection.anki21b", // newest format first
-      "collection.anki21",
-      "collection.anki2",
-      "media",
-    ];
-
-    const hasAnyCollection = requiredFiles.some((f) => files.includes(f));
-    if (!hasAnyCollection) {
-      throw new Error(
-        "Not a valid Anki deck (missing collection or media file)"
-      );
     }
   }
 }
