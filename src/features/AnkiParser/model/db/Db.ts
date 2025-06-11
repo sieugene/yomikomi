@@ -202,6 +202,7 @@ export class Db {
         }
       }
     });
+
     return collection;
   }
 
