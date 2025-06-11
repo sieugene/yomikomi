@@ -19,20 +19,18 @@ export const useAnkiParser = (type: string) => {
     const deck = new Deck(type, sqlClient, extractor);
     await deck.init();
 
-    const mediaMap = await deck.getMedia();
-
-    const notesRaw = await deck.getNotes();
-    const models = await deck.getModels();
+    const { mediaMap, models, notesRaw } = await deck.getCollectedData();
 
     const notes = Object.values(notesRaw).map((note) => {
       const model = models[note.mid] as { flds: { name: string }[] };
 
-      const fieldNames: string[] = model.flds.map((f) => f.name);
-      const values = note.flds.split("\x1f");
+      const fieldNames: string[] = model?.flds?.map((f) => f.name);
+      const values = note?.flds?.split?.("\x1f");
       const fields: Record<string, string> = {};
-      fieldNames.forEach((name, idx) => {
+      fieldNames?.forEach((name, idx) => {
         fields[name] = values[idx] ?? "";
       });
+
       return {
         id: note.id,
         fields,
@@ -67,7 +65,8 @@ export const useAnkiParser = (type: string) => {
       };
       return importData;
     });
-    if (!fastCacheFile) {
+
+    if (fastCacheFile) {
       await add(fastCacheFile!);
     }
 
