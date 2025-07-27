@@ -1,6 +1,4 @@
 "use client";
-import { useHealth } from "@/entities/Health/hooks/useHealth";
-import { Health } from "@/entities/Health/ui";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
 import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
 import { useCloudParse } from "@/features/AnkiParser/hooks/useCloudParse";
@@ -10,16 +8,13 @@ import {
   StoreCollectionProvider,
   useStoreCollection,
 } from "@/features/Collection/context/StoreCollectionContext";
-import { Collections } from "@/features/Collection/ui/Collections";
 import { FileImport } from "@/features/FileImport/ui";
-import { useUpload } from "@/features/Upload/hooks/useUpload";
 import { useMemo, useState } from "react";
 
-type SubmitType = "local" | "backend" | "link";
+type SubmitType = "local" | "link";
 
 const Home = () => {
   const { state } = useStoreCollection();
-  const { health, servicesIsActive } = useHealth();
 
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string>("");
@@ -30,7 +25,7 @@ const Home = () => {
     data: offlineData,
     getCacheFile,
   } = useOfflineParse();
-  const { handleUpload: backendUpload } = useUpload();
+
   const {
     upload: cloudUpload,
     data: cloudData,
@@ -47,12 +42,6 @@ const Home = () => {
     try {
       if (type === "local" && file) {
         await offlineUpload(file);
-
-        setFile(null);
-      }
-
-      if (type === "backend" && file) {
-        await backendUpload(file);
 
         setFile(null);
       }
@@ -86,13 +75,10 @@ const Home = () => {
 
   const urlNotEmpty = !!url.trim();
   const isLocalDisabled = !file || urlNotEmpty;
-  const isBackendDisabled = !servicesIsActive || !file;
   const isUrlInputDisabled = !!file;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 flex flex-col items-center justify-center p-6">
-      <Health health={health} />
-
       <h1 className="mt-12 text-4xl font-extrabold text-indigo-900 mb-8">
         Import Anki Deck
       </h1>
@@ -137,15 +123,6 @@ const Home = () => {
         <button
           type="button"
           className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={() => onSubmit("backend")}
-          disabled={isBackendDisabled || isLoading}
-        >
-          Import (backend)
-        </button>
-
-        <button
-          type="button"
-          className="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           onClick={() => onSubmit("link")}
           disabled={!url.trim() || isLoading}
         >
@@ -179,13 +156,6 @@ const Home = () => {
               ))
             : "-"}
         </ul>
-      </div>
-
-      <div className="mt-12 w-full max-w-xl">
-        <h2 className="text-2xl font-bold text-indigo-900 mb-4">
-          Backend Imports:
-        </h2>
-        <Collections />
       </div>
 
       {viewerData?.length ? <NotesViewer data={viewerData} /> : ""}
