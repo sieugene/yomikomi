@@ -1,12 +1,11 @@
 "use client";
+import { ApplicationContext } from "@/application/context/ApplicationContext";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
-import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
 import { useCloudParse } from "@/features/AnkiParser/hooks/useCloudParse";
 import { useOfflineParse } from "@/features/AnkiParser/hooks/useOfflineParse";
 import { FAST_MEMORY_CLOUD_FILE_NAME } from "@/features/AnkiParser/lib/constants";
 import {
-  StoreCollectionProvider,
-  useStoreCollection,
+  useStoreCollection
 } from "@/features/Collection/context/StoreCollectionContext";
 import { FileImport } from "@/features/FileImport/ui";
 import { useMemo, useState } from "react";
@@ -165,11 +164,9 @@ const Home = () => {
 
 const HomePage = () => {
   return (
-    <SqlJsProvider>
-      <StoreCollectionProvider>
-        <Home />
-      </StoreCollectionProvider>
-    </SqlJsProvider>
+    <ApplicationContext>
+      <Home />
+    </ApplicationContext>
   );
 };
 

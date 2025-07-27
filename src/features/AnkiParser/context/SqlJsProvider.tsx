@@ -1,13 +1,7 @@
-// components/SqlJsProvider.tsx
 "use client";
 
 import Script from "next/script";
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useState
-} from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import type { SqlJsStatic } from "sql.js";
 
 interface SqlJsContextProps {
