@@ -1,5 +1,6 @@
 import { Media as DeckMedia } from "@/features/AnkiParser/model/Deck";
-import { Media, Note } from "@/infrastructure/database/generated";
+import { Media, Note } from '@/shared/types';
+
 
 type LocalOrRemoteMedia = Media &
   Partial<Pick<DeckMedia, "getBlob" | "revokeBlob">>;
