@@ -1,7 +1,7 @@
 import type { SqlJsStatic } from "sql.js";
 import type { Extractor } from "./Extractor";
 import { DB_FILES } from "../lib/constants";
-import { FileStoreManager } from "@/features/StoreManager/model/FileStoreManager";
+import { FileStoreManager } from "@/features/AnkiParser/model/storeManager/FileStoreManager";
 import { Db } from "./db/Db";
 import Anki21bDb from "./db/Anki21bDb";
 import Anki21Db from "./db/Anki21Db";

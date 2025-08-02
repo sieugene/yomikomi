@@ -6,11 +6,12 @@ import React, {
   useRef,
   useState,
 } from "react";
+
+import { FileStoreManager } from "@/features/AnkiParser/model/storeManager/FileStoreManager";
 import {
   CollectionStore,
   CollectionStoreState,
-} from "../model/collection-store";
-import { FileStoreManager } from "@/features/StoreManager/model/FileStoreManager";
+} from "../model/CollectionStore";
 
 type StoreCollectionContextType = {
   state: CollectionStoreState;

@@ -1,4 +1,4 @@
-import { FileStoreManager } from "@/features/StoreManager/model/FileStoreManager";
+import { FileStoreManager } from "@/features/AnkiParser/model/storeManager/FileStoreManager";
 import { v4 as uuidv4 } from "uuid";
 
 const INIT_JSON_STRUCTURE = `

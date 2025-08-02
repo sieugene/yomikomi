@@ -1,4 +1,4 @@
-import { useStoreCollection } from "@/features/Collection/context/StoreCollectionContext";
+import { useStoreCollection } from "@/features/AnkiParser/context/StoreCollectionContext";
 import { MegaCloudExtractor } from "../model/extractors/MegaCloudExtractor";
 import { useAnkiParser } from "./useAnkiParser";
 import { FAST_MEMORY_CLOUD_FILE_NAME } from "../lib/constants";

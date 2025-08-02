@@ -1,4 +1,4 @@
-import { useStoreCollection } from "@/features/Collection/context/StoreCollectionContext";
+import { useStoreCollection } from "@/features/AnkiParser/context/StoreCollectionContext";
 import { JSZipExtractor } from "../model/extractors/JSZipExtractor";
 import { useAnkiParser } from "./useAnkiParser";
 
