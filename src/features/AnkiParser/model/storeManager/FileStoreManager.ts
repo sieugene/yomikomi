@@ -1,4 +1,4 @@
-import { BaseStoreManager } from ".";
+import { BaseStoreManager } from "./BaseStoreManager";
 
 export interface StoredFile {
   key: string;

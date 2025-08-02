@@ -16,7 +16,7 @@ type Props = {
   selectedFile: File | null;
 };
 
-export const FileImport: FC<Props> = ({ setFile, disabled, selectedFile }) => {
+export const Import: FC<Props> = ({ setFile, disabled, selectedFile }) => {
   const fileName = useMemo(() => selectedFile?.name || "", [selectedFile]);
 
   const onDrop = useCallback(

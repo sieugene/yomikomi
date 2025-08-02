@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useAllCollections } from "../hooks/useCollection";
+import { useAllCollections } from "../../hooks/useCollection";
 import { ROUTES } from "@/shared/routes";
 
 export const Collections = () => {

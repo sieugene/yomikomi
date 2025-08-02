@@ -1,13 +1,8 @@
-import { SqlJsProvider } from "@/features/AnkiParser/context/SqlJsProvider";
-import { StoreCollectionProvider } from "@/features/Collection/context/StoreCollectionContext";
+import { CoreParserContext } from "@/features/AnkiParser/context/CoreParserContext";
 
 type Props = {
   children: React.ReactNode;
 };
 export const ApplicationContext: React.FC<Props> = ({ children }) => {
-  return (
-    <SqlJsProvider>
-      <StoreCollectionProvider>{children}</StoreCollectionProvider>
-    </SqlJsProvider>
-  );
+  return <CoreParserContext>{children}</CoreParserContext>;
 };

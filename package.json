@@ -9,8 +9,7 @@
     "lint": "next lint",
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio",
-    "rebuild-sqlite3": "cd node_modules/sqlite3 && pnpm exec node-gyp rebuild",
-    "compile-protobuf": "pbjs -t json -o src/shared/lib/parser/protos/import_export.proto.json src/shared/lib/parser/protos/import_export.proto"
+    "compile-protobuf": "pbjs -t json -o src/features/AnkiParser/lib/parser/protos/import_export.proto.json src/features/AnkiParser/lib/parser/protos/import_export.proto"
   },
   "dependencies": {
     "@dweb-browser/zstd-wasm": "^1.2.1",

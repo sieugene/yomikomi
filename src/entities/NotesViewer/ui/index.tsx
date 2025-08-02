@@ -1,8 +1,8 @@
 "use client";
 
-import { FormattedImportData } from "@/features/Collection/types";
 import { useMemo, useState } from "react";
 import { HtmlWithImageHandling } from "./HtmlWithImageHandling";
+import { FormattedImportData } from '@/features/AnkiParser/types';
 
 const ITEMS_PER_PAGE = 10;
 
