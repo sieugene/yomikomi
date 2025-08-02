@@ -33,7 +33,6 @@ export const Health: FC<Props> = ({ health }) => {
     <div className="w-full max-w-md p-4 rounded-2xl shadow-lg bg-white">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Service Status</h2>
       {getStatusIndicator("Database", health.services.database)}
-      {getStatusIndicator("Minio", health.services.minio)}
     </div>
   );
 };
