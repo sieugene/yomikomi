@@ -45,4 +45,5 @@ prisma/dev.db-journal
 
 src/shared/data/dict/JMdict/*.json
 src/shared/data/dict/JMdict/*.zip
+src/shared/data/dict/JMdict/*.sqlite
 src/shared/data/dict/kuromoji/*.gz
