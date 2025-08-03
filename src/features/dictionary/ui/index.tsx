@@ -1,8 +1,8 @@
+import useClickOutside from "@/shared/hooks/useClickOutside";
 import React, { FC, useMemo, useRef, useState } from "react";
 import { useDictionaryLookup } from "../hooks/useDictionaryLookup";
-import styles from "./index.module.scss";
 import { DictionaryEntry } from "../types";
-import useClickOutside from "@/shared/hooks/useClickOutside";
+import styles from "./index.module.scss";
 
 type Props = {
   sentence: string;
@@ -43,9 +43,6 @@ export const DictionaryLookup: React.FC<Props> = ({ sentence, baseBottom }) => {
                     key={index}
                     className={styles.sentenceEl}
                     onClick={() => {
-                      // TODO
-                      const videoElement = document.querySelector("video");
-                      videoElement?.pause();
                       setSelectedWordId(t.word_id);
                       setOpen(true);
                     }}
