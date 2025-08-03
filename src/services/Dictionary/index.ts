@@ -1,7 +1,7 @@
 import { DictionaryEntry, DictionaryLookup } from "./model/DictionaryLookup";
 
 export class Dictionary {
-  constructor(private readonly dictionaries: DictionaryLookup<any>[]) {
+  constructor(private readonly dictionaries: DictionaryLookup<unknown[]>[]) {
     dictionaries.forEach((d) => {
       d.init();
     });

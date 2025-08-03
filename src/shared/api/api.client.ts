@@ -1,4 +1,5 @@
 import { ApiResponse } from "@/infrastructure/api/types";
+import { IpadicFeatures } from "kuromoji";
 
 const API_ENDPOINTS = {
   health: "/api/health",
@@ -9,10 +10,17 @@ class Api {
   constructor() {}
 
   // Dict-lookup
-  async lookupDictionary(sentence: string) {
-    const response = await fetch(
-      `${API_ENDPOINTS.dictLookup}?sentence=${encodeURIComponent(sentence)}`
-    );
+  async lookupDictionary(sentence: string, tokens: IpadicFeatures[]) {
+    const response = await fetch(`${API_ENDPOINTS.dictLookup}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tokens: tokens,
+        sentence: encodeURIComponent(sentence),
+      }),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch dictionary lookup");

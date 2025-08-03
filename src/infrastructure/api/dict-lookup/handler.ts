@@ -3,25 +3,31 @@ import {
   ApiResponse,
   DictLookupErrorResponse,
 } from "@/infrastructure/api/types";
-import { Dictionary, Kuromoji } from "@/services";
+import { Dictionary } from "@/services";
 import { EnDictionaryLookup } from "@/services/Dictionary/model/Dictionary.en";
 import { RuDictionaryLookup } from "@/services/Dictionary/model/Dictionary.ru";
+import { IpadicFeatures } from "kuromoji";
 import { NextRequest, NextResponse } from "next/server";
 
-const KuromojiService = new Kuromoji();
 const DictionaryService = new Dictionary([
   EnDictionaryLookup,
   RuDictionaryLookup,
 ]);
 
-async function get(
+async function post(
   req: NextRequest
 ): Promise<
   NextResponse<ApiResponse["DictLookup"]["GET"] | DictLookupErrorResponse>
 > {
-  const sentence = new URL(req.url || "")?.searchParams?.get("sentence");
+  let sentence = "";
+  let tokens: IpadicFeatures[] | undefined;
+  if (req.body) {
+    const body = await req.json();
+    tokens = body?.tokens as IpadicFeatures[];
+    sentence = body?.sentence as string;
+  }
 
-  if (!sentence) {
+  if (!sentence || !tokens?.length) {
     return NextResponse.json(
       {
         status: 400,
@@ -30,12 +36,13 @@ async function get(
       { status: 400 }
     );
   }
-  const healthCase = new DictLookupCase(KuromojiService, DictionaryService);
-  const response = await healthCase.lookup(sentence);
+
+  const dictLookupCase = new DictLookupCase(DictionaryService);
+  const response = await dictLookupCase.lookup(sentence, tokens);
 
   return NextResponse.json(response);
 }
 
 export const API_DICT_LOOKUP = {
-  GET: get,
+  POST: post,
 };

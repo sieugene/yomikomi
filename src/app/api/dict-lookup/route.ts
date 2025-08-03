@@ -1,7 +1,8 @@
 import { API_DICT_LOOKUP } from "@/infrastructure/api/dict-lookup/handler";
 
 const API = {
-  GET: API_DICT_LOOKUP.GET,
+  POST: API_DICT_LOOKUP.POST,
 };
 
-export const { GET } = API;
+export const { POST } = API;
+export const runtime = "nodejs"; // Specify the runtime environment for this API route
