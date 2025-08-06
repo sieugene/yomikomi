@@ -1,5 +1,6 @@
 import path from "path";
 
+// TODO clear me
 export const DICTIONARY_CONFIG = {
   basePath: path.join(process.cwd(), "src/shared/data/dict"),
   dictList: {

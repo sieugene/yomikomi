@@ -3,12 +3,20 @@ import React, { FC, useMemo, useRef, useState } from "react";
 import { useDictionaryLookup } from "../hooks/useDictionaryLookup";
 import { DictionaryEntry } from "../types";
 import styles from "./index.module.scss";
+import { UploadDictionary } from "./UploadDictionary";
+import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
+import { useDictionariesStorage } from "../hooks/useDictionariesStorage";
+import { DictionaryLookup as DictionaryLookupModel } from "../model/lookup/DictionaryLookup";
+import { EnDictionaryLookup } from "../model/lookup/DictionaryParser.en";
 
 type Props = {
   sentence: string;
   baseBottom: number;
 };
 export const DictionaryLookup: React.FC<Props> = ({ sentence, baseBottom }) => {
+  const { sqlClient } = useSqlJs();
+  const { state, store } = useDictionariesStorage();
+
   const [open, setOpen] = useState(false);
   const { dictionaryResult, loading, tokens } = useDictionaryLookup(sentence);
   const [selectedWordId, setSelectedWordId] = useState<number | null>(null);
@@ -31,8 +39,58 @@ export const DictionaryLookup: React.FC<Props> = ({ sentence, baseBottom }) => {
     setOpen(false);
   };
 
+  const tryParse = async () => {
+    const currentFile = store.current.getState().data[0];
+    const file = await store.current.storeManager.get(currentFile.id);
+
+    if (file && sqlClient && tokens?.length) {
+      const tokenizedWords = tokens.map((t) => t.basic_form || t.surface_form);
+      const arrayBuffer = await file.content.arrayBuffer();
+      const lookup = new DictionaryLookupModel(
+        currentFile.name,
+        arrayBuffer,
+        sqlClient
+      );
+      const results = lookup.find(tokenizedWords);
+      console.log(results,"results")
+      const parsedVals = results.map((entry: any) =>
+        EnDictionaryLookup.parse(Object.values(entry) as any)
+      );
+
+      debugger;
+    }
+  };
+
   return (
     <>
+      <div
+        style={{
+          border: "1px solid red",
+          padding: "10px",
+          marginBottom: "10px",
+        }}
+      >
+        <UploadDictionary
+          add={(file) => store.current.add(file)}
+          list={state.data}
+        />
+      </div>
+      <div
+        style={{
+          border: "1px solid blue",
+          padding: "10px",
+          marginBottom: "10px",
+        }}
+      >
+        <h1>Try parse with exist dictionary</h1>
+        <button
+          onClick={tryParse}
+          style={{ border: "1px solid black", width: "150px", height: "30px" }}
+        >
+          try
+        </button>
+      </div>
+
       <div className={styles.sentenceBlock}>
         <div className={styles.sentence}>
           {!tokens?.length
