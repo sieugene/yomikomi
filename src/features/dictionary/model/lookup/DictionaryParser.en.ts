@@ -1,3 +1,6 @@
+import { termsSelectSqlQuery } from "../lib/terms-select-sql-query";
+import { DictionaryLookup, ParsedResult } from "./DictionaryLookup";
+
 type TagNode = {
   content: string | TagNode | (string | TagNode)[];
   tag: string;
@@ -60,8 +63,8 @@ function extractLiMeanings(node: TagNode): string[] {
   return result;
 }
 
-class DictionaryParserEn {
-  parse(entry: GlossaryEntry) {
+export class DictionaryLookupEn extends DictionaryLookup<GlossaryEntry> {
+  parse(entry: GlossaryEntry): ParsedResult {
     const [word, reading, type, , , rawContentStr] = entry;
 
     if (Array.isArray(rawContentStr) && typeof rawContentStr[0] === "string") {
@@ -91,6 +94,8 @@ class DictionaryParserEn {
 
     return { word, reading, type, meanings };
   }
+  // TODO duplicate
+  find(tokenizedWords: string[]): GlossaryEntry[] {
+    return termsSelectSqlQuery<GlossaryEntry>(tokenizedWords, this.db);
+  }
 }
-
-export const EnDictionaryLookup = new DictionaryParserEn();
