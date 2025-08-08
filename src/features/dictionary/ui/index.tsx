@@ -6,8 +6,8 @@ import styles from "./index.module.scss";
 import { UploadDictionary } from "./UploadDictionary";
 import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
 import { useDictionariesStorage } from "../hooks/useDictionariesStorage";
-import { DictionaryLookup as DictionaryLookupModel } from "../model/lookup/DictionaryLookup";
-import { EnDictionaryLookup } from "../model/lookup/DictionaryParser.en";
+import { DICTIONARY_CONFIG } from "../model/config/dict.config";
+import { DictionariesInput, Dictionary } from "../model/lookup/Dictionary.main";
 
 type Props = {
   sentence: string;
@@ -40,24 +40,26 @@ export const DictionaryLookup: React.FC<Props> = ({ sentence, baseBottom }) => {
   };
 
   const tryParse = async () => {
-    const currentFile = store.current.getState().data[0];
-    const file = await store.current.storeManager.get(currentFile.id);
+    const storeData = store.current.getState().data;
 
-    if (file && sqlClient && tokens?.length) {
+    const input = {} as DictionariesInput;
+
+    for (const dict of Object.values(DICTIONARY_CONFIG.dictList)) {
+      const current = storeData.find((d) => d.name.includes(dict.file));
+      if (current) {
+        const file = await store.current.storeManager.get(current.id);
+        if (file) {
+          const arrayBuffer = await file.content.arrayBuffer();
+          input[dict.key] = arrayBuffer;
+        }
+      }
+    }
+
+    if (sqlClient && tokens?.length) {
+      const dictionary = new Dictionary(input, sqlClient);
       const tokenizedWords = tokens.map((t) => t.basic_form || t.surface_form);
-      const arrayBuffer = await file.content.arrayBuffer();
-      const lookup = new DictionaryLookupModel(
-        currentFile.name,
-        arrayBuffer,
-        sqlClient
-      );
-      const results = lookup.find(tokenizedWords);
-      console.log(results,"results")
-      const parsedVals = results.map((entry: any) =>
-        EnDictionaryLookup.parse(Object.values(entry) as any)
-      );
-
-      debugger;
+      const parsedVals = dictionary.find(tokenizedWords);
+      console.log("parsedVals", parsedVals);
     }
   };
 
