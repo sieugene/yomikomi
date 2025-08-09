@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Search, BookOpen, Database, Clock, TrendingUp } from "lucide-react";
+import React, { useState, useRef, useMemo } from "react";
+import { Search, BookOpen, Database, Clock, TrendingUp, Zap, ZapOff } from "lucide-react";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { useEnhancedDictionaryLookup } from "../hooks/useEnhancedDictionaryLookup";
 import { useTokenizer } from "../hooks/useTokenizer";
@@ -18,6 +18,8 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
     searchResults,
     groupedResults,
     loading,
+    deepSearchMode,
+    toggleDeepSearch,
     activeEngines,
     activeDictionaries,
   } = useEnhancedDictionaryLookup(sentence);
@@ -25,24 +27,37 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
   const [selectedWordId, setSelectedWordId] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
-  // Токенизация для интерактивного отображения
-  const tokens = tokenizer?.tokenize(sentence) || [];
+  // Мемоизируем токенизацию для производительности
+  const tokens = useMemo(() => {
+    if (!tokenizer || !sentence) return [];
+    try {
+      return tokenizer.tokenize(sentence);
+    } catch (error) {
+      console.warn("Tokenization error:", error);
+      return [];
+    }
+  }, [tokenizer, sentence]);
 
   const handleWordClick = (wordId: number) => {
     setSelectedWordId(wordId);
     setOpen(true);
   };
 
-  const selectedWord = tokens.find((t) => t.word_id === selectedWordId);
-  const relevantResults = selectedWord
-    ? groupedResults.filter(
-        (group) =>
-          group.word === selectedWord.basic_form ||
-          group.word === selectedWord.surface_form ||
-          group.word.includes(selectedWord.basic_form) ||
-          group.word.includes(selectedWord.surface_form)
-      )
-    : [];
+  // УПРОЩЕНИЕ: Простая фильтрация результатов
+  const relevantResults = useMemo(() => {
+    if (!selectedWordId) return [];
+    
+    const selectedWord = tokens.find((t) => t.word_id === selectedWordId);
+    if (!selectedWord) return [];
+
+    return groupedResults.filter(group => {
+      const word = group.word.toLowerCase();
+      const surface = selectedWord.surface_form?.toLowerCase() || "";
+      const basic = selectedWord.basic_form?.toLowerCase() || "";
+      
+      return word === surface || word === basic;
+    }).slice(0, 5); // Максимум 5 групп
+  }, [selectedWordId, tokens, groupedResults]);
 
   return (
     <div className="relative">
@@ -62,6 +77,30 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
             Searching...
           </div>
         )}
+        {/* Кнопка переключения режима поиска */}
+        <div className="ml-auto">
+          <button
+            onClick={toggleDeepSearch}
+            className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              deepSearchMode
+                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            }`}
+            title={deepSearchMode ? 'Switch to fast search' : 'Switch to deep search'}
+          >
+            {deepSearchMode ? (
+              <>
+                <ZapOff className="w-3 h-3 mr-1" />
+                Deep Search
+              </>
+            ) : (
+              <>
+                <Zap className="w-3 h-3 mr-1" />
+                Fast Search
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Интерактивное предложение */}
@@ -73,7 +112,7 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
                 key={index}
                 onClick={() => handleWordClick(token.word_id)}
                 className="cursor-pointer px-1 py-0.5 rounded hover:bg-blue-100 transition-colors border-b-2 border-transparent hover:border-blue-300"
-                title={`${token.basic_form}`}
+                title={`${token.basic_form || token.surface_form}`}
               >
                 {token.surface_form}
               </span>
@@ -87,20 +126,32 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
       {/* Результаты поиска */}
       <DictionaryResultsPanel
         results={relevantResults}
-        selectedWord={selectedWord}
+        selectedWord={tokens.find((t) => t.word_id === selectedWordId)}
         loading={loading}
         isOpen={open}
         onClose={() => setOpen(false)}
         baseBottom={baseBottom}
       />
 
-      {/* Общая статистика поиска */}
+      {/* Упрощенная статистика */}
       {searchResults.length > 0 && (
         <div className="mt-4 p-3 bg-gray-50 rounded-lg">
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Found {searchResults.length} total results</span>
+            <span>
+              Found {searchResults.length} results 
+              {deepSearchMode && (
+                <span className="ml-2 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-xs">
+                  Deep Search
+                </span>
+              )}
+            </span>
             <span>{groupedResults.length} unique words</span>
           </div>
+          {deepSearchMode && (
+            <div className="mt-2 text-xs text-gray-500">
+              Deep search includes partial matches and expanded results
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -142,7 +193,7 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+      className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
       style={{ bottom: baseBottom }}
     >
       <div className="p-4">
@@ -166,20 +217,38 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
 
         {/* Результаты */}
         {results.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-6 text-gray-500">
             <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
             <p>No dictionary entries found</p>
             {selectedWord && (
-              <p className="text-sm">Try selecting a different word</p>
+              <div className="mt-3 space-y-1">
+                <p className="text-sm">Try selecting a different word</p>
+                <div className="flex items-center justify-center gap-2 text-xs">
+                  <span>or try</span>
+                  <button
+                    onClick={() => {
+                      // Получаем toggleDeepSearch из родительского компонента
+                      const event = new CustomEvent('toggleDeepSearch');
+                      document.dispatchEvent(event);
+                    }}
+                    className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    <Zap className="w-3 h-3 mr-1" />
+                    Deep Search
+                  </button>
+                  <span>for more results</span>
+                </div>
+              </div>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {results.map((group, groupIndex) => (
-              <div key={groupIndex} className="border-l-4 border-blue-500 pl-4">
+              <div key={groupIndex} className="border-l-4 border-blue-500 pl-3">
                 <h4 className="font-semibold text-lg mb-2">{group.word}</h4>
 
-                {group.results.map((result, resultIndex) => (
+                {/* Показываем максимум 2 результата на группу */}
+                {group.results.slice(0, 2).map((result, resultIndex) => (
                   <div
                     key={resultIndex}
                     className="mb-3 p-3 bg-gray-50 rounded-md"
@@ -192,9 +261,11 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
                             ({result.reading})
                           </span>
                         )}
-                        <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                          {result.type}
-                        </span>
+                        {result.type && (
+                          <span className="ml-3 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                            {result.type}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center text-xs text-gray-500">
                         <TrendingUp className="w-3 h-3 mr-1" />
@@ -204,8 +275,9 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
 
                     <div className="mb-2">
                       <div className="flex flex-wrap gap-1">
+                        {/* Максимум 3 значения */}
                         {result.meanings
-                          .slice(0, 5)
+                          .slice(0, 3)
                           .map((meaning, meaningIndex) => (
                             <span
                               key={meaningIndex}
@@ -214,9 +286,9 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
                               {meaning}
                             </span>
                           ))}
-                        {result.meanings.length > 5 && (
+                        {result.meanings.length > 3 && (
                           <span className="text-xs text-gray-500">
-                            +{result.meanings.length - 5} more
+                            +{result.meanings.length - 3} more
                           </span>
                         )}
                       </div>
@@ -235,6 +307,13 @@ const DictionaryResultsPanel: React.FC<DictionaryResultsPanelProps> = ({
                     </div>
                   </div>
                 ))}
+                
+                {/* Показать количество скрытых результатов */}
+                {group.results.length > 2 && (
+                  <p className="text-xs text-gray-500 ml-3">
+                    +{group.results.length - 2} more results in {group.results[0].source}
+                  </p>
+                )}
               </div>
             ))}
           </div>

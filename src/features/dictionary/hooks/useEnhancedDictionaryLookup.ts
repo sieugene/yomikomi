@@ -17,6 +17,7 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
 
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [deepSearchMode, setDeepSearchMode] = useState(false);
   const [searchEngines, setSearchEngines] = useState<
     Map<string, DictionarySearchEngine>
   >(new Map());
@@ -74,19 +75,27 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
 
       try {
         const tokens = tokenizer.tokenize(sentence);
-        const searchTerms = generateSearchTerms(tokens);
+        // Используем разные стратегии в зависимости от режима
+        const searchTerms = deepSearchMode
+          ? getDeepSearchTerms(tokens)
+          : getSimplifiedSearchTerms(tokens);
+
         const allResults: SearchResult[] = [];
 
         for (const [dictId, engine] of searchEngines.entries()) {
+          if (cancelled) break;
+
           try {
             const dictInfo = dictionaries.find((d) => d.id === dictId);
-            const results = engine.search(searchTerms);
+            const results = engine.search(searchTerms, deepSearchMode);
             const enriched = results.map((r) => ({
               ...r,
               source: dictInfo?.name || "Unknown",
               relevanceScore: calculateRelevance(r, searchTerms),
             }));
             allResults.push(...enriched);
+
+            // Прерываем между поисками, чтобы не блокировать UI
             await new Promise((res) => setTimeout(res, 0));
           } catch (err) {
             console.warn(`Search error in dictionary ${dictId}:`, err);
@@ -95,9 +104,12 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
 
         if (cancelled) return;
 
+        // Лимиты зависят от режима поиска
+        const maxResults = deepSearchMode ? 100 : 30;
+        // TODO
         // const uniqueResults = removeDuplicates(allResults)
         //   .sort((a, b) => b.relevanceScore - a.relevanceScore)
-        //   .slice(0, 50);
+        //   .slice(0, maxResults);
 
         setSearchResults(allResults);
       } catch (err) {
@@ -108,12 +120,14 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
       }
     };
 
-    const debounceTimer = setTimeout(performSearch, 200);
+    // Разный debounce для разных режимов
+    const debounceTime = deepSearchMode ? 500 : 300;
+    const debounceTimer = setTimeout(performSearch, debounceTime);
     return () => {
       cancelled = true;
       clearTimeout(debounceTimer);
     };
-  }, [sentence, tokenizer, searchEngines, dictionaries]);
+  }, [sentence, tokenizer, searchEngines, dictionaries, deepSearchMode]);
 
   const groupedResults = useMemo(() => {
     const groups = new Map<string, SearchResult[]>();
@@ -124,16 +138,24 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
       groups.get(key)!.push(result);
     }
 
-    return Array.from(groups.entries()).map(([word, results]) => ({
-      word,
-      results: results.sort((a, b) => b.relevanceScore - a.relevanceScore),
-    }));
-  }, [searchResults]);
+    return Array.from(groups.entries())
+      .map(([word, results]) => ({
+        word,
+        results: results.sort((a, b) => b.relevanceScore - a.relevanceScore),
+      }))
+      .slice(0, deepSearchMode ? 25 : 15); // Больше групп в глубоком режиме
+  }, [searchResults, deepSearchMode]);
+
+  const toggleDeepSearch = () => {
+    setDeepSearchMode(!deepSearchMode);
+  };
 
   return {
     searchResults,
     groupedResults,
     loading,
+    deepSearchMode,
+    toggleDeepSearch,
     activeEngines: searchEngines.size,
     totalDictionaries: dictionaries.length,
     activeDictionaries: dictionaries.filter((d) => d.status === "active")
@@ -141,32 +163,71 @@ export const useEnhancedDictionaryLookup = (sentence: string) => {
   };
 };
 
-function generateSearchTerms(tokens: any[]): string[] {
+// УПРОЩЕННАЯ функция генерации поисковых терминов (быстрый режим)
+function getSimplifiedSearchTerms(tokens: any[]): string[] {
+  const terms = new Set<string>();
+
+  for (const token of tokens) {
+    const { surface_form: surface, basic_form: basic } = token;
+
+    // Добавляем только основные формы
+    if (basic && basic.length > 0) {
+      terms.add(basic);
+    }
+    if (surface && surface !== basic && surface.length > 0) {
+      terms.add(surface);
+    }
+
+    // Останавливаемся на 10 терминах
+    if (terms.size >= 10) break;
+  }
+
+  return Array.from(terms);
+}
+
+// РАСШИРЕННАЯ функция для глубокого поиска
+function getDeepSearchTerms(tokens: any[]): string[] {
   const terms = new Set<string>();
 
   for (const token of tokens) {
     const { surface_form: surface, basic_form: basic, reading } = token;
-    if (surface) terms.add(surface);
-    if (basic) terms.add(basic);
-    if (reading) terms.add(reading);
 
-    if (surface && surface.length > 1 && surface.length <= 10) {
-      for (let i = surface.length - 1; i > 0; i--) {
+    // Добавляем все формы
+    if (basic) terms.add(basic);
+    if (surface && surface !== basic) terms.add(surface);
+    if (reading && reading !== basic && reading !== surface) {
+      terms.add(reading);
+    }
+
+    // Добавляем частичные совпадения для длинных слов
+    if (surface && surface.length > 2 && surface.length <= 8) {
+      for (let i = surface.length - 1; i > 1; i--) {
         terms.add(surface.substring(0, i));
       }
     }
+
+    // Останавливаемся на 25 терминах в глубоком режиме
+    if (terms.size >= 25) break;
   }
 
-  // TODO !
-  return Array.from(terms).slice(0, 300);
+  return Array.from(terms);
 }
 
 function calculateRelevance(result: DictionaryEntry, searchTerms: string[]) {
   let score = 0;
+
+  // Точное совпадение
   if (searchTerms.includes(result.word)) score += 100;
+
+  // Длина слова (длинные слова более специфичны)
   score += result.word.length * 2;
+
+  // Количество значений (но не более 5 баллов)
   score += Math.min(result.meanings.length, 5);
-  if (result.word.length === 1) score -= 20;
+
+  // Небольшой штраф за односимвольные слова
+  if (result.word.length === 1) score -= 10;
+
   return score;
 }
 
@@ -187,12 +248,13 @@ function getDefaultConfig(templateId: string) {
     jmdict_en: {
       name: "JMdict English Parser",
       version: "1.0.0",
+      // УПРОЩЕННЫЙ SQL запрос
       sqlQuery: `
         SELECT DISTINCT t.* 
         FROM terms t
-        WHERE t."0" = ? OR t."0" LIKE ? || '%'
+        WHERE t."0" = ?
         ORDER BY length(t."0") DESC
-        LIMIT 20
+        LIMIT 10
       `,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: {
@@ -237,21 +299,22 @@ function getDefaultConfig(templateId: string) {
           return parseMeanings(rawContent);
         `,
       },
-      searchStrategy: { type: "partial" as const, includeSubstrings: true },
+      searchStrategy: { type: "exact" as const }, // Упростили до точного поиска
     },
     jmdict_ru: {
       name: "JMdict Russian Parser",
       version: "1.0.0",
+      // УПРОЩЕННЫЙ SQL запрос
       sqlQuery: `
         SELECT DISTINCT t.* 
         FROM terms t
-        WHERE t."0" = ? OR t."0" LIKE ? || '%'
+        WHERE t."0" = ?
         ORDER BY length(t."0") DESC
-        LIMIT 20
+        LIMIT 10
       `,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: { type: "array" as const },
-      searchStrategy: { type: "partial" as const, includeSubstrings: true },
+      searchStrategy: { type: "exact" as const }, // Упростили до точного поиска
     },
   };
   return configs[templateId] || null;
