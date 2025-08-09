@@ -1,5 +1,4 @@
 import { DictionaryLookup } from "@/features/dictionary/ui";
-import { UploadDictionary } from "@/features/dictionary/ui/UploadDictionary";
 import { useState } from "react";
 
 export const DictPage = () => {
