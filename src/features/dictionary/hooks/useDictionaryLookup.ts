@@ -35,52 +35,49 @@ export const useDictionaryLookup = (): UseDictionaryLookupReturn => {
     searchStats: null,
   });
 
-  const performSearch = useCallback(
-    async (token: string, options: SearchOptions) => {
-      if (!tokenizerReady || !searchReady) {
-        setState((prev) => ({
-          ...prev,
-          error: "Dictionary system not ready",
-        }));
-        return;
-      }
+  const performSearch = async (token: string, options: SearchOptions) => {
+    if (!tokenizerReady || !searchReady) {
+      setState((prev) => ({
+        ...prev,
+        error: "Dictionary system not ready",
+      }));
+      return;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      loading: true,
+      error: null,
+    }));
+
+    try {
+      const searchStartTime = performance.now();
+      const results = await searchSingleToken(token, options);
+      const searchTime = performance.now() - searchStartTime;
+
+      const uniqueWords = new Set(results.map((r) => r.word)).size;
 
       setState((prev) => ({
         ...prev,
-        loading: true,
-        error: null,
+        searchResults: results,
+        loading: false,
+        searchStats: {
+          searchTime,
+          resultCount: results.length,
+          uniqueWords,
+        },
       }));
-
-      try {
-        const searchStartTime = performance.now();
-        const results = await searchSingleToken(token, options);
-        const searchTime = performance.now() - searchStartTime;
-
-        const uniqueWords = new Set(results.map((r) => r.word)).size;
-
-        setState((prev) => ({
-          ...prev,
-          searchResults: results,
-          loading: false,
-          searchStats: {
-            searchTime,
-            resultCount: results.length,
-            uniqueWords,
-          },
-        }));
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Search failed";
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-          searchResults: [],
-        }));
-      }
-    },
-    [tokenizerReady, searchReady, searchSingleToken]
-  );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Search failed";
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: errorMessage,
+        searchResults: [],
+      }));
+    }
+  };
 
   const clearResults = useCallback(() => {
     setState((prev) => ({
