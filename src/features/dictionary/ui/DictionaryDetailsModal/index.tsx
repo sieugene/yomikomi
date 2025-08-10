@@ -1,8 +1,8 @@
 import React from "react";
 import { XCircle } from "lucide-react";
-import { formatFileSize } from "../lib/formatters";
-import { StatusBadge } from "./status-badge";
-import { DictionaryMetadata } from "../types/types";
+import { formatFileSize } from "@features/dictionary/lib/formatters";
+import { StatusBadge } from "@/features/dictionary/ui/StatusBadge";
+import { DictionaryMetadata } from "@features/dictionary/types";
 
 interface DictionaryDetailsModalProps {
   dictionary: DictionaryMetadata | null;

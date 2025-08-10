@@ -1,4 +1,4 @@
-import { DictionaryTemplate } from "../types/types";
+import { DictionaryTemplate } from "../types";
 
 
 export const CUSTOM_FN_EXAMPLE = `function parseMeanings(rawContent) {

@@ -1,14 +1,13 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Search, BookOpen, Database, Zap, AlertCircle } from "lucide-react";
 import useClickOutside from "@/shared/hooks/useClickOutside";
-import { useDictionaryLookup } from "../hooks/useDictionaryLookup";
-import { useDictionarySearch } from "../hooks/useDictionarySearch";
-import { InteractiveSentence } from "./interactive-sentence";
-import { SearchResultCard } from "../ui/search-result-card";
-import { SearchOptions, SearchResult } from '../types/types';
-import { SearchModeToggle } from './search-mode-toggle';
-import { formatSearchStats } from '../lib/formatters';
-
+import { useDictionaryLookup } from "@features/dictionary/hooks/useDictionaryLookup";
+import { useDictionarySearch } from "@features/dictionary/hooks/useDictionarySearch";
+import { InteractiveSentence } from "@/features/dictionary/ui/InteractiveSentence";
+import { SearchResultCard } from "@features/dictionary/ui/SearchResultCard";
+import { SearchOptions, SearchResult } from "@features/dictionary/types";
+import { SearchModeToggle } from "@/features/dictionary/ui/SearchModeToggle";
+import { formatSearchStats } from "@features/dictionary/lib/formatters";
 
 interface Props {
   sentence: string;

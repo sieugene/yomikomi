@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTokenizer } from "../hooks/useTokenizerOptimized";
+import { useTokenizer } from "@features/dictionary/hooks/useTokenizerOptimized";
 
 interface InteractiveSentenceProps {
   sentence: string;

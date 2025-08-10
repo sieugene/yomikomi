@@ -1,6 +1,7 @@
 import React from "react";
-import { EnhancedDictionaryLookup } from "./enhanced-dictionary-lookup";
-import { DictionaryManagementSystem } from "./dictionary-management-system";
+
+import { DictionaryManagementSystem } from "@features/dictionary/ui/DictionaryManagementSystem";
+import { EnhancedDictionaryLookup } from "@features/dictionary/ui/EnhancedDictionaryLookup";
 
 interface DictionarySystemProviderProps {
   mode: "management" | "lookup" | "both";

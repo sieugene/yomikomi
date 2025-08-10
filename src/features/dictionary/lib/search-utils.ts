@@ -1,4 +1,4 @@
-import { DictionaryEntry, SearchOptions, SearchResult } from "../types/types";
+import { DictionaryEntry, SearchOptions, SearchResult } from "../types";
 import { SEARCH_LIMITS } from './constants';
 
 export class SearchTermGenerator {

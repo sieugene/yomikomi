@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { Save, TestTube, AlertCircle, CheckCircle } from "lucide-react";
-import { DictionaryParserConfig, ParserTestResult } from "../types/types";
-import { ConfigValidator } from "../lib/validation";
-import { CUSTOM_FN_EXAMPLE } from "../lib/constants";
+import { CUSTOM_FN_EXAMPLE } from "@features/dictionary/lib/constants";
+import { ConfigValidator } from "@features/dictionary/lib/validation";
+import {
+  DictionaryParserConfig,
+  ParserTestResult,
+} from "@features/dictionary/types";
+import { AlertCircle, CheckCircle, Save, TestTube } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 interface CustomTemplateEditorProps {
   initialConfig?: DictionaryParserConfig;

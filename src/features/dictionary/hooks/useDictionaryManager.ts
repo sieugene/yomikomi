@@ -9,7 +9,7 @@ import {
   DictionaryParserConfig,
   DictionaryTemplate,
   ParserTestResult,
-} from "../types/types";
+} from "../types";
 
 interface UseDictionaryManagerReturn {
   dictionaries: DictionaryMetadata[];

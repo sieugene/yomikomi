@@ -3,7 +3,7 @@ import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
 import { useDictionaryManager } from "./useDictionaryManager";
 import { EnhancedDictionarySearchEngine } from "../model/enhanced-search-engine";
 import { DictionarySearchCoordinator } from "../model/search-coordinator";
-import { SearchOptions, SearchResult } from "../types/types";
+import { SearchOptions, SearchResult } from "../types";
 import { DICTIONARY_TEMPLATES } from "../lib/constants";
 
 interface UseDictionarySearchReturn {

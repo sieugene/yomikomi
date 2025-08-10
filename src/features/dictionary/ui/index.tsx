@@ -1,5 +1,5 @@
 import React from "react";
-import { DictionarySystemProvider } from "./dictionary-system-provider";
+import { DictionarySystemProvider } from "./DictionarySystemProvider";
 
 interface DictionaryLookupProps {
   sentence: string;

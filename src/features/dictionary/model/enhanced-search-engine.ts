@@ -4,7 +4,7 @@ import {
   DictionaryParserConfig,
   SearchResult,
   SearchOptions,
-} from "../types/types";
+} from "../types";
 import { SearchTermGenerator, RelevanceCalculator } from "../lib/search-utils";
 import { SEARCH_LIMITS } from "../lib/constants";
 

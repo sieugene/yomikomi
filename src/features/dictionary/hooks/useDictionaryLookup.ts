@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useTokenizer } from "./useTokenizerOptimized";
 import { useDictionarySearch } from "./useDictionarySearch";
-import { SearchOptions, SearchResult } from "../types/types";
+import { SearchOptions, SearchResult } from "../types";
 
 interface DictionaryLookupState {
   searchResults: SearchResult[];
