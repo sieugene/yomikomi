@@ -74,7 +74,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
       for (const token of testTokens) {
         try {
           const stmt = db.prepare(config.sqlQuery);
-          // Адаптируем параметры к конкретному запросу
+
           const params = this.buildTestQueryParams(token, config);
           stmt.bind(params);
 
@@ -133,16 +133,13 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     token: string,
     config: DictionaryParserConfig
   ): any[] {
-    // Простая эвристика для определения количества параметров в запросе
     const placeholderCount = (config.sqlQuery.match(/\?/g) || []).length;
 
     if (placeholderCount === 1) {
       return [token];
     } else if (placeholderCount === 6) {
-      // Для сложных запросов с LIKE
       return [token, token, token, token, token, 10];
     } else {
-      // Заполняем все плейсхолдеры токеном
       return Array(placeholderCount).fill(token);
     }
   }
@@ -213,7 +210,6 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
       throw new Error("No parser configuration provided");
     }
 
-    // Тестируем парсер перед сохранением
     const testResult = await this.testParser(file, config);
     if (!testResult.success) {
       throw new Error(`Parser test failed: ${testResult.errors.join(", ")}`);
