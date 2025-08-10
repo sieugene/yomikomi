@@ -184,8 +184,11 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
                 initialConfig={customConfig || undefined}
                 onSave={handleCustomConfigSave}
                 onTest={
-                  currentConfig
-                    ? (config) => onTest(selectedFile!, config)
+                  selectedFile
+                    ? (config) => {
+                        debugger;
+                        return onTest(selectedFile, config);
+                      }
                     : undefined
                 }
                 file={selectedFile || undefined}

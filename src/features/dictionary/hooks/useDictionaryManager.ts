@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
-import { DictionaryManager, StoredDictionary } from "../model/dictionary-manager";
-import { DictionaryMetadata, DictionaryParserConfig, DictionaryTemplate, ParserTestResult } from '../types/types';
-
+import {
+  DictionaryManager,
+  StoredDictionary,
+} from "../model/dictionary-manager";
+import {
+  DictionaryMetadata,
+  DictionaryParserConfig,
+  DictionaryTemplate,
+  ParserTestResult,
+} from "../types/types";
 
 interface UseDictionaryManagerReturn {
   dictionaries: DictionaryMetadata[];
@@ -97,6 +104,7 @@ export const useDictionaryManager = (): UseDictionaryManagerReturn => {
       testTokens?: string[]
     ): Promise<ParserTestResult> => {
       if (!manager.current) throw new Error("Manager not initialized");
+
       return manager.current.testParser(file, config, testTokens);
     },
     []
