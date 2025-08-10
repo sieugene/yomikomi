@@ -1,32 +1,16 @@
-import { useEffect, useRef, useState, useCallback } from "react";
 import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
+import useSWR from "swr";
 import {
   DictionaryManager,
   StoredDictionary,
 } from "../model/dictionary-manager";
-import {
-  DictionaryMetadata,
-  DictionaryParserConfig,
-  DictionaryTemplate,
-  ParserTestResult,
-} from "../types";
+import { DictionaryMetadata, DictionaryTemplate } from "../types";
 
 interface UseDictionaryManagerReturn {
   dictionaries: DictionaryMetadata[];
   templates: DictionaryTemplate[];
   loading: boolean;
   totalSize: number;
-  addDictionary: (
-    file: File,
-    templateId?: string,
-    customConfig?: DictionaryParserConfig
-  ) => Promise<string>;
-  testParser: (
-    file: File,
-    config: DictionaryParserConfig,
-    testTokens?: string[]
-  ) => Promise<ParserTestResult>;
-  deleteDictionary: (id: string) => Promise<void>;
   updateDictionaryStatus: (
     id: string,
     status: DictionaryMetadata["status"]
@@ -37,134 +21,81 @@ interface UseDictionaryManagerReturn {
   refresh: () => Promise<void>;
 }
 
-export const useDictionaryManager = (): UseDictionaryManagerReturn => {
+export const useDictionaryManagerV2 = () => {
   const { sqlClient } = useSqlJs();
-  const [dictionaries, setDictionaries] = useState<DictionaryMetadata[]>([]);
-  const [templates, setTemplates] = useState<DictionaryTemplate[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [totalSize, setTotalSize] = useState(0);
+  const { data, isLoading, mutate } = useSWR(
+    sqlClient ? "dictionary-manager-init" : null,
+    async () => {
+      if (sqlClient) {
+        const manager = new DictionaryManager(sqlClient);
 
-  const manager = useRef<DictionaryManager | null>(null);
+        try {
+          const [dicts, totalSizeBytes] = await Promise.all([
+            manager.getDictionaries(),
+            manager.getTotalSize(),
+          ]);
 
-  useEffect(() => {
-    if (sqlClient && !manager.current) {
-      manager.current = new DictionaryManager(sqlClient);
-      loadData();
-    }
-  }, [sqlClient]);
-
-  const loadData = useCallback(async () => {
-    if (!manager.current) return;
-
-    setLoading(true);
-    try {
-      const [dicts, totalSizeBytes] = await Promise.all([
-        manager.current.getDictionaries(),
-        manager.current.getTotalSize(),
-      ]);
-
-      setDictionaries(dicts);
-      setTotalSize(totalSizeBytes);
-      setTemplates(manager.current.getTemplates());
-    } catch (error) {
-      console.error("Failed to load dictionary data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const addDictionary = useCallback(
-    async (
-      file: File,
-      templateId?: string,
-      customConfig?: DictionaryParserConfig
-    ): Promise<string> => {
-      if (!manager.current) throw new Error("Manager not initialized");
-
-      setLoading(true);
-      try {
-        const id = await manager.current.addDictionary(
-          file,
-          templateId,
-          customConfig
-        );
-        await loadData();
-        return id;
-      } finally {
-        setLoading(false);
+          return {
+            manager,
+            dictionaries: dicts,
+            totalSize: totalSizeBytes,
+            templates: manager.getTemplates(),
+          };
+        } catch (error) {
+          console.error("Failed to load dictionary data:", error);
+        }
       }
-    },
-    [loadData]
+    }
   );
+  return {
+    data,
+    loading: isLoading || !sqlClient,
+    manager: data?.manager || null,
+    refresh: mutate,
+  };
+};
 
-  const testParser = useCallback(
-    async (
-      file: File,
-      config: DictionaryParserConfig,
-      testTokens?: string[]
-    ): Promise<ParserTestResult> => {
-      if (!manager.current) throw new Error("Manager not initialized");
+export const useDictionaryManager = (): UseDictionaryManagerReturn => {
+  const { loading, manager, refresh, data } = useDictionaryManagerV2();
 
-      return manager.current.testParser(file, config, testTokens);
-    },
-    []
-  );
+  const updateDictionaryStatus = async (
+    id: string,
+    status: DictionaryMetadata["status"]
+  ): Promise<void> => {
+    if (!manager) throw new Error("Manager not initialized");
 
-  const deleteDictionary = useCallback(
-    async (id: string): Promise<void> => {
-      if (!manager.current) throw new Error("Manager not initialized");
+    await manager.updateDictionaryStatus(id, status);
+    await refresh();
+  };
 
-      setLoading(true);
-      try {
-        await manager.current.deleteDictionary(id);
-        await loadData();
-      } finally {
-        setLoading(false);
-      }
-    },
-    [loadData]
-  );
+  const addCustomTemplate = async (
+    template: DictionaryTemplate
+  ): Promise<void> => {
+    if (!manager) throw new Error("Manager not initialized");
 
-  const updateDictionaryStatus = useCallback(
-    async (id: string, status: DictionaryMetadata["status"]): Promise<void> => {
-      if (!manager.current) throw new Error("Manager not initialized");
+    await manager.addCustomTemplate(template);
+    await refresh();
+  };
 
-      await manager.current.updateDictionaryStatus(id, status);
-      await loadData();
-    },
-    [loadData]
-  );
+  const getDictionary = (id: string) => {
+    return manager?.getDictionary(id) || Promise.resolve(null);
+  };
 
-  const addCustomTemplate = useCallback(
-    async (template: DictionaryTemplate): Promise<void> => {
-      if (!manager.current) throw new Error("Manager not initialized");
-
-      await manager.current.addCustomTemplate(template);
-      setTemplates(manager.current.getTemplates());
-    },
-    []
-  );
-
-  const getDictionary = useCallback((id: string) => {
-    return manager.current?.getDictionary(id) || Promise.resolve(null);
-  }, []);
-
-  const getTemplate = useCallback((id: string) => {
-    return manager.current?.getTemplate(id);
-  }, []);
+  const getTemplate = (id: string) => {
+    return manager?.getTemplate(id);
+  };
 
   return {
-    dictionaries,
-    templates,
+    dictionaries: data?.dictionaries || [],
+    templates: data?.templates || [],
     loading,
-    totalSize,
-    addDictionary,
-    testParser,
-    deleteDictionary,
+    totalSize: data?.totalSize || 0,
     updateDictionaryStatus,
     addCustomTemplate,
     getDictionary,
     getTemplate,
-    refresh: loadData,
+    refresh: async () => {
+      await refresh();
+    },
   };
 };
