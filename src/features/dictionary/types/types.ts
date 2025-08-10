@@ -5,6 +5,12 @@ export interface DictionaryEntry {
   meanings: string[];
 }
 
+export interface SearchResult extends DictionaryEntry {
+  source: string;
+  relevanceScore: number;
+  matchType: 'exact' | 'partial' | 'substring';
+}
+
 export interface DictionaryMetadata {
   id: string;
   name: string;
@@ -30,7 +36,7 @@ export interface DictionaryParserConfig {
   };
   meaningParser: {
     type: 'json' | 'array' | 'string' | 'custom';
-    customFunction?: string; // JavaScript function as string
+    customFunction?: string;
   };
   searchStrategy: {
     type: 'exact' | 'partial' | 'ngram';
@@ -56,4 +62,12 @@ export interface DictionaryTemplate {
   description: string;
   config: DictionaryParserConfig;
   downloadUrl?: string;
+  example?: string;
+}
+
+export interface SearchOptions {
+  deepMode: boolean;
+  maxResults: number;
+  includePartialMatches: boolean;
+  includeSubstrings: boolean;
 }

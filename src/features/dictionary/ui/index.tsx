@@ -1,14 +1,22 @@
 import React from "react";
-import { DictionarySystemProvider } from "./DictionarySystemProvider";
+import { DictionarySystemProvider } from "./dictionary-system-provider";
 
-type Props = {
+interface DictionaryLookupProps {
   sentence: string;
-  baseBottom: number;
-};
-export const DictionaryLookup: React.FC<Props> = ({ sentence, baseBottom }) => {
+  baseBottom?: number;
+}
+
+export const DictionaryLookup: React.FC<DictionaryLookupProps> = ({
+  sentence,
+  baseBottom = 0,
+}) => {
   return (
     <>
-      <DictionarySystemProvider mode="lookup" sentence={sentence} />
+      <DictionarySystemProvider
+        mode="both"
+        sentence={sentence}
+        baseBottom={baseBottom}
+      />
     </>
   );
 };
