@@ -98,7 +98,7 @@ Meanings: Japanese language, Japanese
         LIMIT ?
       `,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
-      meaningParser: { type: "array" },
+      meaningParser: { type: "string" },
       searchStrategy: { type: "partial", includeSubstrings: true },
     },
   },
