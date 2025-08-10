@@ -1,6 +1,6 @@
 import React from "react";
 import { formatFileSize } from "@features/dictionary/lib/formatters";
-import { StatusBadge } from "@/entities/DictionaryManagementSystem/ui/StatusBadge";
+import { StatusBadge } from "@/features/dictionary/ui/StatusBadge";
 import { DictionaryMetadata } from "@features/dictionary/types";
 import { Modal } from "@/shared/ui/Modal";
 

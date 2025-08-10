@@ -1,30 +1,14 @@
 import { useDictionariesStats } from "@/entities/DictionaryManagementSystem/hooks/useDictionariesStats";
-import { DictionaryDetailsModal } from "@/entities/DictionaryManagementSystem/ui/DictionaryDetailsModal";
 import { StatsCard } from "@/entities/DictionaryManagementSystem/ui/StatsCard";
 import { AddDictionary } from "@/features/dictionary-add/ui";
+import { DictionaryOverview } from "@/features/dictionary-overview/ui";
 import { useDictionaryManager } from "@features/dictionary/hooks/useDictionaryManager";
 import { formatFileSize } from "@features/dictionary/lib/formatters";
-import { DictionaryMetadata } from "@features/dictionary/types";
 import { Database } from "lucide-react";
-import React, { useState } from "react";
-import { DictionaryCard } from "./DictionaryCard";
+import React from "react";
 
 export const DictionaryManagementSystem: React.FC = () => {
-  const {
-    dictionaries,
-    loading,
-    totalSize,
-    updateDictionaryStatus,
-  } = useDictionaryManager();
-
-  const [selectedDictionary, setSelectedDictionary] =
-    useState<DictionaryMetadata | null>(null);
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-
-  const handleViewDetails = (dictionary: DictionaryMetadata) => {
-    setSelectedDictionary(dictionary);
-    setShowDetailsModal(true);
-  };
+  const { dictionaries, loading, totalSize } = useDictionaryManager();
 
   const { stats, statsCards } = useDictionariesStats(dictionaries, totalSize);
 
@@ -67,21 +51,10 @@ export const DictionaryManagementSystem: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {dictionaries.map((dictionary) => (
-            <DictionaryCard
-              key={dictionary.id}
-              dictionary={dictionary}
-              onStatusChange={updateDictionaryStatus}
-              onViewDetails={handleViewDetails}
-            />
+            <DictionaryOverview key={dictionary.id} id={dictionary.id} />
           ))}
         </div>
       )}
-
-      <DictionaryDetailsModal
-        dictionary={selectedDictionary}
-        isOpen={showDetailsModal}
-        onClose={() => setShowDetailsModal(false)}
-      />
     </div>
   );
 };

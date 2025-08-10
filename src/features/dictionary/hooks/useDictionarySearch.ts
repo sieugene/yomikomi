@@ -20,7 +20,8 @@ interface UseDictionarySearchReturn {
 
 export const useDictionarySearch = (): UseDictionarySearchReturn => {
   const { sqlClient } = useSqlJs();
-  const { dictionaries, getDictionary, loading } = useDictionaryManager();
+  const { dictionaries, getDictionary, loading, getTemplate } =
+    useDictionaryManager();
   const { manager } = useDictionaryManagerV2();
 
   // TODO app can probably dead after add new dictionaries, it's about out of memory (coordinator.clear())
@@ -50,8 +51,7 @@ export const useDictionarySearch = (): UseDictionarySearchReturn => {
 
           const arrayBuffer = await storedDict.content.arrayBuffer();
           const config =
-            dict.customParser ||
-            DICTIONARY_TEMPLATES[dict.parserTemplate]?.config;
+            dict.customParser || getTemplate(dict.parserTemplate)?.config;
 
           if (!config) {
             console.warn(`No config found for dictionary ${dict.name}`);

@@ -6,6 +6,7 @@ import {
 } from "@features/dictionary/types";
 import { AlertCircle, CheckCircle, Save, TestTube } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 
 interface CustomTemplateEditorProps {
   initialConfig?: DictionaryParserConfig;
@@ -43,6 +44,7 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
   onTest,
   file,
 }) => {
+  const { addCustomTemplate } = useCreateTemplate();
   const [config, setConfig] = useState<DictionaryParserConfig>(
     initialConfig || DEFAULT_CONFIG
   );
@@ -82,9 +84,11 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (validationErrors.length === 0) {
+      // TODO addCustomTemplate? don't save on this step! (maybe user can choice save or not)
       onSave(config);
+      await addCustomTemplate(config);
     }
   };
 
