@@ -20,7 +20,7 @@ export interface StoredDictionary {
 
 export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   private sqlClient: SqlJsStatic;
-  private customTemplates = new Map<string, DictionaryTemplate>();
+  private CUSTOM_TEMPLATES_STORAGE_KEY = "templates";
 
   constructor(sqlClient: SqlJsStatic) {
     super("DictionaryManagerDB", "dictionaries");
@@ -30,21 +30,42 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   getTemplates(): DictionaryTemplate[] {
     return [
       ...Object.values(DICTIONARY_TEMPLATES),
-      ...Array.from(this.customTemplates.values()),
+      ...Object.values(this.getTemplatesFromStorage()),
     ];
   }
 
   getTemplate(id: string): DictionaryTemplate | undefined {
-    return DICTIONARY_TEMPLATES[id] || this.customTemplates.get(id);
+    return DICTIONARY_TEMPLATES[id] || this.getTemplatesFromStorage()[id];
   }
 
-  async addCustomTemplate(template: DictionaryTemplate): Promise<void> {
-    const errors = ConfigValidator.validateTemplate(template);
-    if (errors.length > 0) {
-      throw new Error(`Template validation failed: ${errors.join(", ")}`);
-    }
+  // TODO refactor me!
+  private getTemplatesFromStorage() {
+    const templates: Record<string, DictionaryTemplate> = JSON.parse(
+      localStorage.getItem(this.CUSTOM_TEMPLATES_STORAGE_KEY) || "{}"
+    );
+    return templates;
+  }
+  private setTemplateInStorage(template: DictionaryTemplate) {
+    const nextCustom: Record<string, DictionaryTemplate> = {
+      ...this.getTemplatesFromStorage(),
+      [template.id]: template,
+    };
+    localStorage.setItem(
+      this.CUSTOM_TEMPLATES_STORAGE_KEY,
+      JSON.stringify(nextCustom)
+    );
+  }
 
-    this.customTemplates.set(template.id, template);
+  // TODO refactor me!
+  async addCustomTemplate(template: DictionaryTemplate): Promise<void> {
+    // TODO should ignore?
+    // const errors = ConfigValidator.validateTemplate(template);
+    // if (errors.length > 0) {
+    //   throw new Error(`Template validation failed: ${errors.join(", ")}`);
+    // }
+    this.setTemplateInStorage(template);
+    // TODO Don't really need, useswr make refetch all
+    // this.customTemplates.set(template.id, template);
   }
 
   async testParser(

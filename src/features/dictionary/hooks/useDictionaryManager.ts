@@ -11,11 +11,6 @@ interface UseDictionaryManagerReturn {
   templates: DictionaryTemplate[];
   loading: boolean;
   totalSize: number;
-  updateDictionaryStatus: (
-    id: string,
-    status: DictionaryMetadata["status"]
-  ) => Promise<void>;
-  addCustomTemplate: (template: DictionaryTemplate) => Promise<void>;
   getDictionary: (id: string) => Promise<StoredDictionary | null>;
   getTemplate: (id: string) => DictionaryTemplate | undefined;
   refresh: () => Promise<void>;
@@ -58,25 +53,6 @@ export const useDictionaryManagerV2 = () => {
 export const useDictionaryManager = (): UseDictionaryManagerReturn => {
   const { loading, manager, refresh, data } = useDictionaryManagerV2();
 
-  const updateDictionaryStatus = async (
-    id: string,
-    status: DictionaryMetadata["status"]
-  ): Promise<void> => {
-    if (!manager) throw new Error("Manager not initialized");
-
-    await manager.updateDictionaryStatus(id, status);
-    await refresh();
-  };
-
-  const addCustomTemplate = async (
-    template: DictionaryTemplate
-  ): Promise<void> => {
-    if (!manager) throw new Error("Manager not initialized");
-
-    await manager.addCustomTemplate(template);
-    await refresh();
-  };
-
   const getDictionary = (id: string) => {
     return manager?.getDictionary(id) || Promise.resolve(null);
   };
@@ -90,8 +66,6 @@ export const useDictionaryManager = (): UseDictionaryManagerReturn => {
     templates: data?.templates || [],
     loading,
     totalSize: data?.totalSize || 0,
-    updateDictionaryStatus,
-    addCustomTemplate,
     getDictionary,
     getTemplate,
     refresh: async () => {
