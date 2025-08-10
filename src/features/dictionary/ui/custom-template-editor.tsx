@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Save, TestTube, AlertCircle, CheckCircle } from "lucide-react";
 import { DictionaryParserConfig, ParserTestResult } from "../types/types";
 import { ConfigValidator } from "../lib/validation";
+import { CUSTOM_FN_EXAMPLE } from "../lib/constants";
 
 interface CustomTemplateEditorProps {
   initialConfig?: DictionaryParserConfig;
@@ -234,10 +235,7 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
                 }
                 rows={8}
                 className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm font-mono"
-                placeholder={`function parseMeanings(rawContent) {
-  // Your parsing logic here
-  return Array.isArray(rawContent) ? rawContent : [];
-}`}
+                placeholder={CUSTOM_FN_EXAMPLE}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Function should accept rawContent parameter and return string

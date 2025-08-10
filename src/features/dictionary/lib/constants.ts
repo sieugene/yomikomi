@@ -1,4 +1,32 @@
-import { DictionaryTemplate } from '../types/types';
+import { DictionaryTemplate } from "../types/types";
+
+
+export const CUSTOM_FN_EXAMPLE = `function parseMeanings(rawContent) {
+  // Your parsing logic here
+  return Array.isArray(rawContent) ? rawContent : [];
+}
+return parseMeanings(rawContent);
+`
+
+const BASE_SQL_QUERY = `
+SELECT
+  DISTINCT *
+FROM
+  terms
+WHERE
+  "0" = ?
+  OR "0" LIKE ? || '%'
+  OR "0" LIKE '%' || ? || '%'
+ORDER BY
+  CASE
+    WHEN "0" = ? THEN 1
+    WHEN "0" LIKE ? || '%' THEN 2
+    ELSE 3
+  END,
+  length("0") DESC
+LIMIT
+  ?
+`;
 
 export const DICTIONARY_TEMPLATES: Record<string, DictionaryTemplate> = {
   jmdict_en: {
@@ -14,18 +42,7 @@ Meanings: Japanese language, Japanese
     config: {
       name: "JMdict English Parser",
       version: "1.0.0",
-      sqlQuery: `
-        SELECT DISTINCT * FROM terms 
-        WHERE "0" = ? OR "0" LIKE ? || '%' OR "0" LIKE '%' || ? || '%'
-        ORDER BY 
-          CASE 
-            WHEN "0" = ? THEN 1
-            WHEN "0" LIKE ? || '%' THEN 2
-            ELSE 3 
-          END,
-          length("0") DESC 
-        LIMIT ?
-      `,
+      sqlQuery: BASE_SQL_QUERY,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: {
         type: "custom",
@@ -46,7 +63,6 @@ Meanings: Japanese language, Japanese
               return meanings;
             } catch { return []; }
           }
-          
           function extractLiMeanings(node) {
             const result = [];
             if (node.tag === 'ul' && node.data?.content === 'glossary') {
@@ -65,7 +81,6 @@ Meanings: Japanese language, Japanese
             }
             return result;
           }
-          
           return parseMeanings(rawContent);
         `,
       },
@@ -74,7 +89,7 @@ Meanings: Japanese language, Japanese
   },
   jmdict_ru: {
     id: "jmdict_ru",
-    name: "JMdict Russian", 
+    name: "JMdict Russian",
     language: "ru",
     description: "Standard JMdict Russian dictionary format",
     example: `
@@ -85,18 +100,7 @@ Meanings: Japanese language, Japanese
     config: {
       name: "JMdict Russian Parser",
       version: "1.0.0",
-      sqlQuery: `
-        SELECT DISTINCT * FROM terms 
-        WHERE "0" = ? OR "0" LIKE ? || '%' OR "0" LIKE '%' || ? || '%'
-        ORDER BY 
-          CASE 
-            WHEN "0" = ? THEN 1
-            WHEN "0" LIKE ? || '%' THEN 2
-            ELSE 3 
-          END,
-          length("0") DESC 
-        LIMIT ?
-      `,
+      sqlQuery: BASE_SQL_QUERY,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: { type: "string" },
       searchStrategy: { type: "partial", includeSubstrings: true },

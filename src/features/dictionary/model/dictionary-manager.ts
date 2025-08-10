@@ -1,9 +1,14 @@
 import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
 import type { SqlJsStatic } from "sql.js";
-import { DictionaryEntry, DictionaryMetadata, DictionaryParserConfig, DictionaryTemplate, ParserTestResult } from '../types/types';
-import { DICTIONARY_TEMPLATES } from '../lib/constants';
-import { ConfigValidator } from '../lib/validation';
-
+import {
+  DictionaryEntry,
+  DictionaryMetadata,
+  DictionaryParserConfig,
+  DictionaryTemplate,
+  ParserTestResult,
+} from "../types/types";
+import { DICTIONARY_TEMPLATES } from "../lib/constants";
+import { ConfigValidator } from "../lib/validation";
 
 export interface StoredDictionary {
   key: string;
@@ -76,6 +81,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
           while (stmt.step() && results.length < 10) {
             const row = stmt.getAsObject();
             const values = Object.values(row);
+
             const parsed = this.parseEntry(values, config);
 
             if (parsed) {
@@ -94,11 +100,20 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
 
       db.close();
 
+      const errors = [];
+      if (results.length === 0) {
+        errors.push("No results found for test tokens");
+      }
+      if (results.length > 1 && results[0].meanings.length === 0) {
+        errors.push(
+          "Results were found but contain no meanings. Please check the parser type or parser function."
+        );
+      }
+
       return {
         success: results.length > 0,
         sampleResults: results.slice(0, 5),
-        errors:
-          results.length === 0 ? ["No results found for test tokens"] : [],
+        errors,
         performance: {
           queryTime,
           parseTime: totalTime - queryTime,
