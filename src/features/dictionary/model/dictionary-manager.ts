@@ -1,13 +1,11 @@
 import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
 import type { SqlJsStatic } from "sql.js";
-import {
-  DictionaryMetadata,
-  DictionaryParserConfig,
-  DictionaryTemplate,
-  ParserTestResult,
-} from "../types/dictionary.types";
+import { DictionaryEntry, DictionaryMetadata, DictionaryParserConfig, DictionaryTemplate, ParserTestResult } from '../types/types';
+import { DICTIONARY_TEMPLATES } from '../lib/constants';
+import { ConfigValidator } from '../lib/validation';
 
-interface StoredDictionary {
+
+export interface StoredDictionary {
   key: string;
   name: string;
   type: string;
@@ -16,161 +14,45 @@ interface StoredDictionary {
 }
 
 export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
-  private sqlClient: SqlJsStatic | null = null;
-  private templates: Map<string, DictionaryTemplate> = new Map();
+  private sqlClient: SqlJsStatic;
+  private customTemplates = new Map<string, DictionaryTemplate>();
 
-  constructor(sqlClient?: SqlJsStatic) {
+  constructor(sqlClient: SqlJsStatic) {
     super("DictionaryManagerDB", "dictionaries");
-    this.sqlClient = sqlClient!;
-    this.loadDefaultTemplates();
-  }
-
-  setSqlClient(client: SqlJsStatic) {
-    this.sqlClient = client;
-  }
-
-  private loadDefaultTemplates() {
-    const defaultTemplates: DictionaryTemplate[] = [
-      {
-        id: "jmdict_en",
-        name: "JMdict English",
-        language: "en",
-        description: "Standard JMdict English dictionary format",
-        config: {
-          name: "JMdict English Parser",
-          version: "1.0.0",
-          sqlQuery: `
-            WITH RECURSIVE token_parts AS (
-              SELECT ? as token
-              UNION ALL
-              SELECT substr(token, 1, length(token)-1)
-              FROM token_parts 
-              WHERE length(token) > 1
-            )
-            SELECT DISTINCT t.* FROM terms t
-            JOIN token_parts tp ON t."0" = tp.token
-            ORDER BY length(t."0") DESC
-          `,
-          columnMapping: {
-            word: 0,
-            reading: 1,
-            type: 2,
-            meanings: 5,
-          },
-          meaningParser: {
-            type: "json",
-            customFunction: `
-              function parseMeanings(rawContent) {
-                try {
-                  if (Array.isArray(rawContent)) return rawContent;
-                  const structured = JSON.parse(rawContent);
-                  const meanings = [];
-                  for (const block of structured) {
-                    if (block.type === 'structured-content') {
-                      const roots = Array.isArray(block.content) ? block.content : [block.content];
-                      for (const root of roots) {
-                        meanings.push(...extractLiMeanings(root));
-                      }
-                    }
-                  }
-                  return meanings;
-                } catch (e) {
-                  return [];
-                }
-              }
-              
-              function extractLiMeanings(node) {
-                const result = [];
-                if (node.tag === 'ul' && node.data?.content === 'glossary') {
-                  const items = Array.isArray(node.content) ? node.content : [node.content];
-                  for (const li of items) {
-                    if (typeof li === 'object' && li.tag === 'li' && typeof li.content === 'string') {
-                      result.push(li.content);
-                    }
-                  }
-                }
-                const children = Array.isArray(node.content) ? node.content : [node.content];
-                for (const child of children) {
-                  if (typeof child === 'object' && child !== null) {
-                    result.push(...extractLiMeanings(child));
-                  }
-                }
-                return result;
-              }
-              
-              return parseMeanings(rawContent);
-            `,
-          },
-          searchStrategy: {
-            type: "partial",
-            includeSubstrings: true,
-          },
-        },
-      },
-      {
-        id: "jmdict_ru",
-        name: "JMdict Russian",
-        language: "ru",
-        description: "Standard JMdict Russian dictionary format",
-        config: {
-          name: "JMdict Russian Parser",
-          version: "1.0.0",
-          sqlQuery: `
-            WITH RECURSIVE token_parts AS (
-              SELECT ? as token
-              UNION ALL
-              SELECT substr(token, 1, length(token)-1)
-              FROM token_parts 
-              WHERE length(token) > 1
-            )
-            SELECT DISTINCT t.* FROM terms t
-            JOIN token_parts tp ON t."0" = tp.token
-            ORDER BY length(t."0") DESC
-          `,
-          columnMapping: {
-            word: 0,
-            reading: 1,
-            type: 2,
-            meanings: 5,
-          },
-          meaningParser: {
-            type: "array",
-          },
-          searchStrategy: {
-            type: "partial",
-            includeSubstrings: true,
-          },
-        },
-      },
-    ];
-
-    defaultTemplates.forEach((template) => {
-      this.templates.set(template.id, template);
-    });
+    this.sqlClient = sqlClient;
   }
 
   getTemplates(): DictionaryTemplate[] {
-    return Array.from(this.templates.values());
+    return [
+      ...Object.values(DICTIONARY_TEMPLATES),
+      ...Array.from(this.customTemplates.values()),
+    ];
   }
 
   getTemplate(id: string): DictionaryTemplate | undefined {
-    return this.templates.get(id);
+    return DICTIONARY_TEMPLATES[id] || this.customTemplates.get(id);
   }
 
   async addCustomTemplate(template: DictionaryTemplate): Promise<void> {
-    this.templates.set(template.id, template);
+    const errors = ConfigValidator.validateTemplate(template);
+    if (errors.length > 0) {
+      throw new Error(`Template validation failed: ${errors.join(", ")}`);
+    }
+
+    this.customTemplates.set(template.id, template);
   }
 
   async testParser(
     file: File,
     config: DictionaryParserConfig,
-    testTokens: string[] = ["test", "テスト"]
+    testTokens: string[] = ["test", "テスト", "試験"]
   ): Promise<ParserTestResult> {
-    if (!this.sqlClient) {
+    const errors = ConfigValidator.validateParserConfig(config);
+    if (errors.length > 0) {
       return {
         success: false,
         sampleResults: [],
-        errors: ["SQL client not initialized"],
+        errors,
         performance: { queryTime: 0, parseTime: 0 },
       };
     }
@@ -182,27 +64,25 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
       const db = new this.sqlClient.Database(new Uint8Array(arrayBuffer));
 
       const queryStartTime = performance.now();
-      const results = [];
+      const results: DictionaryEntry[] = [];
 
       for (const token of testTokens) {
         try {
           const stmt = db.prepare(config.sqlQuery);
-          stmt.bind([token]);
+          // Адаптируем параметры к конкретному запросу
+          const params = this.buildTestQueryParams(token, config);
+          stmt.bind(params);
 
-          while (stmt.step()) {
+          while (stmt.step() && results.length < 10) {
             const row = stmt.getAsObject();
             const values = Object.values(row);
-
-            const parseStartTime = performance.now();
             const parsed = this.parseEntry(values, config);
-            const parseTime = performance.now() - parseStartTime;
 
             if (parsed) {
               results.push(parsed);
             }
-
-            if (results.length >= 5) break; // Ограничиваем для теста
           }
+
           stmt.free();
         } catch (error) {
           console.warn(`Error testing token ${token}:`, error);
@@ -216,7 +96,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
 
       return {
         success: results.length > 0,
-        sampleResults: results.slice(0, 3),
+        sampleResults: results.slice(0, 5),
         errors:
           results.length === 0 ? ["No results found for test tokens"] : [],
         performance: {
@@ -234,7 +114,28 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     }
   }
 
-  private parseEntry(values: any[], config: DictionaryParserConfig): any {
+  private buildTestQueryParams(
+    token: string,
+    config: DictionaryParserConfig
+  ): any[] {
+    // Простая эвристика для определения количества параметров в запросе
+    const placeholderCount = (config.sqlQuery.match(/\?/g) || []).length;
+
+    if (placeholderCount === 1) {
+      return [token];
+    } else if (placeholderCount === 6) {
+      // Для сложных запросов с LIKE
+      return [token, token, token, token, token, 10];
+    } else {
+      // Заполняем все плейсхолдеры токеном
+      return Array(placeholderCount).fill(token);
+    }
+  }
+
+  private parseEntry(
+    values: any[],
+    config: DictionaryParserConfig
+  ): DictionaryEntry | null {
     try {
       const word = values[config.columnMapping.word as number] || "";
       const reading = values[config.columnMapping.reading as number] || "";
@@ -279,7 +180,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
         word: String(word),
         reading: String(reading),
         type: String(type),
-        meanings: Array.isArray(meanings) ? meanings : [],
+        meanings: Array.isArray(meanings) ? meanings.filter(Boolean) : [],
       };
     } catch (error) {
       console.warn("Parse entry error:", error);
@@ -355,10 +256,9 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     await this.delete(id);
   }
 
-  getTotalSize(): Promise<number> {
-    return this.getDictionaries().then((dicts) =>
-      dicts.reduce((total, dict) => total + dict.size, 0)
-    );
+  async getTotalSize(): Promise<number> {
+    const dicts = await this.getDictionaries();
+    return dicts.reduce((total, dict) => total + dict.size, 0);
   }
 
   protected asFile(data: StoredDictionary): File | null {
