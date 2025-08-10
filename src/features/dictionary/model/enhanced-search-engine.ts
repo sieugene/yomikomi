@@ -174,51 +174,23 @@ export class EnhancedDictionarySearchEngine {
 
       let meanings: string[] = [];
 
+      // Строго следуем настройкам шаблона
       switch (this.config.meaningParser.type) {
         case "array":
-          if (Array.isArray(rawMeanings)) {
-            meanings = rawMeanings.filter((m) => m && typeof m === "string");
-          } else if (typeof rawMeanings === "string") {
-            // Попробуем парсить как JSON массив
-            try {
-              const parsed = JSON.parse(rawMeanings);
-              meanings = Array.isArray(parsed)
-                ? parsed.filter((m) => m && typeof m === "string")
-                : [rawMeanings];
-            } catch {
-              // Если не JSON, то разделяем по разделителям
-              meanings = rawMeanings
-                .split(/[;,|]/)
-                .map((m) => m.trim())
-                .filter((m) => m.length > 0);
-            }
-          }
+          meanings = Array.isArray(rawMeanings) ? rawMeanings : [];
           break;
 
         case "string":
-          if (typeof rawMeanings === "string" && rawMeanings.trim()) {
-            meanings = [rawMeanings.trim()];
-          } else if (Array.isArray(rawMeanings)) {
-            meanings = rawMeanings.filter((m) => m && typeof m === "string");
-          }
+          meanings = typeof rawMeanings === "string" ? [rawMeanings] : [];
           break;
 
         case "json":
           try {
-            if (typeof rawMeanings === "string") {
-              const parsed = JSON.parse(rawMeanings);
-              meanings = Array.isArray(parsed)
-                ? parsed.filter((m) => m && typeof m === "string")
-                : [parsed];
-            } else if (Array.isArray(rawMeanings)) {
-              meanings = rawMeanings.filter((m) => m && typeof m === "string");
-            }
-          } catch (e) {
-            console.warn("JSON parse error:", e);
-            // Fallback к обработке как строка
-            if (typeof rawMeanings === "string" && rawMeanings.trim()) {
-              meanings = [rawMeanings.trim()];
-            }
+            meanings = Array.isArray(rawMeanings)
+              ? rawMeanings
+              : JSON.parse(rawMeanings);
+          } catch {
+            meanings = [];
           }
           break;
 
@@ -229,33 +201,20 @@ export class EnhancedDictionarySearchEngine {
                 "rawContent",
                 this.config.meaningParser.customFunction
               );
-              const result = fn(rawMeanings);
-              meanings = Array.isArray(result)
-                ? result.filter((m) => m && typeof m === "string")
-                : [];
+              meanings = fn(rawMeanings) || [];
             } catch (error) {
               console.warn("Custom parser function error:", error);
-              // Fallback к базовой обработке
-              if (Array.isArray(rawMeanings)) {
-                meanings = rawMeanings.filter(
-                  (m) => m && typeof m === "string"
-                );
-              } else if (
-                typeof rawMeanings === "string" &&
-                rawMeanings.trim()
-              ) {
-                meanings = [rawMeanings.trim()];
-              }
+              meanings = [];
             }
           }
           break;
       }
 
       const result: DictionaryEntry = {
-        word: String(word).trim(),
-        reading: String(reading).trim(),
-        type: String(type).trim(),
-        meanings: meanings,
+        word: String(word),
+        reading: String(reading),
+        type: String(type),
+        meanings: Array.isArray(meanings) ? meanings.filter(Boolean) : [],
       };
 
       console.log(`Parsed result:`, result);
