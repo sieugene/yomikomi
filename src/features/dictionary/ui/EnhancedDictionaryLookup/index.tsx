@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef } from "react";
 import { Search, BookOpen, Database, Zap, AlertCircle } from "lucide-react";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { useDictionaryLookup } from "@features/dictionary/hooks/useDictionaryLookup";
@@ -42,34 +42,31 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
     clearResults();
   });
 
-  const handleWordClick = useCallback(
-    async (token: any, wordId: number) => {
-      setSelectedWordId(wordId);
-      setSelectedToken(token);
-      setPanelOpen(true);
+  const handleWordClick = async (token: any, wordId: number) => {
+    setSelectedWordId(wordId);
+    setSelectedToken(token);
+    setPanelOpen(true);
 
-      // Определяем поисковый термин из токена
-      const searchTerm = token.basic_form || token.surface_form || "";
-      if (!searchTerm) return;
+    // Определяем поисковый термин из токена
+    const searchTerm = token.basic_form || token.surface_form || "";
+    if (!searchTerm) return;
 
-      const searchOptions: SearchOptions = {
-        deepMode: deepSearchMode,
-        maxResults: deepSearchMode ? 100 : 50,
-        includePartialMatches: true,
-        includeSubstrings: deepSearchMode,
-      };
+    const searchOptions: SearchOptions = {
+      deepMode: deepSearchMode,
+      maxResults: deepSearchMode ? 100 : 50,
+      includePartialMatches: true,
+      includeSubstrings: deepSearchMode,
+    };
 
-      console.log(
-        `Searching for token: "${searchTerm}" (${
-          deepSearchMode ? "deep" : "fast"
-        } mode)`
-      );
-      await performSearch(searchTerm, searchOptions);
-    },
-    [deepSearchMode, performSearch]
-  );
+    console.log(
+      `Searching for token: "${searchTerm}" (${
+        deepSearchMode ? "deep" : "fast"
+      } mode)`
+    );
+    await performSearch(searchTerm, searchOptions);
+  };
 
-  const toggleDeepSearch = useCallback(() => {
+  const toggleDeepSearch = () => {
     setDeepSearchMode((prev) => !prev);
 
     // Если панель открыта, повторяем поиск с новыми настройками
@@ -86,7 +83,7 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
         performSearch(searchTerm, newOptions);
       }
     }
-  }, [deepSearchMode, panelOpen, selectedToken, performSearch]);
+  };
 
   if (!isInitialized) {
     return (

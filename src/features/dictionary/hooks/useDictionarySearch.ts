@@ -1,13 +1,15 @@
-import { useEffect, useState, useCallback, useRef } from "react";
 import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
-import { useDictionaryManager } from "./useDictionaryManager";
+import useSWR from "swr";
+import { DICTIONARY_TEMPLATES } from "../lib/constants";
 import { EnhancedDictionarySearchEngine } from "../model/enhanced-search-engine";
 import { DictionarySearchCoordinator } from "../model/search-coordinator";
 import { SearchOptions, SearchResult } from "../types";
-import { DICTIONARY_TEMPLATES } from "../lib/constants";
+import {
+  useDictionaryManager,
+  useDictionaryManagerV2,
+} from "./useDictionaryManager";
 
 interface UseDictionarySearchReturn {
-  searchCoordinator: DictionarySearchCoordinator | null;
   activeEngineCount: number;
   isInitialized: boolean;
   searchSingleToken: (
@@ -18,27 +20,24 @@ interface UseDictionarySearchReturn {
 
 export const useDictionarySearch = (): UseDictionarySearchReturn => {
   const { sqlClient } = useSqlJs();
-  const { dictionaries, getDictionary } = useDictionaryManager();
-  const [coordinator] = useState(() => new DictionarySearchCoordinator());
-  const [activeEngineCount, setActiveEngineCount] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const initializationRef = useRef<Promise<void> | null>(null);
+  const { dictionaries, getDictionary, loading } = useDictionaryManager();
+  const { manager } = useDictionaryManagerV2();
 
-  const initializeEngines = useCallback(async () => {
-    if (!sqlClient || initializationRef.current) {
-      await initializationRef.current;
-      return;
-    }
-
-    initializationRef.current = (async () => {
+  // TODO app can probably dead after add new dictionaries, it's about out of memory (coordinator.clear())
+  const { data, isLoading } = useSWR(
+    sqlClient && dictionaries.length > 0 && !loading && manager
+      ? ["dictionary-engines", dictionaries]
+      : null,
+    async () => {
       console.log("Initializing dictionary search engines...");
+      const coordinator = new DictionarySearchCoordinator();
 
-      // Очищаем старые движки
-      coordinator.clear();
+      // coordinator.clear();
 
       const activeDictionaries = dictionaries.filter(
         (d) => d.status === "active"
       );
+
       console.log(`Found ${activeDictionaries.length} active dictionaries`);
 
       const initPromises = activeDictionaries.map(async (dict) => {
@@ -60,7 +59,7 @@ export const useDictionarySearch = (): UseDictionarySearchReturn => {
           }
 
           const engine = new EnhancedDictionarySearchEngine(
-            sqlClient,
+            sqlClient!,
             arrayBuffer,
             config,
             dict.name
@@ -76,48 +75,35 @@ export const useDictionarySearch = (): UseDictionarySearchReturn => {
       await Promise.all(initPromises);
 
       const engineCount = coordinator.getActiveEngineCount();
-      setActiveEngineCount(engineCount);
-      setIsInitialized(true);
-
       console.log(
         `Dictionary search system initialized with ${engineCount} engines`
       );
-    })();
-
-    await initializationRef.current;
-  }, [dictionaries, sqlClient, coordinator, getDictionary]);
-
-  useEffect(() => {
-    if (sqlClient && dictionaries.length > 0) {
-      initializeEngines();
-    }
-
-    // Cleanup при размонтировании
-    return () => {
-      coordinator.clear();
-    };
-  }, [dictionaries, sqlClient, initializeEngines, coordinator]);
-
-  const searchSingleToken = useCallback(
-    async (token: string, options: SearchOptions): Promise<SearchResult[]> => {
-      if (!isInitialized || !coordinator) {
-        console.warn("Search coordinator not initialized");
-        return [];
-      }
-
-      const activeDictIds = dictionaries
-        .filter((d) => d.status === "active")
-        .map((d) => d.id);
-
-      return coordinator.searchSingleToken(token, options, activeDictIds);
+      return { engineCount, coordinator };
     },
-    [isInitialized, coordinator, dictionaries]
+    {
+      revalidateOnFocus: false,
+    }
   );
 
+  const searchSingleToken = async (
+    token: string,
+    options: SearchOptions
+  ): Promise<SearchResult[]> => {
+    if (isLoading || !data?.engineCount || data.engineCount === 0) {
+      console.warn("Search coordinator not initialized");
+      return [];
+    }
+
+    const activeDictIds = dictionaries
+      .filter((d) => d.status === "active")
+      .map((d) => d.id);
+
+    return data.coordinator?.searchSingleToken(token, options, activeDictIds);
+  };
+
   return {
-    searchCoordinator: coordinator,
-    activeEngineCount,
-    isInitialized,
+    activeEngineCount: data?.engineCount ?? 0,
+    isInitialized: !isLoading && (data?.engineCount ?? 0) > 0,
     searchSingleToken,
   };
 };

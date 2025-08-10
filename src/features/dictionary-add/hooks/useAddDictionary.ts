@@ -4,7 +4,6 @@ import {
   DictionaryTemplate,
   ParserTestResult,
 } from "@/features/dictionary/types";
-import { useCallback, useState } from "react";
 
 type UseAddDictionaryReturn = {
   templates: DictionaryTemplate[];
