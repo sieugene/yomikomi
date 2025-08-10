@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { DictionaryMetadata } from "../types/types";
+import { DictionaryMetadata } from "@features/dictionary/types";
 
 interface StatusBadgeProps {
   status: DictionaryMetadata["status"];

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { XCircle, Upload, Database } from "lucide-react";
-import { TemplateSelector } from "../ui/template-selector";
-import { CustomTemplateEditor } from "../ui/custom-template-editor";
+import { formatFileSize } from "@features/dictionary/lib/formatters";
 import {
   DictionaryParserConfig,
   DictionaryTemplate,
   ParserTestResult,
-} from "../types/types";
-import { formatFileSize } from "../lib/formatters";
+} from "@features/dictionary/types";
+import { CustomTemplateEditor } from "@features/dictionary/ui/CustomTemplateEditor";
+import { TemplateSelector } from "@/features/dictionary/ui/TemplateSelector";
+import { Database, Upload, XCircle } from "lucide-react";
+import React, { useState } from "react";
 
 interface AddDictionaryModalProps {
   isOpen: boolean;

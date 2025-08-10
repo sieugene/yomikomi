@@ -6,12 +6,12 @@ import {
   AlertTriangle,
   Download,
 } from "lucide-react";
-import { useDictionaryManager } from "../hooks/useDictionaryManager";
-import { DictionaryMetadata } from "../types/types";
-import { formatFileSize } from "../lib/formatters";
-import { StatusBadge } from "./status-badge";
-import { AddDictionaryModal } from "./add-dictionary-modal";
-import { DictionaryDetailsModal } from './dictionary-details-modal';
+import { useDictionaryManager } from "@features/dictionary/hooks/useDictionaryManager";
+import { DictionaryMetadata } from "@features/dictionary/types";
+import { formatFileSize } from "@features/dictionary/lib/formatters";
+import { StatusBadge } from "@/features/dictionary/ui/StatusBadge";
+import { AddDictionaryModal } from "@features/dictionary/ui/AddDictionaryModal";
+import { DictionaryDetailsModal } from "@features/dictionary/ui/DictionaryDetailsModal";
 
 // Мелкие компоненты для статистики
 const StatsCard: React.FC<{

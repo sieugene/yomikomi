@@ -1,6 +1,6 @@
+import { DictionaryTemplate } from "@/features/dictionary/types";
+import { Eye, Plus, Settings } from "lucide-react";
 import React, { useState } from "react";
-import { Settings, Plus, Eye, Code } from "lucide-react";
-import { DictionaryTemplate } from "../types/types";
 
 interface TemplateSelectorProps {
   templates: DictionaryTemplate[];

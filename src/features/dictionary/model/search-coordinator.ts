@@ -1,5 +1,5 @@
 import { SEARCH_LIMITS } from "../lib/constants";
-import { SearchOptions, SearchResult } from "../types/types";
+import { SearchOptions, SearchResult } from "../types";
 import { EnhancedDictionarySearchEngine } from "./enhanced-search-engine";
 
 export class DictionarySearchCoordinator {

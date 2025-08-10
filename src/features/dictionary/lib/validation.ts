@@ -1,4 +1,4 @@
-import { DictionaryParserConfig, DictionaryTemplate } from '../types/types';
+import { DictionaryParserConfig, DictionaryTemplate } from '../types';
 
 export class ConfigValidator {
   static validateParserConfig(config: DictionaryParserConfig): string[] {

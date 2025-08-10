@@ -6,7 +6,7 @@ import {
   DictionaryParserConfig,
   DictionaryTemplate,
   ParserTestResult,
-} from "../types/types";
+} from "../types";
 import { DICTIONARY_TEMPLATES } from "../lib/constants";
 import { ConfigValidator } from "../lib/validation";
 
