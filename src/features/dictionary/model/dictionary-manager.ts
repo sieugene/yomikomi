@@ -1,5 +1,5 @@
 import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
-import type { SqlJsStatic } from "sql.js";
+import type { SqlJsStatic, SqlValue } from "sql.js";
 import {
   DictionaryEntry,
   DictionaryMetadata,
@@ -155,7 +155,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   private buildTestQueryParams(
     token: string,
     config: DictionaryParserConfig
-  ): any[] {
+  ): (string | number)[] {
     const placeholderCount = (config.sqlQuery.match(/\?/g) || []).length;
 
     if (placeholderCount === 1) {
@@ -168,7 +168,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   }
 
   private parseEntry(
-    values: any[],
+    values: SqlValue[],
     config: DictionaryParserConfig
   ): DictionaryEntry | null {
     try {
@@ -190,7 +190,8 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
           try {
             meanings = Array.isArray(rawMeanings)
               ? rawMeanings
-              : JSON.parse(rawMeanings);
+              // TODO rawMeanings is?
+              : JSON.parse(rawMeanings as unknown as string);
           } catch {
             meanings = [];
           }

@@ -24,7 +24,7 @@ interface UseDictionaryLookupReturn extends DictionaryLookupState {
 }
 
 export const useDictionaryLookup = (): UseDictionaryLookupReturn => {
-  const { tokenizeText, isReady: tokenizerReady } = useTokenizer();
+  const { isReady: tokenizerReady } = useTokenizer();
   const { searchSingleToken, isInitialized: searchReady } =
     useDictionarySearch();
 

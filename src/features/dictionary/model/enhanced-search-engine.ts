@@ -1,4 +1,4 @@
-import type { Database, SqlJsStatic } from "sql.js";
+import type { Database, SqlJsStatic, SqlValue } from "sql.js";
 import {
   DictionaryEntry,
   DictionaryParserConfig,
@@ -160,7 +160,7 @@ export class EnhancedDictionarySearchEngine {
     }
   }
 
-  private parseEntry(values: any[]): DictionaryEntry | null {
+  private parseEntry(values: SqlValue[]): DictionaryEntry | null {
     try {
       const word = values[this.config.columnMapping.word as number] || "";
       const reading = values[this.config.columnMapping.reading as number] || "";
@@ -188,7 +188,8 @@ export class EnhancedDictionarySearchEngine {
           try {
             meanings = Array.isArray(rawMeanings)
               ? rawMeanings
-              : JSON.parse(rawMeanings);
+              // TODO rawMeanings is?
+              : JSON.parse(rawMeanings as unknown as string);
           } catch {
             meanings = [];
           }

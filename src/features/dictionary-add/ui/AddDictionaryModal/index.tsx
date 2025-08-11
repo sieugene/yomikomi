@@ -1,16 +1,14 @@
 import { CustomTemplateEditor } from "@/features/dictionary-add/ui/CustomTemplateEditor";
 import { TemplateSelector } from "@/features/dictionary-add/ui/TemplateSelector";
+import { useTemplates } from "@/features/dictionary/hooks/useTemplates";
 import { Modal } from "@/shared/ui/Modal";
-import { formatFileSize } from "@features/dictionary/lib/formatters";
 import { DictionaryParserConfig } from "@features/dictionary/types";
-import { Database, Upload } from "lucide-react";
 import React, { useState } from "react";
 import { useAddDictionary } from "../../hooks/useAddDictionary";
-import { useTemplates } from "@/features/dictionary/hooks/useTemplates";
-import { SelectFileStep } from "../SelectFileStep";
+import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 import { FinalStep } from "../FinalStep";
 import { ProgressSteps } from "../ProgressSteps";
-import { useCreateTemplate } from "../../hooks/useCreateTemplate";
+import { SelectFileStep } from "../SelectFileStep";
 
 interface AddDictionaryModalProps {
   isOpen: boolean;

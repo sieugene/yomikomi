@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { KuromojiTokenizer } from "../model/KuromojiTokenizer";
+import { IpadicFeatures } from "kuromoji";
 
 interface TokenizerHookReturn {
   tokenizer: KuromojiTokenizer | null;
   isReady: boolean;
   error: string | null;
-  tokenizeText: (text: string) => any[] | null;
+  tokenizeText: (text: string) => IpadicFeatures[] | null;
 }
 
 export const useTokenizer = (): TokenizerHookReturn => {
@@ -44,7 +45,7 @@ export const useTokenizer = (): TokenizerHookReturn => {
     initTokenizer();
   }, []);
 
-  const tokenizeText = (text: string): any[] | null => {
+  const tokenizeText = (text: string) => {
     if (!tokenizer || !isReady) return null;
 
     try {
