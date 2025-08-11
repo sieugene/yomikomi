@@ -2,13 +2,11 @@ import { CustomTemplateEditor } from "@/features/dictionary-add/ui/CustomTemplat
 import { TemplateSelector } from "@/features/dictionary-add/ui/TemplateSelector";
 import { Modal } from "@/shared/ui/Modal";
 import { formatFileSize } from "@features/dictionary/lib/formatters";
-import {
-  DictionaryParserConfig,
-  ParserTestResult,
-} from "@features/dictionary/types";
+import { DictionaryParserConfig } from "@features/dictionary/types";
 import { Database, Upload } from "lucide-react";
 import React, { useState } from "react";
 import { useAddDictionary } from "../../hooks/useAddDictionary";
+import { useTemplates } from "@/features/dictionary/hooks/useTemplates";
 
 interface AddDictionaryModalProps {
   isOpen: boolean;
@@ -19,14 +17,14 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { templates, addDictionary, testParser } = useAddDictionary();
+  const { addDictionary, testParser } = useAddDictionary();
+  const { data: templates } = useTemplates();
 
   const [step, setStep] = useState(1);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
   const [customConfig, setCustomConfig] =
     useState<DictionaryParserConfig | null>(null);
-  const [testResult, setTestResult] = useState<ParserTestResult | null>(null);
   const [adding, setAdding] = useState(false);
 
   const resetModal = () => {
@@ -34,7 +32,6 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
     setSelectedFile(null);
     setSelectedTemplateId("");
     setCustomConfig(null);
-    setTestResult(null);
     setAdding(false);
   };
 

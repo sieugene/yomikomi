@@ -1,11 +1,10 @@
-import { formatFileSize } from "@/features/dictionary/lib/formatters";
 import { DictionaryMetadata } from "@/features/dictionary/types";
 import { AlertTriangle, CheckCircle, Database, Download } from "lucide-react";
 import { StatCard, StatKey } from "../types";
 
 export const useDictionariesStats = (
   dictionaries: DictionaryMetadata[],
-  totalSize: number
+  formattedTotalSize: string
 ) => {
   const stats: { [key in StatKey]: number } = {
     total: dictionaries.length,
@@ -34,7 +33,7 @@ export const useDictionariesStats = (
     },
     {
       icon: Download,
-      value: formatFileSize(totalSize),
+      value: formattedTotalSize,
       label: "Storage Used",
       color: "text-purple-600",
     },

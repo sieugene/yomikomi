@@ -1,4 +1,4 @@
-import { useDictionaryManagerV2 } from "@/features/dictionary/hooks/useDictionaryManager";
+import { useDictionaryManager } from "@/features/dictionary/hooks/useDictionaryManager";
 import { DictionaryTemplate } from "@/features/dictionary/types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -6,7 +6,7 @@ type UseCreateTemplateReturn = {
   addCustomTemplate: (config: DictionaryTemplate["config"]) => Promise<void>;
 };
 export const useCreateTemplate = (): UseCreateTemplateReturn => {
-  const { manager, refresh } = useDictionaryManagerV2();
+  const { manager, refresh } = useDictionaryManager();
 
   const addCustomTemplate = async (
     config: DictionaryTemplate["config"]

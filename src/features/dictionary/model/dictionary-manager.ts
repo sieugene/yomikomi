@@ -9,6 +9,7 @@ import {
 } from "../types";
 import { DICTIONARY_TEMPLATES } from "../lib/constants";
 import { ConfigValidator } from "../lib/validation";
+import { v4 as uuidv4 } from "uuid";
 
 export interface StoredDictionary {
   key: string;
@@ -19,6 +20,7 @@ export interface StoredDictionary {
 }
 
 export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
+  public id = uuidv4();
   private sqlClient: SqlJsStatic;
   private CUSTOM_TEMPLATES_STORAGE_KEY = "templates";
 
@@ -35,7 +37,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   }
 
   getTemplate(id: string): DictionaryTemplate | undefined {
-    return DICTIONARY_TEMPLATES[id] || this.getTemplatesFromStorage()[id];
+    return this.getTemplates().find((t) => t.id === id);
   }
 
   // TODO refactor me!
@@ -286,11 +288,6 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
 
   async deleteDictionary(id: string): Promise<void> {
     await this.delete(id);
-  }
-
-  async getTotalSize(): Promise<number> {
-    const dicts = await this.getDictionaries();
-    return dicts.reduce((total, dict) => total + dict.size, 0);
   }
 
   protected asFile(data: StoredDictionary): File | null {

@@ -2,15 +2,25 @@ import { useDictionariesStats } from "@/entities/DictionaryManagementSystem/hook
 import { StatsCard } from "@/entities/DictionaryManagementSystem/ui/StatsCard";
 import { AddDictionary } from "@/features/dictionary-add/ui";
 import { DictionaryOverview } from "@/features/dictionary-overview/ui";
+import {
+  useDictionaries,
+  useDictionariesSize,
+} from "@/features/dictionary/hooks/useDictionaries";
 import { useDictionaryManager } from "@features/dictionary/hooks/useDictionaryManager";
-import { formatFileSize } from "@features/dictionary/lib/formatters";
 import { Database } from "lucide-react";
 import React from "react";
 
 export const DictionaryManagementSystem: React.FC = () => {
-  const { dictionaries, loading, totalSize } = useDictionaryManager();
+  const { loading: managerIsLoading } = useDictionaryManager();
+  const { data: dictionaries, isLoading: dictionariesIsLoading } =
+    useDictionaries();
+  const loading = dictionariesIsLoading || managerIsLoading;
+  const { formattedTotalSize } = useDictionariesSize();
 
-  const { stats, statsCards } = useDictionariesStats(dictionaries, totalSize);
+  const { stats, statsCards } = useDictionariesStats(
+    dictionaries,
+    formattedTotalSize
+  );
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -20,7 +30,7 @@ export const DictionaryManagementSystem: React.FC = () => {
             Dictionary Management
           </h1>
           <p className="text-gray-600">
-            {stats.total} dictionaries • {formatFileSize(totalSize)} total
+            {stats.total} dictionaries • {formattedTotalSize} total
           </p>
         </div>
         <AddDictionary />

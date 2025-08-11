@@ -1,12 +1,10 @@
-import { useDictionaryManagerV2 } from "@/features/dictionary/hooks/useDictionaryManager";
+import { useDictionaryManager } from "@/features/dictionary/hooks/useDictionaryManager";
 import {
   DictionaryParserConfig,
-  DictionaryTemplate,
   ParserTestResult,
 } from "@/features/dictionary/types";
 
 type UseAddDictionaryReturn = {
-  templates: DictionaryTemplate[];
   addDictionary: (
     file: File,
     templateId?: string,
@@ -20,7 +18,7 @@ type UseAddDictionaryReturn = {
 };
 
 export const useAddDictionary = (): UseAddDictionaryReturn => {
-  const { manager, refresh, data } = useDictionaryManagerV2();
+  const { manager, refresh } = useDictionaryManager();
 
   const addDictionary = async (
     file: File,
@@ -44,5 +42,5 @@ export const useAddDictionary = (): UseAddDictionaryReturn => {
     return manager.testParser(file, config, testTokens);
   };
 
-  return { templates: data?.templates || [], addDictionary, testParser };
+  return { addDictionary, testParser };
 };
