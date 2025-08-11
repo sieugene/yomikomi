@@ -1,5 +1,4 @@
 import { AddDictionaryModal } from "@/features/dictionary-add/ui/AddDictionaryModal";
-import { useDictionaryManager } from "@/features/dictionary/hooks/useDictionaryManager";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 

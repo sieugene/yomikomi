@@ -6,7 +6,6 @@ import {
 } from "@features/dictionary/types";
 import { AlertCircle, CheckCircle, Save, TestTube } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { useCreateTemplate } from "../../hooks/useCreateTemplate";
 
 interface CustomTemplateEditorProps {
   initialConfig?: DictionaryParserConfig;
@@ -165,8 +164,8 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
             placeholder="SELECT * FROM terms WHERE..."
           />
           <p className="text-xs text-gray-500">
-            Example: SELECT * FROM terms WHERE "0" = ? ORDER BY length("0") DESC
-            LIMIT 20
+           {` Example: SELECT * FROM terms WHERE "0" = ? ORDER BY length("0") DESC
+            LIMIT 20`}
           </p>
         </div>
 
@@ -209,7 +208,8 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
               onChange={(e) =>
                 handleFieldChange("meaningParser", {
                   ...config.meaningParser,
-                  type: e.target.value as any,
+                  // TODO provide type!
+                  type: e.target.value as "string" | "array" | "json" | "custom",
                 })
               }
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
@@ -262,7 +262,8 @@ export const CustomTemplateEditor: React.FC<CustomTemplateEditorProps> = ({
               onChange={(e) =>
                 handleFieldChange("searchStrategy", {
                   ...config.searchStrategy,
-                  type: e.target.value as any,
+                  // TODO provide type!
+                  type: e.target.value as "exact" | "partial" | "ngram",
                 })
               }
               className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm"

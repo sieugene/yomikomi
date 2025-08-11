@@ -1,13 +1,14 @@
-import React, { useState, useRef } from "react";
-import { Search, BookOpen, Database, Zap, AlertCircle } from "lucide-react";
+import { InteractiveSentence } from "@/features/dictionary/ui/InteractiveSentence";
+import { SearchModeToggle } from "@/features/dictionary/ui/SearchModeToggle";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { useDictionaryLookup } from "@features/dictionary/hooks/useDictionaryLookup";
 import { useDictionarySearch } from "@features/dictionary/hooks/useDictionarySearch";
-import { InteractiveSentence } from "@/features/dictionary/ui/InteractiveSentence";
-import { SearchResultCard } from "@features/dictionary/ui/SearchResultCard";
-import { SearchOptions, SearchResult } from "@features/dictionary/types";
-import { SearchModeToggle } from "@/features/dictionary/ui/SearchModeToggle";
 import { formatSearchStats } from "@features/dictionary/lib/formatters";
+import { SearchOptions, SearchResult } from "@features/dictionary/types";
+import { SearchResultCard } from "@features/dictionary/ui/SearchResultCard";
+import { IpadicFeatures } from "kuromoji";
+import { AlertCircle, BookOpen, Database, Search } from "lucide-react";
+import React, { useRef, useState } from "react";
 
 interface Props {
   sentence: string;
@@ -20,7 +21,6 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
 }) => {
   const { activeEngineCount, isInitialized } = useDictionarySearch();
   const {
-    searchResults,
     groupedResults,
     loading,
     error,
@@ -30,7 +30,9 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
   } = useDictionaryLookup();
 
   const [selectedWordId, setSelectedWordId] = useState<number | null>(null);
-  const [selectedToken, setSelectedToken] = useState<any>(null);
+  const [selectedToken, setSelectedToken] = useState<IpadicFeatures | null>(
+    null
+  );
   const [panelOpen, setPanelOpen] = useState(false);
   const [deepSearchMode, setDeepSearchMode] = useState(false);
 
@@ -42,7 +44,7 @@ export const EnhancedDictionaryLookup: React.FC<Props> = ({
     clearResults();
   });
 
-  const handleWordClick = async (token: any, wordId: number) => {
+  const handleWordClick = async (token: IpadicFeatures, wordId: number) => {
     setSelectedWordId(wordId);
     setSelectedToken(token);
     setPanelOpen(true);
@@ -189,10 +191,14 @@ interface DictionaryResultsPanelProps {
     word: string;
     results: SearchResult[];
   }>;
-  selectedToken?: any;
+  selectedToken?: IpadicFeatures | null;
   loading: boolean;
   error: string | null;
-  searchStats: any;
+  searchStats: {
+    searchTime: number;
+    resultCount: number;
+    uniqueWords: number;
+  } | null;
   deepSearchMode: boolean;
   isOpen: boolean;
   onClose: () => void;
@@ -211,7 +217,6 @@ const DictionaryResultsPanel = React.forwardRef<
       error,
       deepSearchMode,
       isOpen,
-      onClose,
       baseBottom,
     },
     ref

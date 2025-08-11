@@ -1,9 +1,10 @@
 import React, { useMemo } from "react";
 import { useTokenizer } from "@features/dictionary/hooks/useTokenizerOptimized";
+import { IpadicFeatures } from "kuromoji";
 
 interface InteractiveSentenceProps {
   sentence: string;
-  onWordClick: (token: any, wordId: number) => void;
+  onWordClick: (token: IpadicFeatures, wordId: number) => void;
   selectedWordId?: number | null;
   className?: string;
 }
@@ -45,7 +46,9 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
                   : "border-transparent hover:bg-blue-100 hover:border-blue-300"
               }`}
               title={`${token.basic_form || token.surface_form} (${
-                token.part_of_speech || "unknown"
+                // TODO
+                // token.part_of_speech || "unknown"
+                "unknown"
               })`}
             >
               {token.surface_form}
