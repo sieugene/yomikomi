@@ -1,4 +1,4 @@
-import { useDictionaryManagerV2 } from "@/features/dictionary/hooks/useDictionaryManager";
+import { useDictionaryManager } from "@/features/dictionary/hooks/useDictionaryManager";
 import { DictionaryMetadata } from "@/features/dictionary/types";
 
 type UseUpdateDictionaryStatusReturn = {
@@ -9,7 +9,7 @@ type UseUpdateDictionaryStatusReturn = {
 };
 export const useUpdateDictionaryStatus =
   (): UseUpdateDictionaryStatusReturn => {
-    const { data, refresh } = useDictionaryManagerV2();
+    const { data, refresh } = useDictionaryManager();
 
     const updateDictionaryStatus = async (
       id: string,

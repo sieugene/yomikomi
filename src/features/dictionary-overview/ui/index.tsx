@@ -1,11 +1,11 @@
 import { DictionaryDetailsModal } from "@/features/dictionary-overview/ui/DictionaryDetailsModal";
 import { StatusBadge } from "@/features/dictionary/ui/StatusBadge";
 import { DictionaryDelete } from "@/features/dictionary-delete/ui";
-import { useDictionaryById } from "@/features/dictionary/hooks/useDictionaryById";
 import { formatFileSize } from "@/features/dictionary/lib/formatters";
 import { DictionaryMetadata } from "@/features/dictionary/types";
 import { FC, useState } from "react";
 import { useUpdateDictionaryStatus } from "../hooks/useUpdateDictionaryStatus";
+import { useDictionaryById } from "@/features/dictionary/hooks/useDictionaries";
 
 type Props = {
   id: DictionaryMetadata["id"];
