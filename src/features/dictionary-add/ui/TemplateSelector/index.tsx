@@ -8,6 +8,7 @@ interface TemplateSelectorProps {
   onTemplateSelect: (templateId: string) => void;
   onCustomTemplate: () => void;
   onViewTemplate?: (template: DictionaryTemplate) => void;
+  customTemplateId: string;
 }
 
 export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
@@ -16,6 +17,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   onTemplateSelect,
   onCustomTemplate,
   onViewTemplate,
+  customTemplateId,
 }) => {
   const [expandedTemplate, setExpandedTemplate] = useState<string | null>(null);
 
@@ -139,7 +141,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         <div
           onClick={onCustomTemplate}
           className={`p-4 border border-gray-200 rounded-lg cursor-pointer transition-colors hover:border-blue-500 ${
-            selectedTemplateId === "custom"
+            selectedTemplateId === customTemplateId
               ? "bg-blue-50 border-blue-500"
               : "hover:bg-gray-50"
           }`}
@@ -148,7 +150,7 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             <div>
               <h4 className="font-medium flex items-center">
                 Custom Parser
-                {selectedTemplateId === "custom" && (
+                {selectedTemplateId === customTemplateId && (
                   <span className="ml-2 text-blue-600">
                     <Settings className="w-4 h-4" />
                   </span>
