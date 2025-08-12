@@ -21,7 +21,7 @@ export const useDictionaries = () => {
 };
 
 export const useDictionariesSize = () => {
-  const { data } = useDictionaries();
+  const { data,isLoading } = useDictionaries();
   const totalSizeBytes = useMemo(
     () => data?.reduce((total, dict) => total + dict.size, 0),
     [data]
@@ -31,6 +31,7 @@ export const useDictionariesSize = () => {
     [totalSizeBytes]
   );
   return {
+    isLoading,
     totalSizeBytes,
     formattedTotalSize,
   };

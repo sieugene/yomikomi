@@ -1,26 +1,13 @@
-import { useDictionariesStats } from "@/entities/DictionaryManagementSystem/hooks/useDictionariesStats";
 import { StatsCard } from "@/entities/DictionaryManagementSystem/ui/StatsCard";
 import { AddDictionary } from "@/features/dictionary-add/ui";
 import { DictionaryOverview } from "@/features/dictionary-overview/ui";
-import {
-  useDictionaries,
-  useDictionariesSize,
-} from "@/features/dictionary/hooks/useDictionaries";
-import { useDictionaryManager } from "@features/dictionary/hooks/useDictionaryManager";
 import { Database } from "lucide-react";
 import React from "react";
+import { useDictionaryManagementSystem } from "../hooks/useDictionaryManagementSystem";
 
 export const DictionaryManagementSystem: React.FC = () => {
-  const { loading: managerIsLoading } = useDictionaryManager();
-  const { data: dictionaries, isLoading: dictionariesIsLoading } =
-    useDictionaries();
-  const loading = dictionariesIsLoading || managerIsLoading;
-  const { formattedTotalSize } = useDictionariesSize();
-
-  const { stats, statsCards } = useDictionariesStats(
-    dictionaries,
-    formattedTotalSize
-  );
+  const { formattedTotalSize, stats, statsCards, loading, dictionaries } =
+    useDictionaryManagementSystem();
 
   return (
     <div className="max-w-6xl mx-auto p-6">

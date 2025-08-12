@@ -1,0 +1,1 @@
+export const CUSTOM_TEMPLATE_ID = "custom";
