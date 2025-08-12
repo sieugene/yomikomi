@@ -1,5 +1,5 @@
+import { DictionaryCustomTemplateEditor } from "@/entities/DictionaryCustomTemplateEditor/ui";
 import { DictionaryTemplateSelector } from "@/entities/DictionaryTemplateSelector/ui";
-import { CustomTemplateEditor } from "@/features/dictionary-add/ui/CustomTemplateEditor";
 import { useTemplateById } from "@/features/dictionary/hooks/useTemplates";
 import { Modal } from "@/shared/ui/Modal";
 import {
@@ -110,7 +110,7 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
     {
       step: STEPS.CUSTOM_TEMPLATE_EDITOR_STEP,
       content: (
-        <CustomTemplateEditor
+        <DictionaryCustomTemplateEditor
           initialConfig={customConfig || undefined}
           onSave={handleCustomConfigSave}
           onTest={

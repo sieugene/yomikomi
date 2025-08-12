@@ -5,10 +5,11 @@ export interface DictionaryEntry {
   meanings: string[];
 }
 
+export type SearchResultMatchType = "exact" | "partial" | "substring";
 export interface SearchResult extends DictionaryEntry {
   source: string;
   relevanceScore: number;
-  matchType: 'exact' | 'partial' | 'substring';
+  matchType: SearchResultMatchType;
 }
 
 export interface DictionaryMetadata {
@@ -20,9 +21,12 @@ export interface DictionaryMetadata {
   updatedAt: Date;
   parserTemplate: string;
   customParser?: DictionaryParserConfig;
-  status: 'active' | 'inactive' | 'error';
+  status: "active" | "inactive" | "error";
   lastTestResult?: ParserTestResult;
 }
+
+export type MeaningParserT = "json" | "array" | "string" | "custom";
+export type SearchStrategyT = "exact" | "partial" | "ngram";
 
 export interface DictionaryParserConfig {
   name: string;
@@ -35,11 +39,11 @@ export interface DictionaryParserConfig {
     meanings: string | number;
   };
   meaningParser: {
-    type: 'json' | 'array' | 'string' | 'custom';
+    type: MeaningParserT;
     customFunction?: string;
   };
   searchStrategy: {
-    type: 'exact' | 'partial' | 'ngram';
+    type: SearchStrategyT;
     ngramSize?: number;
     includeSubstrings?: boolean;
   };
