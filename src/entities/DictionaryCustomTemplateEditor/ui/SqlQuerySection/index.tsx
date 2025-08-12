@@ -20,7 +20,7 @@ export const SqlQuerySection: React.FC<Props> = ({ config, onChange }) => (
       placeholder="SELECT * FROM terms WHERE..."
     />
     <p className="text-xs text-gray-500">
-      Example: SELECT * FROM terms WHERE "0" = ? ORDER BY length("0") DESC LIMIT 20
+      {`Example: SELECT * FROM terms WHERE "0" = ? ORDER BY length("0") DESC LIMIT 20`}
     </p>
   </div>
 );

@@ -1,5 +1,8 @@
 import React from "react";
-import { DictionaryParserConfig } from "@features/dictionary/types";
+import {
+  DictionaryParserConfig,
+  ParserTestResult,
+} from "@features/dictionary/types";
 import { useCustomTemplateConfig } from "../hooks/useCustomTemplateConfig";
 import { ValidationErrors } from "./ValidationErrors";
 import { BasicInfoSection } from "./BasicInfoSection";
@@ -13,7 +16,9 @@ import { SaveButton } from "./SaveButton";
 interface Props {
   initialConfig?: DictionaryParserConfig;
   onSave: (config: DictionaryParserConfig) => void;
-  onTest?: (config: DictionaryParserConfig) => Promise<any>;
+  onTest?:
+    | ((config: DictionaryParserConfig) => Promise<ParserTestResult>)
+    | undefined;
   file?: File;
 }
 
