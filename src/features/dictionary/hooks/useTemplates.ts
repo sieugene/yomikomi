@@ -17,6 +17,11 @@ export const useTemplates = () => {
   };
 };
 
+export const useTemplateById = (id: DictionaryTemplate["id"]) => {
+  const { data } = useTemplates();
+  return data.find((t) => t.id === id);
+};
+
 type UseGetTemplateReturn = {
   getTemplate: (id: string) => DictionaryTemplate | undefined;
 };

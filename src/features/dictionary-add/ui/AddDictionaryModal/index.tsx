@@ -1,11 +1,16 @@
+import { DictionaryTemplateSelector } from "@/entities/DictionaryTemplateSelector/ui";
 import { CustomTemplateEditor } from "@/features/dictionary-add/ui/CustomTemplateEditor";
-import { TemplateSelector } from "@/features/dictionary-add/ui/TemplateSelector";
-import { useTemplates } from "@/features/dictionary/hooks/useTemplates";
+import { useTemplateById } from "@/features/dictionary/hooks/useTemplates";
 import { Modal } from "@/shared/ui/Modal";
-import { DictionaryParserConfig } from "@features/dictionary/types";
-import React, { useState } from "react";
+import {
+  DictionaryParserConfig,
+  DictionaryTemplate,
+} from "@features/dictionary/types";
+import React, { useMemo, useState } from "react";
+import { CUSTOM_TEMPLATE_ID } from "../../constants/dictionary-add.constants";
 import { useAddDictionary } from "../../hooks/useAddDictionary";
 import { useCreateTemplate } from "../../hooks/useCreateTemplate";
+import { STEPS } from "../../types";
 import { FinalStep } from "../FinalStep";
 import { ProgressSteps } from "../ProgressSteps";
 import { SelectFileStep } from "../SelectFileStep";
@@ -15,20 +20,11 @@ interface AddDictionaryModalProps {
   onClose: () => void;
 }
 
-const CUSTOM_TEMPLATE_ID = "custom";
-enum STEPS {
-  "SELECT_FILE_STEP" = 1,
-  "TEMPLATE_SELECT_STEP" = 2,
-  "CUSTOM_TEMPLATE_EDITOR_STEP" = 3,
-  "FINAL_STEP" = 4,
-}
-
 export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
   isOpen,
   onClose,
 }) => {
   const { addDictionary, testParser } = useAddDictionary();
-  const { data: templates } = useTemplates();
 
   const [step, setStep] = useState(STEPS.SELECT_FILE_STEP);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -37,6 +33,7 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
     useState<DictionaryParserConfig | null>(null);
   const [adding, setAdding] = useState(false);
   const { addCustomTemplate } = useCreateTemplate();
+  const selectedTemplate = useTemplateById(selectedTemplateId);
 
   const resetModal = () => {
     setStep(STEPS.SELECT_FILE_STEP);
@@ -54,18 +51,13 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
     }
   };
 
-  const handleTemplateSelect = (templateId: string) => {
+  const handleTemplateSelect = (templateId: DictionaryTemplate["id"]) => {
     setSelectedTemplateId(templateId);
     setStep(
       templateId === CUSTOM_TEMPLATE_ID
         ? STEPS.CUSTOM_TEMPLATE_EDITOR_STEP
         : STEPS.FINAL_STEP
     );
-  };
-
-  const handleCustomTemplate = () => {
-    setSelectedTemplateId(CUSTOM_TEMPLATE_ID);
-    setStep(STEPS.CUSTOM_TEMPLATE_EDITOR_STEP);
   };
 
   const handleCustomConfigSave = (config: DictionaryParserConfig) => {
@@ -100,8 +92,58 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
     }
   };
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
-
+  const steps = [
+    {
+      step: STEPS.SELECT_FILE_STEP,
+      content: <SelectFileStep handleFileSelect={handleFileSelect} />,
+    },
+    {
+      step: STEPS.TEMPLATE_SELECT_STEP,
+      content: (
+        <DictionaryTemplateSelector
+          selectedTemplateId={selectedTemplateId}
+          onTemplateSelect={handleTemplateSelect}
+          customTemplateId={CUSTOM_TEMPLATE_ID}
+        />
+      ),
+    },
+    {
+      step: STEPS.CUSTOM_TEMPLATE_EDITOR_STEP,
+      content: (
+        <CustomTemplateEditor
+          initialConfig={customConfig || undefined}
+          onSave={handleCustomConfigSave}
+          onTest={
+            selectedFile
+              ? (config) => testParser(selectedFile, config)
+              : undefined
+          }
+          file={selectedFile || undefined}
+        />
+      ),
+    },
+    {
+      step: STEPS.FINAL_STEP,
+      content: (
+        <FinalStep
+          handleAdd={handleAdd}
+          loading={adding}
+          onBackClick={() => {
+            if (selectedTemplateId === CUSTOM_TEMPLATE_ID) {
+              setStep(STEPS.CUSTOM_TEMPLATE_EDITOR_STEP);
+            } else {
+              setStep(STEPS.TEMPLATE_SELECT_STEP);
+            }
+          }}
+          selectedFile={selectedFile}
+          selectedTemplate={selectedTemplate}
+        />
+      ),
+    },
+  ];
+  const currentStepContent = useMemo(() => {
+    return steps.find((s) => s.step === step)?.content;
+  }, [steps, step]);
   return (
     <Modal
       isOpen={isOpen}
@@ -112,56 +154,11 @@ export const AddDictionaryModal: React.FC<AddDictionaryModalProps> = ({
       title="Add Dictionary"
       maxWidth="max-w-4xl"
     >
-      {/* Progress Steps */}
       <div className="flex items-center mb-8">
         <ProgressSteps stepsCount={STEPS.FINAL_STEP} currentStep={step} />
       </div>
 
-      {/* Step Content */}
-      <div className="min-h-[400px]">
-        {step === STEPS.SELECT_FILE_STEP && (
-          <SelectFileStep handleFileSelect={handleFileSelect} />
-        )}
-
-        {step === STEPS.TEMPLATE_SELECT_STEP && (
-          <TemplateSelector
-            templates={templates}
-            selectedTemplateId={selectedTemplateId}
-            onTemplateSelect={handleTemplateSelect}
-            onCustomTemplate={handleCustomTemplate}
-            customTemplateId={CUSTOM_TEMPLATE_ID}
-          />
-        )}
-
-        {step === STEPS.CUSTOM_TEMPLATE_EDITOR_STEP && (
-          <CustomTemplateEditor
-            initialConfig={customConfig || undefined}
-            onSave={handleCustomConfigSave}
-            onTest={
-              selectedFile
-                ? (config) => testParser(selectedFile, config)
-                : undefined
-            }
-            file={selectedFile || undefined}
-          />
-        )}
-
-        {step === STEPS.FINAL_STEP && (
-          <FinalStep
-            handleAdd={handleAdd}
-            loading={adding}
-            onBackClick={() => {
-              if (selectedTemplateId === CUSTOM_TEMPLATE_ID) {
-                setStep(STEPS.CUSTOM_TEMPLATE_EDITOR_STEP);
-              } else {
-                setStep(STEPS.TEMPLATE_SELECT_STEP);
-              }
-            }}
-            selectedFile={selectedFile}
-            selectedTemplate={selectedTemplate}
-          />
-        )}
-      </div>
+      <div className="min-h-[400px]">{currentStepContent || <></>}</div>
     </Modal>
   );
 };
