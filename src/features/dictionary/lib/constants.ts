@@ -1,13 +1,5 @@
 import { DictionaryTemplate } from "../types";
 
-
-export const CUSTOM_FN_EXAMPLE = `function parseMeanings(rawContent) {
-  // Your parsing logic here
-  return Array.isArray(rawContent) ? rawContent : [];
-}
-return parseMeanings(rawContent);
-`
-
 const BASE_SQL_QUERY = `
 SELECT
   DISTINCT *
