@@ -1,8 +1,8 @@
 import React from "react";
 
-import { EnhancedDictionaryLookup } from "@features/dictionary/ui/EnhancedDictionaryLookup";
 // TODO
 import { DictionaryManagementSystem } from "@/entities/DictionaryManagementSystem/ui";
+import { DictionaryLookup } from "@/entities/DictionaryLookup/ui";
 
 interface DictionarySystemProviderProps {
   mode: "management" | "lookup" | "both";
@@ -23,10 +23,7 @@ export const DictionarySystemProvider: React.FC<
 
       {(mode === "lookup" || mode === "both") && (
         <div className="mb-8">
-          <EnhancedDictionaryLookup
-            sentence={sentence}
-            baseBottom={baseBottom}
-          />
+          <DictionaryLookup sentence={sentence} baseBottom={baseBottom} />
         </div>
       )}
 
