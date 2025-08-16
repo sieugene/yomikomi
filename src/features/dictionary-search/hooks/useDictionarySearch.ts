@@ -5,37 +5,48 @@ import { useCallback, useMemo, useState } from "react";
 import { useStoreDictionarySearchSettings } from "../context/DictionarySearchSettingsContext";
 import { SEARCH_LIMITS } from "../lib/constants";
 
-interface DictionaryLookupState {
-  searchResults: SearchResult[];
-  loading: boolean;
-  error: string | null;
+export type PerfrormSearchResult = {
+  results: SearchResult[];
   searchStats: {
     searchTime: number;
     resultCount: number;
     uniqueWords: number;
   } | null;
-}
-
-interface UseDictionaryLookupReturn extends DictionaryLookupState {
-  performSearch: (token: string) => Promise<void>;
-  clearResults: () => void;
-  groupedResults: Array<{
+  groupedResults: {
     word: string;
     results: SearchResult[];
-  }>;
+  }[];
+};
+
+function groupResults(
+  searchResults: SearchResult[]
+): PerfrormSearchResult["groupedResults"] {
+  const groups = new Map<string, SearchResult[]>();
+
+  for (const result of searchResults) {
+    const key = result.word;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(result);
+  }
+
+  return Array.from(groups.entries())
+    .map(([word, results]) => ({
+      word,
+      results: results.sort((a, b) => b.relevanceScore - a.relevanceScore),
+    }))
+    .sort((a, b) => {
+      const maxScoreA = Math.max(...a.results.map((r) => r.relevanceScore));
+      const maxScoreB = Math.max(...b.results.map((r) => r.relevanceScore));
+      return maxScoreB - maxScoreA;
+    });
 }
 
-export const useDictionarySearch = (): UseDictionaryLookupReturn => {
+export const useDictionarySearch = () => {
   const { deepSearchMode } = useStoreDictionarySearchSettings();
   const { inited, coordinator } = useSearchCore();
   const { isReady: tokenizerReady } = useTokenizer();
-
-  const [state, setState] = useState<DictionaryLookupState>({
-    searchResults: [],
-    loading: false,
-    error: null,
-    searchStats: null,
-  });
 
   const searchSingleToken = async (
     token: string,
@@ -50,20 +61,12 @@ export const useDictionarySearch = (): UseDictionaryLookupReturn => {
     return results || [];
   };
 
-  const performSearch = async (token: string) => {
+  const performSearch = async (
+    token: string
+  ): Promise<PerfrormSearchResult> => {
     if (!tokenizerReady || !inited) {
-      setState((prev) => ({
-        ...prev,
-        error: "Dictionary system not ready",
-      }));
-      return;
+      throw new Error("Dictionary system not ready");
     }
-
-    setState((prev) => ({
-      ...prev,
-      loading: true,
-      error: null,
-    }));
 
     try {
       const searchOptions: SearchOptions = {
@@ -80,64 +83,23 @@ export const useDictionarySearch = (): UseDictionaryLookupReturn => {
 
       const uniqueWords = new Set(results.map((r) => r.word)).size;
 
-      setState((prev) => ({
-        ...prev,
-        searchResults: results,
-        loading: false,
+      return {
+        results,
         searchStats: {
           searchTime,
           resultCount: results.length,
           uniqueWords,
         },
-      }));
+        groupedResults: groupResults(results),
+      };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Search failed";
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-        searchResults: [],
-      }));
+      throw new Error(errorMessage);
     }
   };
 
-  const clearResults = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      searchResults: [],
-      error: null,
-      searchStats: null,
-    }));
-  }, []);
-
-  const groupedResults = useMemo(() => {
-    const groups = new Map<string, SearchResult[]>();
-
-    for (const result of state.searchResults) {
-      const key = result.word;
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(result);
-    }
-
-    return Array.from(groups.entries())
-      .map(([word, results]) => ({
-        word,
-        results: results.sort((a, b) => b.relevanceScore - a.relevanceScore),
-      }))
-      .sort((a, b) => {
-        const maxScoreA = Math.max(...a.results.map((r) => r.relevanceScore));
-        const maxScoreB = Math.max(...b.results.map((r) => r.relevanceScore));
-        return maxScoreB - maxScoreA;
-      });
-  }, [state.searchResults]);
-
   return {
-    ...state,
     performSearch,
-    clearResults,
-    groupedResults,
   };
 };
