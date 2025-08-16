@@ -5,13 +5,6 @@ export interface DictionaryEntry {
   meanings: string[];
 }
 
-export type SearchResultMatchType = "exact" | "partial" | "substring";
-export interface SearchResult extends DictionaryEntry {
-  source: string;
-  relevanceScore: number;
-  matchType: SearchResultMatchType;
-}
-
 export interface DictionaryMetadata {
   id: string;
   name: string;
@@ -67,11 +60,4 @@ export interface DictionaryTemplate {
   config: DictionaryParserConfig;
   downloadUrl?: string;
   example?: string;
-}
-
-export interface SearchOptions {
-  deepMode: boolean;
-  maxResults: number;
-  includePartialMatches: boolean;
-  includeSubstrings: boolean;
 }

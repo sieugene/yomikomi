@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useTokenizer } from "@features/dictionary/hooks/useTokenizerOptimized";
+import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
 import { IpadicFeatures } from "kuromoji";
 
 interface InteractiveSentenceProps {

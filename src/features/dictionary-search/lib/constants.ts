@@ -1,0 +1,14 @@
+export const SEARCH_LIMITS = {
+  FAST_MODE: {
+    MAX_TOKENS: 10,
+    MAX_RESULTS_PER_TOKEN: 15,
+    MAX_TOTAL_RESULTS: 50,
+    MAX_SUBSTRINGS: 3,
+  },
+  DEEP_MODE: {
+    MAX_TOKENS: 25,
+    MAX_RESULTS_PER_TOKEN: 30,
+    MAX_TOTAL_RESULTS: 150,
+    MAX_SUBSTRINGS: 8,
+  },
+} as const;

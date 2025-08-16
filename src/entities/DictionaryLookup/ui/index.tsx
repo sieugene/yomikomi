@@ -1,14 +1,12 @@
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
 import useClickOutside from "@/shared/hooks/useClickOutside";
-import { useDictionaryLookup } from "@features/dictionary/hooks/useDictionaryLookup";
-import { useDictionarySearch } from "@features/dictionary/hooks/useDictionarySearch";
-import { SearchOptions } from "@features/dictionary/types";
-import { IpadicFeatures } from "kuromoji";
 import { AlertCircle, Database } from "lucide-react";
-import React, { useRef, useState } from "react";
-import { LookupSettings } from "./LookupSettings";
+import React, { useRef } from "react";
+import { useDictionaryLookupStore } from "../hooks/useDictionaryLookupStore";
 import { SearchResultsPanel } from "./SearchResultsPanel";
-import { useDictionaryLookupStore } from "../hooks/useDictionaryLookup";
+import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore";
+import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
+import { useStoreDictionarySearchSettings } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
 
 interface Props {
   sentence: string;
@@ -19,13 +17,11 @@ export const DictionaryLookup: React.FC<Props> = ({
   sentence,
   baseBottom = 0,
 }) => {
+  const { engineCount, inited } = useSearchCore();
+  const { deepSearchMode } = useStoreDictionarySearchSettings();
   const {
     clear,
-    isInitialized,
-    activeEngineCount,
-    deepSearchMode,
     loading,
-    toggleDeepSearch,
     handleWordClick,
     selectedWordId,
     groupedResults,
@@ -39,7 +35,7 @@ export const DictionaryLookup: React.FC<Props> = ({
     clear();
   });
 
-  if (!isInitialized) {
+  if (!inited) {
     return (
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div className="flex items-center">
@@ -52,7 +48,7 @@ export const DictionaryLookup: React.FC<Props> = ({
     );
   }
 
-  if (activeEngineCount === 0) {
+  if (engineCount === 0) {
     return (
       <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="text-center">
@@ -68,12 +64,7 @@ export const DictionaryLookup: React.FC<Props> = ({
 
   return (
     <div className="relative">
-      <LookupSettings
-        activeEngineCount={activeEngineCount}
-        deepSearchMode={deepSearchMode}
-        loading={loading}
-        toggleDeepSearch={toggleDeepSearch}
-      />
+      <DictionaryLookupSettings />
 
       <InteractiveSentence
         sentence={sentence}
