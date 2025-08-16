@@ -1,8 +1,7 @@
-import { Database } from "lucide-react";
-import { FC } from "react";
 import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore";
-import { SearchModeToggle } from "../SearchModeToggle";
+import { Database } from "lucide-react";
 import { useStoreDictionarySearchSettings } from "../../context/DictionarySearchSettingsContext";
+import { SearchModeToggle } from "../SearchModeToggle";
 
 export const DictionaryLookupSettings = () => {
   const { engineCount } = useSearchCore();
