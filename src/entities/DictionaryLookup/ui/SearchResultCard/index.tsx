@@ -1,6 +1,6 @@
 import React from "react";
 import { Database, Clock, TrendingUp } from "lucide-react";
-import { SearchResult } from "@features/dictionary/types";
+import { SearchResult } from '@/features/dictionary-search/types';
 
 interface SearchResultCardProps {
   result: SearchResult;

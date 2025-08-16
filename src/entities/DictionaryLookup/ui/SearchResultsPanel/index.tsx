@@ -1,9 +1,9 @@
-import { SearchResult } from "@/features/dictionary/types";
 import { IpadicFeatures } from "kuromoji";
 import React from "react";
 import { MainResultStats } from "../MainResultStats";
 import { AlertCircle, BookOpen, Search } from "lucide-react";
 import { SearchResultCard } from "../SearchResultCard";
+import { SearchResult } from '@/features/dictionary-search/types';
 
 interface SearchResultsPanelProps {
   results: Array<{
