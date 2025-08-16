@@ -19,28 +19,19 @@ export class DictionarySearchCoordinator {
     }
   }
 
-  /**
-   * Поиск по одному конкретному токену во всех активных словарях
-   */
   async searchSingleToken(
     searchTerm: string,
-    options: SearchOptions,
-    activeDictionaries: string[] = []
+    options: SearchOptions
   ): Promise<SearchResult[]> {
     const promises: Promise<SearchResult[]>[] = [];
     const searchStartTime = performance.now();
 
-    // Определяем какие движки использовать
-    const enginesToUse =
-      activeDictionaries.length > 0
-        ? activeDictionaries.filter((id) => this.engines.has(id))
-        : Array.from(this.engines.keys());
+    const enginesToUse = Array.from(this.engines.keys());
 
     console.log(
       `Searching "${searchTerm}" in ${enginesToUse.length} dictionaries`
     );
 
-    // Запускаем поиск параллельно по всем словарям
     for (const dictId of enginesToUse) {
       const engine = this.engines.get(dictId);
       if (engine) {

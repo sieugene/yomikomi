@@ -1,22 +1,21 @@
-import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
 import useSWR from "swr";
-import { EnhancedDictionarySearchEngine } from "../model/enhanced-search-engine";
 import { DictionarySearchCoordinator } from "../model/search-coordinator";
-import { SearchOptions, SearchResult } from "../types";
-import { useDictionaries, useGetStoredDictionary } from "./useDictionaries";
-import { useDictionaryManager } from "./useDictionaryManager";
-import { useGetTemplate } from "./useTemplates";
+import { EnhancedDictionarySearchEngine } from "../model/enhanced-search-engine";
+import { useSqlJs } from "@/features/AnkiParser/context/SqlJsProvider";
+import {
+  useDictionaries,
+  useDictionaryManager,
+  useGetStoredDictionary,
+  useGetTemplate,
+} from "@/features/dictionary/hooks";
 
-interface UseDictionarySearchReturn {
-  activeEngineCount: number;
-  isInitialized: boolean;
-  searchSingleToken: (
-    token: string,
-    options: SearchOptions
-  ) => Promise<SearchResult[]>;
-}
-
-export const useDictionarySearch = (): UseDictionarySearchReturn => {
+type UseSearchCoreReturn = {
+  engineCount: number;
+  coordinator: DictionarySearchCoordinator | null;
+  loading: boolean;
+  inited: boolean;
+};
+export const useSearchCore = (): UseSearchCoreReturn => {
   const { sqlClient } = useSqlJs();
   const { loading: managerIsLoading, manager } = useDictionaryManager();
   const { data: dictionaries, isLoading: dictionariesIsLoading } =
@@ -26,7 +25,9 @@ export const useDictionarySearch = (): UseDictionarySearchReturn => {
   const loading = managerIsLoading || dictionariesIsLoading;
 
   // TODO app can probably dead after add new dictionaries, it's about out of memory (coordinator.clear())
-  const { data, isLoading } = useSWR(
+  const { isLoading: initLoading, data } = useSWR<
+    Pick<UseSearchCoreReturn, "engineCount" | "coordinator">
+  >(
     sqlClient && dictionaries.length > 0 && !loading && manager
       ? ["dictionary-engines", dictionaries, manager.id]
       : null,
@@ -86,25 +87,10 @@ export const useDictionarySearch = (): UseDictionarySearchReturn => {
     }
   );
 
-  const searchSingleToken = async (
-    token: string,
-    options: SearchOptions
-  ): Promise<SearchResult[]> => {
-    if (isLoading || !data?.engineCount || data.engineCount === 0) {
-      console.warn("Search coordinator not initialized");
-      return [];
-    }
-
-    const activeDictIds = dictionaries
-      .filter((d) => d.status === "active")
-      .map((d) => d.id);
-
-    return data.coordinator?.searchSingleToken(token, options, activeDictIds);
-  };
-
   return {
-    activeEngineCount: data?.engineCount ?? 0,
-    isInitialized: !isLoading && (data?.engineCount ?? 0) > 0,
-    searchSingleToken,
+    loading: initLoading || loading,
+    coordinator: data?.coordinator || null,
+    engineCount: data?.engineCount || 0,
+    inited: !!data,
   };
 };

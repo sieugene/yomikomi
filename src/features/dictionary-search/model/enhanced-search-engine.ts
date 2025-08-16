@@ -2,10 +2,12 @@ import type { Database, SqlJsStatic, SqlValue } from "sql.js";
 import {
   DictionaryEntry,
   DictionaryParserConfig,
-  SearchResult,
-  SearchOptions,
-} from "../types";
-import { SearchTermGenerator, RelevanceCalculator } from "../lib/search-utils";
+} from "../../dictionary/types";
+import {
+  SearchTermGenerator,
+  RelevanceCalculator,
+} from "../lib/search-utils";
+import { SearchOptions, SearchResult } from "../types";
 import { SEARCH_LIMITS } from "../lib/constants";
 
 export class EnhancedDictionarySearchEngine {
@@ -14,7 +16,7 @@ export class EnhancedDictionarySearchEngine {
   private dictionaryName: string;
 
   constructor(
-    private sqlClient: SqlJsStatic,
+    private readonly sqlClient: SqlJsStatic,
     dbFile: ArrayBuffer,
     config: DictionaryParserConfig,
     dictionaryName: string
@@ -41,7 +43,6 @@ export class EnhancedDictionarySearchEngine {
       ? SEARCH_LIMITS.DEEP_MODE
       : SEARCH_LIMITS.FAST_MODE;
 
-    // Генерируем все поисковые термины для данного токена
     const searchTerms = options.includeSubstrings
       ? SearchTermGenerator.generateSearchTerms(searchTerm, {
           maxSubstrings: limits.MAX_SUBSTRINGS,
@@ -136,6 +137,7 @@ export class EnhancedDictionarySearchEngine {
 
   private buildSearchQuery(options: SearchOptions): string {
     if (options.includePartialMatches) {
+      // TODO
       return `
         SELECT DISTINCT * FROM terms 
         WHERE "0" = ? 
@@ -188,8 +190,8 @@ export class EnhancedDictionarySearchEngine {
           try {
             meanings = Array.isArray(rawMeanings)
               ? rawMeanings
-              // TODO rawMeanings is?
-              : JSON.parse(rawMeanings as unknown as string);
+              : // TODO rawMeanings is?
+                JSON.parse(rawMeanings as unknown as string);
           } catch {
             meanings = [];
           }
