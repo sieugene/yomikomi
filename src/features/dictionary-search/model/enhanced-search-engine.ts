@@ -87,9 +87,11 @@ export class EnhancedDictionarySearchEngine {
   public hasTokenBulk(tokens: string[]): DictionaryEntry[] {
     if (!tokens.length) return [];
     try {
-      // TODO
+      // TODO dynamic way for getting table name, is good ?
+      const match = this.config.sqlQuery.match(/FROM\s+([^\s;]+)/i);
+      const tableName = match ? match[1] : null;
       const placeholders = tokens.map(() => "?").join(",");
-      const query = `SELECT * FROM terms WHERE "0" IN (${placeholders})`;
+      const query = `SELECT * FROM ${tableName} WHERE "${this.config.columnMapping.word}" IN (${placeholders})`;
       const stmt = this.db.prepare(query);
       stmt.bind(tokens);
 
