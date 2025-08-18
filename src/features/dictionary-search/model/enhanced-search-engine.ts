@@ -84,27 +84,27 @@ export class EnhancedDictionarySearchEngine {
     return this.deduplicateAndSort(results).slice(0, options.maxResults);
   }
 
-  public hasToken(token: string): DictionaryEntry | null {
-    // TODO !!!! (new field for template? Like sql tokenize pattern or smth)
+  public hasTokenBulk(tokens: string[]): DictionaryEntry[] {
+    if (!tokens.length) return [];
     try {
-      const query = `SELECT * FROM terms WHERE "0" = ? LIMIT 1`;
+      // TODO
+      const placeholders = tokens.map(() => "?").join(",");
+      const query = `SELECT * FROM terms WHERE "0" IN (${placeholders})`;
       const stmt = this.db.prepare(query);
-      stmt.bind([token]);
+      stmt.bind(tokens);
 
-      if (stmt.step()) {
+      const results: DictionaryEntry[] = [];
+      while (stmt.step()) {
         const row = stmt.getAsObject();
-        stmt.free();
-        return this.parseEntry(Object.values(row));
+        const entry = this.parseEntry(Object.values(row));
+        if (entry) results.push(entry);
       }
 
       stmt.free();
-      return null;
+      return results;
     } catch (error) {
-      console.warn(
-        `hasToken error for "${token}" in ${this.dictionaryName}:`,
-        error
-      );
-      return null;
+      console.warn(`hasTokenBulk error:`, error);
+      return [];
     }
   }
 

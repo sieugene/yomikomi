@@ -24,10 +24,8 @@ export class DictionarySearchCoordinator {
     const results: DictionaryEntry[] = [];
 
     for (const dict of this.engines.values()) {
-      for (const token of tokens) {
-        const entry = dict.hasToken(token);
-        if (entry) results.push(entry);
-      }
+      const entries = dict.hasTokenBulk(tokens);
+      if (entries.length > 0) results.push(...entries);
     }
 
     return results;
