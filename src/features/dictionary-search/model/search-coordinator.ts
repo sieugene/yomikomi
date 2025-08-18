@@ -1,3 +1,4 @@
+import { DictionaryEntry } from "@/features/dictionary/types";
 import { SEARCH_LIMITS } from "../lib/constants";
 import { SearchOptions, SearchResult } from "../types";
 import { EnhancedDictionarySearchEngine } from "./enhanced-search-engine";
@@ -17,6 +18,19 @@ export class DictionarySearchCoordinator {
       engine.close();
       this.engines.delete(dictId);
     }
+  }
+
+  public async checkTokensAsync(tokens: string[]): Promise<DictionaryEntry[]> {
+    const results: DictionaryEntry[] = [];
+
+    for (const dict of this.engines.values()) {
+      for (const token of tokens) {
+        const entry = dict.hasToken(token);
+        if (entry) results.push(entry);
+      }
+    }
+
+    return results;
   }
 
   async searchSingleToken(

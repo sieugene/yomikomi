@@ -3,10 +3,7 @@ import {
   DictionaryEntry,
   DictionaryParserConfig,
 } from "../../dictionary/types";
-import {
-  SearchTermGenerator,
-  RelevanceCalculator,
-} from "../lib/search-utils";
+import { SearchTermGenerator, RelevanceCalculator } from "../lib/search-utils";
 import { SearchOptions, SearchResult } from "../types";
 import { SEARCH_LIMITS } from "../lib/constants";
 
@@ -85,6 +82,30 @@ export class EnhancedDictionarySearchEngine {
 
     // Сортируем по релевантности и убираем дубли по ключу word+reading
     return this.deduplicateAndSort(results).slice(0, options.maxResults);
+  }
+
+  public hasToken(token: string): DictionaryEntry | null {
+    // TODO !!!! (new field for template? Like sql tokenize pattern or smth)
+    try {
+      const query = `SELECT * FROM terms WHERE "0" = ? LIMIT 1`;
+      const stmt = this.db.prepare(query);
+      stmt.bind([token]);
+
+      if (stmt.step()) {
+        const row = stmt.getAsObject();
+        stmt.free();
+        return this.parseEntry(Object.values(row));
+      }
+
+      stmt.free();
+      return null;
+    } catch (error) {
+      console.warn(
+        `hasToken error for "${token}" in ${this.dictionaryName}:`,
+        error
+      );
+      return null;
+    }
   }
 
   private executeSingleTermSearch(

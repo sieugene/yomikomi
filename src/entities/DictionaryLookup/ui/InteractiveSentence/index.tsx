@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React, { FC, useMemo } from "react";
 import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
 import { IpadicFeatures } from "kuromoji";
+import useSWR from "swr";
 
 interface InteractiveSentenceProps {
   sentence: string;
@@ -17,10 +18,15 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 }) => {
   const { tokenizeText, isReady } = useTokenizer();
 
-  const tokens = useMemo(() => {
-    if (!isReady || !sentence) return [];
-    return tokenizeText(sentence) || [];
-  }, [isReady, sentence, tokenizeText]);
+  const { data, isLoading, error } = useSWR(
+    sentence && isReady ? ["tokenize", sentence] : null,
+    async () => {
+      if (!tokenizeText || !sentence) return null;
+      const result = await tokenizeText(sentence);
+      return result;
+    },
+    { revalidateOnFocus: false }
+  );
 
   if (!isReady) {
     return (
@@ -33,9 +39,45 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
   }
 
   return (
+    <>
+      <h2>Kuromoji</h2>
+      {data?.base && (
+        <Tokens
+          tokens={data?.base}
+          onWordClick={onWordClick}
+          sentence={sentence}
+          className={className}
+          selectedWordId={selectedWordId}
+        />
+      )}
+      <h2>Kuromoji + dict</h2>
+      {data?.extended && (
+        <Tokens
+          tokens={data?.extended}
+          onWordClick={onWordClick}
+          sentence={sentence}
+          className={className}
+          selectedWordId={selectedWordId}
+        />
+      )}
+    </>
+  );
+};
+
+type TokensProps = {
+  tokens: IpadicFeatures[];
+} & InteractiveSentenceProps;
+const Tokens: FC<TokensProps> = ({
+  tokens,
+  className,
+  onWordClick,
+  selectedWordId,
+  sentence,
+}) => {
+  return (
     <div className={`p-4 bg-white rounded-lg border ${className}`}>
       <div className="flex flex-wrap gap-1">
-        {tokens.length > 0 ? (
+        {tokens && tokens.length > 0 ? (
           tokens.map((token, index) => (
             <span
               key={index}
@@ -59,7 +101,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
         )}
       </div>
 
-      {tokens.length > 0 && (
+      {tokens && tokens.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
           Click on any word to look up its meaning • {tokens.length} tokens
           parsed
