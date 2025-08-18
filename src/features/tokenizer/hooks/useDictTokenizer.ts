@@ -2,7 +2,7 @@ import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore"
 import { DictionaryEntry } from "@/features/dictionary/types";
 import { IpadicFeatures } from "kuromoji";
 
-const MAX_NGRAM_LENGTH = 3
+const MAX_NGRAM_LENGTH = 3;
 
 function generateTokenCombinations(tokens: string[], maxN = MAX_NGRAM_LENGTH) {
   const combinations: string[] = [];
@@ -21,44 +21,45 @@ function uniqueArray(arr: string[]): string[] {
   return Array.from(new Set(arr));
 }
 
+// types
+export type DisplayToken = IpadicFeatures & {
+  source: "kuromoji" | "dict";
+};
+
+// merge
 function mergeTokensAsIpadic(
   tokens: IpadicFeatures[],
   dictionaryEntries: DictionaryEntry[]
-): IpadicFeatures[] {
+): DisplayToken[] {
   const wordMap = new Map<string, DictionaryEntry>();
   dictionaryEntries.forEach((entry) => wordMap.set(entry.word, entry));
 
-  const merged: IpadicFeatures[] = [];
+  const merged: DisplayToken[] = [];
   let i = 0;
 
   while (i < tokens.length) {
     let found = false;
 
-    for (let n = 3; n > 0; n--) {
+    for (let n = MAX_NGRAM_LENGTH; n > 0; n--) {
       if (i + n - 1 >= tokens.length) continue;
 
-      const combined = tokens
-        .slice(i, i + n)
+      const slice = tokens.slice(i, i + n);
+      const combinedBasic = slice
         .map((t) => t.basic_form || t.surface_form)
         .join("");
+      const combinedSurface = slice.map((t) => t.surface_form).join("");
 
-      const entry = wordMap.get(combined);
+      const entry = wordMap.get(combinedBasic);
       if (entry) {
-        const firstToken = tokens[i];
+        const firstToken = slice[0];
 
         merged.push({
-          word_id: firstToken.word_id, // можно сгенерировать уникальный, если нужно
+          ...firstToken,
+          surface_form: combinedSurface,
+          basic_form: combinedBasic,
           word_type: "KNOWN",
-          word_position: firstToken.word_position,
-          surface_form: combined,
-          pos: firstToken.pos,
-          pos_detail_1: firstToken.pos_detail_1,
-          pos_detail_2: firstToken.pos_detail_2,
-          pos_detail_3: firstToken.pos_detail_3,
-          conjugated_type: firstToken.conjugated_type,
-          conjugated_form: firstToken.conjugated_form,
-          basic_form: combined,
-          reading: entry.reading || undefined,
+          reading: entry.reading || firstToken.reading,
+          source: "dict",
         });
 
         i += n;
@@ -68,7 +69,7 @@ function mergeTokensAsIpadic(
     }
 
     if (!found) {
-      merged.push(tokens[i]);
+      merged.push({ ...tokens[i], source: "kuromoji" });
       i += 1;
     }
   }
@@ -78,15 +79,16 @@ function mergeTokensAsIpadic(
 
 export const useDictTokenizer = () => {
   const { coordinator } = useSearchCore();
-  const onFill = async (tokens: IpadicFeatures[]) => {
+
+  const onFill = async (tokens: IpadicFeatures[]): Promise<DisplayToken[]> => {
     const by_basic = tokens.map((t) => t.basic_form);
-    const combinations = uniqueArray(generateTokenCombinations(by_basic, 2)); // пары токенов
+    const combinations = uniqueArray(generateTokenCombinations(by_basic));
 
     if (coordinator) {
       const foundEntries = await coordinator.checkTokensAsync(combinations);
       return mergeTokensAsIpadic(tokens, foundEntries);
     }
-    return tokens;
+    return [];
   };
 
   return { onFill };

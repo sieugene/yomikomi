@@ -2,6 +2,7 @@ import React, { FC, useMemo } from "react";
 import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
 import { IpadicFeatures } from "kuromoji";
 import useSWR from "swr";
+import { DisplayToken } from "@/features/tokenizer/hooks/useDictTokenizer";
 
 interface InteractiveSentenceProps {
   sentence: string;
@@ -40,20 +41,9 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 
   return (
     <>
-      <h2>Kuromoji</h2>
-      {data?.base && (
+      {data && data.length && (
         <Tokens
-          tokens={data?.base}
-          onWordClick={onWordClick}
-          sentence={sentence}
-          className={className}
-          selectedWordId={selectedWordId}
-        />
-      )}
-      <h2>Kuromoji + dict</h2>
-      {data?.extended && (
-        <Tokens
-          tokens={data?.extended}
+          tokens={data}
           onWordClick={onWordClick}
           sentence={sentence}
           className={className}
@@ -65,7 +55,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 };
 
 type TokensProps = {
-  tokens: IpadicFeatures[];
+  tokens: DisplayToken[];
 } & InteractiveSentenceProps;
 const Tokens: FC<TokensProps> = ({
   tokens,
@@ -74,6 +64,9 @@ const Tokens: FC<TokensProps> = ({
   selectedWordId,
   sentence,
 }) => {
+  const dictCount = tokens.filter((t) => t.source === "dict").length;
+  const kuromojiCount = tokens.length - dictCount;
+
   return (
     <div className={`p-4 bg-white rounded-lg border ${className}`}>
       <div className="flex flex-wrap gap-1">
@@ -85,13 +78,11 @@ const Tokens: FC<TokensProps> = ({
               className={`cursor-pointer px-1 py-0.5 rounded transition-all duration-200 border-b-2 ${
                 selectedWordId === token.word_id
                   ? "bg-blue-200 border-blue-500 text-blue-900"
-                  : "border-transparent hover:bg-blue-100 hover:border-blue-300"
+                  : token.source === "dict"
+                  ? "border-green-500 hover:bg-green-100"
+                  : "border-blue-500 hover:bg-blue-100"
               }`}
-              title={`${token.basic_form || token.surface_form} (${
-                // TODO
-                // token.part_of_speech || "unknown"
-                "unknown"
-              })`}
+              title={`${token.basic_form || token.surface_form} (unknown)`}
             >
               {token.surface_form}
             </span>
@@ -103,8 +94,8 @@ const Tokens: FC<TokensProps> = ({
 
       {tokens && tokens.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
-          Click on any word to look up its meaning • {tokens.length} tokens
-          parsed
+          Kuromoji: {kuromojiCount} words • Dict: {dictCount} words • Total:{" "}
+          {tokens.length}
         </div>
       )}
     </div>

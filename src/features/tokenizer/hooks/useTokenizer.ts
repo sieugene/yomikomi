@@ -1,19 +1,13 @@
 import useSWR from "swr";
-import { IpadicFeatures } from "kuromoji";
 import { KuromojiTokenizer } from "../model/KuromojiTokenizer";
-import { useDictTokenizer } from "./useDictTokenizer";
+import { DisplayToken, useDictTokenizer } from "./useDictTokenizer";
 
 interface TokenizerHookReturn {
   tokenizer: KuromojiTokenizer | null;
   isReady: boolean;
   error: string | null;
-  tokenizeText: (text: string) => Promise<TokenizeRes>;
+  tokenizeText: (text: string) => Promise<DisplayToken[]>;
 }
-
-export type TokenizeRes = {
-  base: IpadicFeatures[];
-  extended: IpadicFeatures[];
-};
 
 export const useTokenizer = (): TokenizerHookReturn => {
   const {
@@ -28,21 +22,15 @@ export const useTokenizer = (): TokenizerHookReturn => {
 
   const { onFill } = useDictTokenizer();
 
-  const tokenizeText = async (text: string): Promise<TokenizeRes> => {
-    if (!tokenizer) return { base: [], extended: [] };
+  const tokenizeText = async (text: string): Promise<DisplayToken[]> => {
+    if (!tokenizer) return [];
     try {
       const tokeniRes = tokenizer.tokenize(text);
       const tokenizeText = await onFill(tokeniRes);
-      return {
-        base: tokeniRes,
-        extended: tokenizeText,
-      };
+      return tokenizeText;
     } catch (err) {
       console.error("Tokenization error:", err);
-      return {
-        base: [],
-        extended: [],
-      };
+      return [];
     }
   };
 
