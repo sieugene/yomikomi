@@ -1,9 +1,7 @@
-import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
-import { SearchOptions, SearchResult } from "../types";
-import { useSearchCore } from "./useSearchCore";
-import { useCallback, useMemo, useState } from "react";
 import { useStoreDictionarySearchSettings } from "../context/DictionarySearchSettingsContext";
 import { SEARCH_LIMITS } from "../lib/constants";
+import { SearchOptions, SearchResult } from "../types";
+import { useSearchCore } from "./useSearchCore";
 
 export type PerfrormSearchResult = {
   results: SearchResult[];
@@ -46,7 +44,6 @@ function groupResults(
 export const useDictionarySearch = () => {
   const { deepSearchMode } = useStoreDictionarySearchSettings();
   const { inited, coordinator } = useSearchCore();
-  const { isReady: tokenizerReady } = useTokenizer();
 
   const searchSingleToken = async (
     token: string,
@@ -64,7 +61,7 @@ export const useDictionarySearch = () => {
   const performSearch = async (
     token: string
   ): Promise<PerfrormSearchResult> => {
-    if (!tokenizerReady || !inited) {
+    if (!inited) {
       throw new Error("Dictionary system not ready");
     }
 
