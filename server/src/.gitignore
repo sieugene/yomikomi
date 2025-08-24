@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+.env/
+env/
+.venv/
+virtualenv/
+
+# Python package dependencies
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.whl
+
+# Docker
+*.dockerignore
+docker-compose.override.yml
+*.log
+Dockerfile.bak
+
+# PaddleOCR model files and caches
+.paddleocr/
+paddleocr_model/
+*.cache
+*.paddle
+
+# FastAPI and Uvicorn
+*.log
+uvicorn.log
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Test and coverage reports
+.coverage
+coverage.xml
+*.cover
+htmlcov/
+
+# Environment variables
+.env
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Miscellaneous
+*.pid
+*.seed
+*.pid.lock
+*.log

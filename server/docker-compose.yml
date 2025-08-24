@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  paddleocr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Tokyo
+      - OCR_LANG=japan
+      - USE_GPU=${USE_GPU:-false}
+    volumes:
+      - ./src:/app
