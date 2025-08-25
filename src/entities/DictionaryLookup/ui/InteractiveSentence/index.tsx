@@ -1,8 +1,8 @@
-import React, { FC, useMemo } from "react";
+import { DisplayToken } from "@/features/tokenizer/hooks/useDictTokenizer";
 import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
 import { IpadicFeatures } from "kuromoji";
+import React, { FC } from "react";
 import useSWR from "swr";
-import { DisplayToken } from "@/features/tokenizer/hooks/useDictTokenizer";
 
 interface InteractiveSentenceProps {
   sentence: string;
@@ -19,7 +19,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 }) => {
   const { tokenizeText, isReady } = useTokenizer();
 
-  const { data, isLoading, error } = useSWR(
+  const { data } = useSWR(
     sentence && isReady ? ["tokenize", sentence] : null,
     async () => {
       if (!tokenizeText || !sentence) return null;
