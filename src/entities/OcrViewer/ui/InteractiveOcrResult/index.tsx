@@ -1,12 +1,12 @@
 import { Copy, Download } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
-import { ImageWithTextOverlays } from "./ImageWithTextOverlays";
-import { TextBlocksList } from "./TextBlocksList";
+import { ImageWithTextOverlays } from "../ImageWithTextOverlays";
+import { TextBlocksList } from "../TextBlocksList";
 
 import { OCRResponse } from "@/features/ocr/types";
-import { useDownloadText } from "../hooks/useDownloadText";
-import { useInteractiveOcr } from "../hooks/useInteractiveOcr";
-import { useOcrCopy } from "../hooks/useOcrCopy";
+import { useDownloadText } from "../../hooks/useDownloadText";
+import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
+import { useOcrCopy } from "../../hooks/useOcrCopy";
 
 type Props = {
   imageUrl: string;
