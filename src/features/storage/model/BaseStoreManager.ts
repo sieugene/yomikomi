@@ -28,6 +28,10 @@ export abstract class BaseStoreManager<T> {
     });
   }
 
+  public getDb() {
+    return this.db;
+  }
+
   async save(data: T): Promise<string> {
     if (!this.db) await this.init();
 

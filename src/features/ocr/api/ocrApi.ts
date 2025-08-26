@@ -1,23 +1,17 @@
 import { OCRResponse } from "../types";
 
-const OCR_BASE_URL = "http://localhost:8000";
-
 export class OCRApi {
   static async performOCRWithPositions(
     file: File,
-    // TODO temporarily allow custom endpoint for testing purposes
-    _api_endpoint?: string
+    api_endpoint: string
   ): Promise<OCRResponse> {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(
-      `${_api_endpoint || OCR_BASE_URL}/ocr/with-positions/`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
+    const response = await fetch(`${api_endpoint}/ocr/with-positions/`, {
+      method: "POST",
+      body: formData,
+    });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -29,11 +23,14 @@ export class OCRApi {
     return await response.json();
   }
 
-  static async performOCR(file: File): Promise<{ text: string }> {
+  static async performOCR(
+    file: File,
+    api_endpoint: string
+  ): Promise<{ text: string }> {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(`${OCR_BASE_URL}/ocr/`, {
+    const response = await fetch(`${api_endpoint}/ocr/`, {
       method: "POST",
       body: formData,
     });
