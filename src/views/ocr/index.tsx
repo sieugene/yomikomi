@@ -1,16 +1,13 @@
-import { OCRCatalogAlbum } from "@/features/ocr-catalog/types";
-import { AlbumList } from "@/features/ocr-catalog/ui/AlbumList";
-import { AlbumViewer } from "@/features/ocr-catalog/ui/AlbumViewer";
-import { BatchUpload } from "@/features/ocr-catalog/ui/BatchUpload";
-import { ProgressTracker } from "@/features/ocr-catalog/ui/ProgressTracker";
+import { AlbumList } from "@/features/ocr-album/ui/AlbumList";
+import { BatchUpload } from "@/features/ocr-album/ui/BatchUpload";
+import { ProgressTracker } from "@/features/ocr-album/ui/ProgressTracker";
 import { OCRSettingsPanel } from "@/features/ocr-settings/ui";
+import { ROUTES } from "@/shared/routes";
+import { redirect } from "next/navigation";
 
 import React, { useState } from "react";
 
 export const OCRPage: React.FC = () => {
-  const [selectedAlbumId, setSelectedAlbumId] = useState<
-    OCRCatalogAlbum["id"] | null
-  >(null);
   const [settingsIsOpen, setSettingsIsOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -37,10 +34,9 @@ export const OCRPage: React.FC = () => {
         <ProgressTracker />
         <AlbumList
           onAlbumSelect={(album) => {
-            setSelectedAlbumId(album.id);
+            redirect(ROUTES.album({ albumId: album.id, page: 1 }));
           }}
         />
-        <AlbumViewer albumId={selectedAlbumId} />
       </div>
     </div>
   );

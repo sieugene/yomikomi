@@ -1,7 +1,7 @@
 import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
-import { OCRCatalogAlbum, OCRCatalogImage } from "../types";
+import { OCRAlbumAlbum, OCRAlbumImage } from "../types";
 
-const DB_NAME = "OCRCatalogDB";
+const DB_NAME = "OCRAlbumDB";
 const DB_VERSION = 1;
 const ALBUMS_STORE = "albums";
 const IMAGES_STORE = "images";
@@ -12,15 +12,15 @@ interface StoredFile {
   file: File;
 }
 
-class AlbumStore extends BaseStoreManager<OCRCatalogAlbum> {}
-class ImageStore extends BaseStoreManager<OCRCatalogImage> {}
+class AlbumStore extends BaseStoreManager<OCRAlbumAlbum> {}
+class ImageStore extends BaseStoreManager<OCRAlbumImage> {}
 class FileStore extends BaseStoreManager<StoredFile> {
   protected asFile(data: StoredFile): File | null {
     return data.file;
   }
 }
 
-export class OCRCatalogIndexedDB {
+export class OCRAlbumIndexedDB {
   private albums: AlbumStore;
   private images: ImageStore;
   private files: FileStore;
@@ -62,19 +62,19 @@ export class OCRCatalogIndexedDB {
     ]);
   }
 
-  createAlbum(album: OCRCatalogAlbum) {
+  createAlbum(album: OCRAlbumAlbum) {
     return this.albums.save(album);
   }
 
-  updateAlbum(album: OCRCatalogAlbum) {
+  updateAlbum(album: OCRAlbumAlbum) {
     return this.albums.save(album);
   }
 
-  getAlbum(albumId: string): Promise<OCRCatalogAlbum | null> {
+  getAlbum(albumId: string): Promise<OCRAlbumAlbum | null> {
     return this.albums.get(albumId);
   }
 
-  async getAllAlbums(): Promise<OCRCatalogAlbum[]> {
+  async getAllAlbums(): Promise<OCRAlbumAlbum[]> {
     const albums = await this.albums.list();
     return albums.sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
   }
@@ -89,15 +89,15 @@ export class OCRCatalogIndexedDB {
     await this.albums.delete(albumId);
   }
 
-  createImage(image: OCRCatalogImage) {
+  createImage(image: OCRAlbumImage) {
     return this.images.save(image);
   }
 
-  updateImage(image: OCRCatalogImage) {
+  updateImage(image: OCRAlbumImage) {
     return this.images.save(image);
   }
 
-  async getAlbumImages(albumId: string): Promise<OCRCatalogImage[]> {
+  async getAlbumImages(albumId: string): Promise<OCRAlbumImage[]> {
     return new Promise((resolve, reject) => {
       const tx = this.images.getDb()!.transaction(IMAGES_STORE, "readonly");
 

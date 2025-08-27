@@ -1,14 +1,14 @@
 import { Modal } from "@/shared/ui/Modal";
 import { AlertCircle, FileImage, FolderPlus, Upload } from "lucide-react";
 import React, { useCallback, useState } from "react";
-import { useOCRCatalog } from "../../context/OCRCatalogContext";
+import { useOCRAlbum } from "../../context/OCRAlbumContext";
 
 interface BatchUploadProps {
   onComplete?: (albumId: string) => void;
 }
 
 export const BatchUpload: React.FC<BatchUploadProps> = ({ onComplete }) => {
-  const { createAlbum } = useOCRCatalog();
+  const { createAlbum } = useOCRAlbum();
   const [isOpen, setIsOpen] = useState(false);
   const [albumName, setAlbumName] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
