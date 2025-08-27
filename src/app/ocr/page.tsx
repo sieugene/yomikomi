@@ -1,17 +1,17 @@
 "use client";
 import { ApplicationContext } from "@/application/client/context/ApplicationContext";
-import { OCRCatalogProvider } from "@/features/ocr-catalog/context/OCRCatalogContext";
+import { OCRAlbumProvider } from "@/features/ocr-album/context/OCRAlbumContext";
 import { OCRSettingsProvider } from "@/features/ocr-settings/context/OCRSettingsContext";
 import { OCRPage } from "@/views/ocr";
 
 export default function Page() {
   return (
     <OCRSettingsProvider>
-      <OCRCatalogProvider>
+      <OCRAlbumProvider>
         <ApplicationContext>
           <OCRPage />
         </ApplicationContext>
-      </OCRCatalogProvider>
+      </OCRAlbumProvider>
     </OCRSettingsProvider>
   );
 }

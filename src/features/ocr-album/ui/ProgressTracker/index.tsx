@@ -1,9 +1,9 @@
 import React from "react";
 import { X, Clock, CheckCircle, XCircle, Pause } from "lucide-react";
-import { useOCRCatalog } from "../../context/OCRCatalogContext";
+import { useOCRAlbum } from "../../context/OCRAlbumContext";
 
 export const ProgressTracker: React.FC = () => {
-  const { batchProgress, cancelBatchProcessing } = useOCRCatalog();
+  const { batchProgress, cancelBatchProcessing } = useOCRAlbum();
 
   if (!batchProgress) return null;
 

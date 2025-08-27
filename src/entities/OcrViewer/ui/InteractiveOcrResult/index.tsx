@@ -7,6 +7,7 @@ import { OCRResponse } from "@/features/ocr/types";
 import { useDownloadText } from "../../hooks/useDownloadText";
 import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
 import { useOcrCopy } from "../../hooks/useOcrCopy";
+import { DictionaryLookup } from "@/entities/DictionaryLookup/ui";
 
 type Props = {
   imageUrl: string;
@@ -47,6 +48,10 @@ export const InteractiveOcrResult: React.FC<Props> = ({
             <div className="text-xs text-blue-600 mt-1">
               Confidence: {(selectedTextBlock.confidence * 100).toFixed(1)}%
             </div>
+            <DictionaryLookup
+              sentence={selectedTextBlock.text}
+              baseBottom={0}
+            />
           </div>
         )}
       </div>

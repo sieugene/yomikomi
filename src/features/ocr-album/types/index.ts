@@ -1,6 +1,6 @@
 import { OCRResponse } from "@/features/ocr/types";
 
-export interface OCRCatalogImage {
+export interface OCRAlbumImage {
   id: string;
   filename: string;
   originalFile: File;
@@ -14,7 +14,7 @@ export interface OCRCatalogImage {
   albumId: string;
 }
 
-export interface OCRCatalogAlbum {
+export interface OCRAlbumAlbum {
   id: string;
   name: string;
   createdAt: Date;
@@ -36,13 +36,14 @@ export interface BatchProcessingProgress {
   completedAt?: Date;
 }
 
-export interface OCRCatalogContextType {
-  albums: OCRCatalogAlbum[];
-  currentAlbum: OCRCatalogAlbum | null;
+export interface OCRAlbumContextType {
+  isDbReady: boolean
+  albums: OCRAlbumAlbum[];
+  currentAlbum: OCRAlbumAlbum | null;
   batchProgress: BatchProcessingProgress | null;
   createAlbum: (name: string, files: File[]) => Promise<string>;
-  getAlbum: (albumId: string) => Promise<OCRCatalogAlbum | null>;
-  getAlbumImages: (albumId: string) => Promise<OCRCatalogImage[]>;
+  getAlbum: (albumId: string) => Promise<OCRAlbumAlbum | null>;
+  getAlbumImages: (albumId: string) => Promise<OCRAlbumImage[]>;
   deleteAlbum: (albumId: string) => Promise<void>;
   startBatchProcessing: (albumId: string) => Promise<void>;
   cancelBatchProcessing: () => void;

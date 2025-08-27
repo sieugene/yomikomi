@@ -8,16 +8,16 @@ import {
   AlertCircle,
   Image,
 } from "lucide-react";
-import { useOCRCatalog } from "../../context/OCRCatalogContext";
-import { OCRCatalogAlbum } from "../../types";
+import { useOCRAlbum } from "../../context/OCRAlbumContext";
+import { OCRAlbumAlbum } from "../../types";
 
 interface AlbumListProps {
-  onAlbumSelect: (album: OCRCatalogAlbum) => void;
+  onAlbumSelect: (album: OCRAlbumAlbum) => void;
 }
 
 export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
   const { albums, deleteAlbum, startBatchProcessing, batchProgress } =
-    useOCRCatalog();
+    useOCRAlbum();
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -29,7 +29,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }).format(new Date(date));
   };
 
-  const getStatusIcon = (status: OCRCatalogAlbum["status"]) => {
+  const getStatusIcon = (status: OCRAlbumAlbum["status"]) => {
     switch (status) {
       case "completed":
         return <CheckCircle className="w-4 h-4 text-green-600" />;
@@ -45,7 +45,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  const getStatusText = (album: OCRCatalogAlbum) => {
+  const getStatusText = (album: OCRAlbumAlbum) => {
     switch (album.status) {
       case "completed":
         return `Completed (${album.processedImages}/${album.totalImages})`;
@@ -59,7 +59,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  const canStartProcessing = (album: OCRCatalogAlbum) => {
+  const canStartProcessing = (album: OCRAlbumAlbum) => {
     return (
       album.status !== "processing" &&
       album.processedImages < album.totalImages &&
@@ -67,7 +67,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     );
   };
 
-  const handleStartProcessing = async (album: OCRCatalogAlbum) => {
+  const handleStartProcessing = async (album: OCRAlbumAlbum) => {
     try {
       await startBatchProcessing(album.id);
     } catch (error) {
@@ -75,7 +75,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  const handleDelete = async (album: OCRCatalogAlbum) => {
+  const handleDelete = async (album: OCRAlbumAlbum) => {
     if (
       !window.confirm(
         `Are you sure you want to delete "${album.name}" and all its images?`

@@ -1,12 +1,12 @@
 import { FC, useEffect, useState } from "react";
 
 import { InteractiveOcrResult } from "@/entities/OcrViewer/ui/InteractiveOcrResult";
-import { OCRCatalogImage } from "@/features/ocr-catalog/types";
+import { OCRAlbumImage } from "@/features/ocr-album/types";
 import { CopyFeedback } from "./CopyFeedback";
 import { OcrFailure } from "./OcrFailure";
 
 type Props = {
-  data: OCRCatalogImage;
+  data: OCRAlbumImage;
 };
 export const OcrViewer: FC<Props> = ({ data }) => {
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);

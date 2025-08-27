@@ -7,28 +7,26 @@ import React, {
   useRef,
 } from "react";
 import {
-  OCRCatalogContextType,
-  OCRCatalogAlbum,
-  OCRCatalogImage,
+  OCRAlbumContextType,
+  OCRAlbumAlbum,
+  OCRAlbumImage,
   BatchProcessingProgress,
 } from "../types";
-import { OCRCatalogIndexedDB } from "../services/indexedDbService";
+import { OCRAlbumIndexedDB } from "../services/indexedDbService";
 import { OCRApi } from "@/features/ocr/api/ocrApi";
 import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
 
-const OCRCatalogContext = createContext<OCRCatalogContextType | undefined>(
+const OCRAlbumContext = createContext<OCRAlbumContextType | undefined>(
   undefined
 );
 
-export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
+export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { settings } = useOCRSettings();
-  const db = useRef(new OCRCatalogIndexedDB());
-  const [albums, setAlbums] = useState<OCRCatalogAlbum[]>([]);
-  const [currentAlbum, setCurrentAlbum] = useState<OCRCatalogAlbum | null>(
-    null
-  );
+  const db = useRef(new OCRAlbumIndexedDB());
+  const [albums, setAlbums] = useState<OCRAlbumAlbum[]>([]);
+  const [currentAlbum, setCurrentAlbum] = useState<OCRAlbumAlbum | null>(null);
   const [batchProgress, setBatchProgress] =
     useState<BatchProcessingProgress | null>(null);
   const [isDbReady, setIsDbReady] = useState(false);
@@ -41,7 +39,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsDbReady(true);
         loadAlbums();
       } catch (error) {
-        console.error("Failed to initialize OCR Catalog database:", error);
+        console.error("Failed to initialize OCR Album database:", error);
       }
     };
 
@@ -75,7 +73,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
       .substr(2, 9)}`;
     const now = new Date();
 
-    const album: OCRCatalogAlbum = {
+    const album: OCRAlbumAlbum = {
       id: albumId,
       name,
       createdAt: now,
@@ -90,7 +88,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
     const sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name));
 
     // Create images with order based on filename
-    const images: OCRCatalogImage[] = sortedFiles.map((file, index) => ({
+    const images: OCRAlbumImage[] = sortedFiles.map((file, index) => ({
       id: `image_${albumId}_${index}`,
       filename: generateFilename(file.name, index),
       originalFile: file,
@@ -120,14 +118,12 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const getAlbum = async (albumId: string): Promise<OCRCatalogAlbum | null> => {
+  const getAlbum = async (albumId: string): Promise<OCRAlbumAlbum | null> => {
     if (!isDbReady) return null;
     return await db.current.getAlbum(albumId);
   };
 
-  const getAlbumImages = async (
-    albumId: string
-  ): Promise<OCRCatalogImage[]> => {
+  const getAlbumImages = async (albumId: string): Promise<OCRAlbumImage[]> => {
     if (!isDbReady) return [];
     return await db.current.getAlbumImages(albumId);
   };
@@ -152,7 +148,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!album) return;
 
     const totalImages = album.totalImages;
-    let status: OCRCatalogAlbum["status"];
+    let status: OCRAlbumAlbum["status"];
 
     if (processedCount + failedCount >= totalImages) {
       status =
@@ -166,7 +162,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
         processedCount === 0 && failedCount === 0 ? "pending" : "processing";
     }
 
-    const updatedAlbum: OCRCatalogAlbum = {
+    const updatedAlbum: OCRAlbumAlbum = {
       ...album,
       processedImages: processedCount,
       failedImages: failedCount,
@@ -182,9 +178,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const processImageBatch = async (
-    images: OCRCatalogImage[]
-  ): Promise<void> => {
+  const processImageBatch = async (images: OCRAlbumImage[]): Promise<void> => {
     const batchPromises = images.map(async (image) => {
       try {
         // Update status to processing
@@ -204,7 +198,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
         );
 
         // Update with result
-        const completedImage: OCRCatalogImage = {
+        const completedImage: OCRAlbumImage = {
           ...updatedImage,
           status: "completed",
           ocrResult,
@@ -215,7 +209,7 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
         return { success: true, image: completedImage };
       } catch (error) {
         // Update with error
-        const failedImage: OCRCatalogImage = {
+        const failedImage: OCRAlbumImage = {
           ...image,
           status: "failed",
           error: error instanceof Error ? error.message : "Unknown error",
@@ -325,7 +319,8 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
     setBatchProgress(null);
   };
 
-  const value: OCRCatalogContextType = {
+  const value: OCRAlbumContextType = {
+    isDbReady,
     albums,
     currentAlbum,
     batchProgress,
@@ -338,16 +333,16 @@ export const OCRCatalogProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <OCRCatalogContext.Provider value={value}>
+    <OCRAlbumContext.Provider value={value}>
       {children}
-    </OCRCatalogContext.Provider>
+    </OCRAlbumContext.Provider>
   );
 };
 
-export const useOCRCatalog = () => {
-  const context = useContext(OCRCatalogContext);
+export const useOCRAlbum = () => {
+  const context = useContext(OCRAlbumContext);
   if (!context) {
-    throw new Error("useOCRCatalog must be used within an OCRCatalogProvider");
+    throw new Error("useOCRAlbum must be used within an OCRAlbumProvider");
   }
   return context;
 };
