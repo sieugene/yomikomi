@@ -1,0 +1,9 @@
+fastapi==0.111.1
+uvicorn==0.30.6
+python-multipart==0.0.9
+pillow==10.4.0
+numpy==1.26.4
+torch>=2.5.0
+torchvision>=0.16.0
+transformers>=4.21.0
+yomitoku==0.8.0
