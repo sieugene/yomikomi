@@ -12,8 +12,7 @@ export interface OCRSettingsContextType {
 }
 
 export const DEFAULT_OCR_SETTINGS: OCRSettings = {
-  // TODO env
-  apiEndpoint: "http://localhost:8000",
+  apiEndpoint: process.env.NEXT_PUBLIC_OCR_ENDPOINT || "",
   timeout: 30000,
   retryAttempts: 3,
   batchSize: 5,
