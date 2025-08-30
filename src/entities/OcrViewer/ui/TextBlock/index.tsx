@@ -2,7 +2,6 @@ import { useDictionaryLookupStore } from "@/entities/DictionaryLookup/hooks/useD
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
 import { SearchResultsPanel } from "@/entities/DictionaryLookup/ui/SearchResultsPanel";
 import { useStoreDictionarySearchSettings } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
-import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore";
 import type { TextBlock as TextBlockT } from "@/features/ocr/types";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { FC, useMemo, useRef } from "react";

@@ -12,7 +12,6 @@ type Props = {
 export const InteractiveOcrResult: React.FC<Props> = ({
   imageUrl,
   result,
-  setCopyFeedback,
 }) => {
   const { handleTextBlockClick, selectedTextBlock } = useInteractiveOcr();
 
