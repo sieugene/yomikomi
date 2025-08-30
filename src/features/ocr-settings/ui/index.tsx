@@ -45,14 +45,14 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            API Endpoint
+            API
           </label>
           <input
             type="url"
             value={localSettings.apiEndpoint}
             onChange={(e) => handleChange("apiEndpoint", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="http://localhost:8000"
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="http://ocr.api"
           />
         </div>
 
@@ -69,7 +69,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             onChange={(e) =>
               handleChange("timeout", parseInt(e.target.value) * 1000)
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -86,7 +86,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             onChange={(e) =>
               handleChange("retryAttempts", parseInt(e.target.value))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -103,7 +103,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             onChange={(e) =>
               handleChange("batchSize", parseInt(e.target.value))
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-xs text-gray-500 mt-1">
             Number of files to process simultaneously
