@@ -5,40 +5,38 @@ import { OCRAlbumImage } from "@/features/ocr-album/types";
 import { CopyFeedback } from "./CopyFeedback";
 import { OcrFailure } from "./OcrFailure";
 
-type Props = {
-  data: OCRAlbumImage;
-};
-export const OcrViewer: FC<Props> = ({ data }) => {
+type Props = Pick<OCRAlbumImage, "originalFile" | "ocrResult" | "error">;
+export const OcrViewer: FC<Props> = ({ originalFile, ocrResult, error }) => {
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!data.originalFile) {
+    if (!originalFile) {
       setImageUrl(null);
       return;
     }
 
-    const url = URL.createObjectURL(data.originalFile);
+    const url = URL.createObjectURL(originalFile);
     setImageUrl(url);
 
     // Cleanup: revoke the object URL when the component unmounts or the file changes
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [data.originalFile]);
+  }, [originalFile]);
 
   return (
     <>
       {copyFeedback && <CopyFeedback message={copyFeedback} />}
 
-      {data.error && <OcrFailure error={data.error} />}
+      {error && <OcrFailure error={error} />}
 
       {/* Results */}
-      {data.ocrResult && imageUrl && (
+      {ocrResult && imageUrl && (
         <InteractiveOcrResult
           imageUrl={imageUrl}
-          result={data.ocrResult}
+          result={ocrResult}
           setCopyFeedback={setCopyFeedback}
         />
       )}
