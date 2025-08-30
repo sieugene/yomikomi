@@ -46,7 +46,11 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
         Order: {pageData.order}
       </div>
       <div>
-        <OcrViewer data={pageData} />
+        <OcrViewer
+          originalFile={pageData.originalFile}
+          ocrResult={pageData.ocrResult}
+          error={pageData.error}
+        />
       </div>
 
       <div className="flex items-center justify-between mt-8">
