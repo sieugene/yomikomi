@@ -22,6 +22,7 @@ interface SearchResultsPanelProps {
   isOpen: boolean;
   onClose: () => void;
   baseBottom: number;
+  className?: string
 }
 
 export const SearchResultsPanel = React.forwardRef<
@@ -38,6 +39,7 @@ export const SearchResultsPanel = React.forwardRef<
       isOpen,
       baseBottom,
       searchStats,
+      className
     },
     ref
   ) => {
@@ -46,7 +48,7 @@ export const SearchResultsPanel = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+        className={`absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto ${className || ""}`}
         style={{ bottom: baseBottom }}
       >
         <MainResultStats

@@ -7,7 +7,7 @@ import { ROUTES } from "@/shared/routes";
 type Props = ALBUM_PAGE_PARAMS;
 export const AlbumPage: FC<Props> = ({ albumId, page }) => {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="pb-14">
       <div className="mb-4">
         <Link href={ROUTES.ocr} className="text-blue-600 hover:underline">
           Back to Ocr

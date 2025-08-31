@@ -15,11 +15,8 @@ import useClickOutside from "@/shared/hooks/useClickOutside";
 interface FloatingActionsProps {
   onCopyAll?: () => void;
   onDownload?: () => void;
-  onSpeak?: () => void;
   onShowDictionary?: () => void;
   onShowHelp?: () => void;
-  onShowSettings?: () => void;
-  isSpeaking?: boolean;
   hasSelectedText?: boolean;
   className?: string;
 }
@@ -27,11 +24,8 @@ interface FloatingActionsProps {
 export const FloatingActions: FC<FloatingActionsProps> = ({
   onCopyAll,
   onDownload,
-  onSpeak,
   onShowDictionary,
   onShowHelp,
-  onShowSettings,
-  isSpeaking = false,
   hasSelectedText = false,
   className = "",
 }) => {
@@ -65,13 +59,6 @@ export const FloatingActions: FC<FloatingActionsProps> = ({
 
   const actions = [
     {
-      icon: isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />,
-      label: isSpeaking ? "Stop Speaking" : "Speak Text",
-      action: onSpeak,
-      color: "bg-orange-500 hover:bg-orange-600",
-      show: hasSelectedText,
-    },
-    {
       icon: <Book className="w-5 h-5" />,
       label: "Dictionary",
       action: onShowDictionary,
@@ -95,7 +82,7 @@ export const FloatingActions: FC<FloatingActionsProps> = ({
     {
       icon: <Settings className="w-5 h-5" />,
       label: "Settings",
-      action: onShowSettings,
+      action: () => {alert("test")},
       color: "bg-gray-500 hover:bg-gray-600",
       show: true,
     },

@@ -1,14 +1,6 @@
-import { FC, useEffect, useRef } from "react";
-import { 
-  Copy, 
-  Book, 
-  Share2, 
-  Search, 
-  Volume2, 
-  Bookmark,
-  X 
-} from "lucide-react";
 import useClickOutside from "@/shared/hooks/useClickOutside";
+import { Book, Bookmark, Copy, Search, Share2, X } from "lucide-react";
+import { FC, useEffect, useRef } from "react";
 
 interface ContextMenuProps {
   isOpen: boolean;
@@ -18,7 +10,6 @@ interface ContextMenuProps {
   onCopy: () => void;
   onTranslate: () => void;
   onSearch: () => void;
-  onSpeak?: () => void;
   onBookmark?: () => void;
   onShare?: () => void;
 }
@@ -31,12 +22,11 @@ export const ContextMenu: FC<ContextMenuProps> = ({
   onCopy,
   onTranslate,
   onSearch,
-  onSpeak,
   onBookmark,
   onShare,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   useClickOutside(menuRef, onClose);
 
   // Position adjustment to keep menu in viewport
@@ -75,9 +65,10 @@ export const ContextMenu: FC<ContextMenuProps> = ({
 
   if (!isOpen) return null;
 
-  const truncatedText = selectedText.length > 30 
-    ? `${selectedText.substring(0, 30)}...` 
-    : selectedText;
+  const truncatedText =
+    selectedText.length > 30
+      ? `${selectedText.substring(0, 30)}...`
+      : selectedText;
 
   const menuItems = [
     {
@@ -99,16 +90,6 @@ export const ContextMenu: FC<ContextMenuProps> = ({
       color: "text-green-600",
     },
   ];
-
-  // Add optional actions
-  if (onSpeak && 'speechSynthesis' in window) {
-    menuItems.push({
-      icon: <Volume2 className="w-4 h-4" />,
-      label: "Speak",
-      action: onSpeak,
-      color: "text-orange-600",
-    });
-  }
 
   if (onBookmark) {
     menuItems.push({
@@ -135,9 +116,9 @@ export const ContextMenu: FC<ContextMenuProps> = ({
       style={{
         left: position.x,
         top: position.y,
-        minWidth: '200px',
-        maxWidth: '280px',
-        transform: 'translateZ(0)', // Force hardware acceleration
+        minWidth: "200px",
+        maxWidth: "280px",
+        transform: "translateZ(0)", // Force hardware acceleration
       }}
     >
       {/* Header with selected text */}
@@ -172,10 +153,10 @@ export const ContextMenu: FC<ContextMenuProps> = ({
             className={`
               w-full flex items-center px-4 py-3 text-left text-sm font-medium
               transition-colors duration-150 hover:bg-gray-50 active:bg-gray-100
-              ${item.color || 'text-gray-700'}
+              ${item.color || "text-gray-700"}
             `}
           >
-            <span className={`mr-3 ${item.color || 'text-gray-500'}`}>
+            <span className={`mr-3 ${item.color || "text-gray-500"}`}>
               {item.icon}
             </span>
             <span className="flex-1">{item.label}</span>

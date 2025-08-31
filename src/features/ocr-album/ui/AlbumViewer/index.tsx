@@ -1,4 +1,3 @@
-// src/features/ocr-album/ui/AlbumViewer/index.tsx
 "use client";
 
 import { OcrViewer } from "@/entities/OcrViewer/ui";

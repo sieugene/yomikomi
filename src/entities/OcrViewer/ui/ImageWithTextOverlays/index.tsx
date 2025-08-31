@@ -205,7 +205,7 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
         })}
 
         {/* Selection Hint for Mobile */}
-        {isImageLoaded && textBlocks.length > 0 && !selectedTextId && showBoundingBoxes && (
+        {isImageLoaded && textBlocks.length > 0 && !selectedTextId?.toString() && showBoundingBoxes && (
           <div className="absolute top-4 left-4 right-4 sm:hidden">
             <div className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg shadow-lg">
               <p className="font-medium">💡 Tap any highlighted text to select it</p>
@@ -216,111 +216,8 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
           </div>
         )}
 
-        {/* Stats Overlay */}
-        {isImageLoaded && textBlocks.length > 0 && (
-          <div className="absolute bottom-4 left-4 sm:left-auto sm:right-4">
-            <div className="bg-black/70 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg shadow-lg">
-              <div className="flex items-center space-x-3">
-                <span>{textBlocks.length} text blocks</span>
-                {selectedTextId && (
-                  <span className="text-blue-300">
-                    Block selected
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Mobile Navigation Hint */}
-        {isImageLoaded && (
-          <div className="sm:hidden absolute top-1/2 left-2 transform -translate-y-1/2">
-            <div className="bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-60">
-              ←
-            </div>
-          </div>
-        )}
-        
-        {isImageLoaded && (
-          <div className="sm:hidden absolute top-1/2 right-2 transform -translate-y-1/2">
-            <div className="bg-black/50 backdrop-blur-sm text-white text-xs px-2 py-1 rounded-full shadow-lg opacity-60">
-              →
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Desktop Settings (Hidden on Mobile) */}
-      <div className="hidden sm:block mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={showDictionary}
-              onChange={(e) => setShowDictionary(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <span className="text-gray-700">Dictionary</span>
-          </label>
-
-          <label className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              checked={showBoundingBoxes}
-              onChange={(e) => setShowBoundingBoxes(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <span className="text-gray-700">Bounding Boxes</span>
-          </label>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Text Scale: {textScale.toFixed(1)}x
-            </label>
-            <input
-              type="range"
-              min={0.5}
-              max={3}
-              step={0.1}
-              value={textScale}
-              onChange={(e) => setTextScale(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Text Opacity: {(fontTransparency * 100).toFixed(0)}%
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={fontTransparency}
-              onChange={(e) => setFontTransparency(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Image Opacity: {(imageTransparency * 100).toFixed(0)}%
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.1}
-              value={imageTransparency}
-              onChange={(e) => setImageTransparency(parseFloat(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none"
-            />
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
