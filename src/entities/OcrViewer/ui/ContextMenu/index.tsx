@@ -100,7 +100,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
     });
   }
 
-  if (onShare && navigator.share) {
+  if (onShare && !!navigator.share) {
     menuItems.push({
       icon: <Share2 className="w-4 h-4" />,
       label: "Share",
@@ -129,7 +129,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
               Selected Text
             </div>
             <div className="text-sm text-gray-900 font-medium leading-tight">
-              "{truncatedText}"
+              {truncatedText}
             </div>
           </div>
           <button
