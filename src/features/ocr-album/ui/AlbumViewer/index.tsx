@@ -71,7 +71,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-orange-500" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Page Not Found</h2>
           <p className="text-gray-600 mb-4">
-            Page {page} doesn't exist in this album. There are {totalPages} pages available.
+            Page {page} doesnt exist in this album. There are {totalPages} pages available.
           </p>
           <div className="space-y-2">
             <Link

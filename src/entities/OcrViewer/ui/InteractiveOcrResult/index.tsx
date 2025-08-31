@@ -1,21 +1,19 @@
-import { Dispatch, SetStateAction, useMemo, useState, useEffect } from "react";
-import { ImageWithTextOverlays } from "../ImageWithTextOverlays";
-import { OCRResponse } from "@/features/ocr/types";
-import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
-import { Copy, Download, RotateCcw, Info } from "lucide-react";
-import { useOcrCopy } from "../../hooks/useOcrCopy";
+import { OCRResponse, TextBlock } from "@/features/ocr/types";
+import { Copy, Download, Info, RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useDownloadText } from "../../hooks/useDownloadText";
+import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
+import { useOcrCopy } from "../../hooks/useOcrCopy";
+import { ImageWithTextOverlays } from "../ImageWithTextOverlays";
 
 type Props = {
   imageUrl: string;
   result: OCRResponse;
 };
 
-export const InteractiveOcrResult: React.FC<Props> = ({
-  imageUrl,
-  result,
-}) => {
-  const { handleTextBlockClick, selectedTextBlock, handleReset } = useInteractiveOcr();
+export const InteractiveOcrResult: React.FC<Props> = ({ imageUrl, result }) => {
+  const { handleTextBlockClick, selectedTextBlock, handleReset } =
+    useInteractiveOcr();
   const { handleCopyFullText } = useOcrCopy();
   const { handleDownloadText } = useDownloadText();
   const [showInfo, setShowInfo] = useState(false);
@@ -33,7 +31,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
     }
   }, [showInfo]);
 
-  const handleTextBlockClickWithFeedback = (textBlock: any) => {
+  const handleTextBlockClickWithFeedback = (textBlock: TextBlock) => {
     handleTextBlockClick(textBlock);
   };
 
@@ -46,13 +44,15 @@ export const InteractiveOcrResult: React.FC<Props> = ({
             <button
               onClick={() => setShowInfo(!showInfo)}
               className={`p-2 rounded-full transition-colors ${
-                showInfo ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                showInfo
+                  ? "bg-blue-100 text-blue-600"
+                  : "bg-gray-100 text-gray-600"
               }`}
               title="Show OCR info"
             >
               <Info className="w-4 h-4" />
             </button>
-            
+
             {selectedTextBlock && (
               <button
                 onClick={handleReset}
@@ -72,7 +72,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
               <Copy className="w-4 h-4 mr-1" />
               Copy All
             </button>
-            
+
             <button
               onClick={() => handleDownloadText(result)}
               className="p-2 rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200"
@@ -96,9 +96,10 @@ export const InteractiveOcrResult: React.FC<Props> = ({
               </div>
               {selectedTextBlock && (
                 <div className="text-blue-800 font-medium mt-2">
-                  ✅ Selected: "{selectedTextBlock.text.substring(0, 30)}..."
+                  ✅ Selected: {selectedTextBlock.text.substring(0, 30)}...
                   <br />
-                  🎯 Confidence: {(selectedTextBlock.confidence * 100).toFixed(1)}%
+                  🎯 Confidence:{" "}
+                  {(selectedTextBlock.confidence * 100).toFixed(1)}%
                 </div>
               )}
             </div>
@@ -116,7 +117,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
             </span>
           )}
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {selectedTextBlock && (
             <button
@@ -127,7 +128,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
               Clear Selection
             </button>
           )}
-          
+
           <button
             onClick={() => handleCopyFullText(result)}
             className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
@@ -135,7 +136,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
             <Copy className="w-4 h-4 mr-1" />
             Copy All Text
           </button>
-          
+
           <button
             onClick={() => handleDownloadText(result)}
             className="flex items-center px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors text-sm"
@@ -155,8 +156,6 @@ export const InteractiveOcrResult: React.FC<Props> = ({
         className="w-full"
         imageInfo={result.image_info}
       />
-
-
     </div>
   );
 };

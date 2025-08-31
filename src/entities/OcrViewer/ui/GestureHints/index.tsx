@@ -1,15 +1,15 @@
 // src/entities/OcrViewer/ui/GestureHints/index.tsx
-import { FC, useState, useEffect } from "react";
-import { X, Hand, Zap, ArrowUp, RotateCcw } from "lucide-react";
+import { ArrowUp, Hand, X, Zap } from "lucide-react";
+import { FC, useEffect, useState } from "react";
 
 interface GestureHintsProps {
   isFirstVisit?: boolean;
   onClose?: () => void;
 }
 
-export const GestureHints: FC<GestureHintsProps> = ({ 
-  isFirstVisit = false, 
-  onClose 
+export const GestureHints: FC<GestureHintsProps> = ({
+  isFirstVisit = false,
+  onClose,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentHint, setCurrentHint] = useState(0);
@@ -83,7 +83,9 @@ export const GestureHints: FC<GestureHintsProps> = ({
                   {hints[currentHint].icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Touch Gestures</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    Touch Gestures
+                  </h3>
                   <p className="text-sm text-gray-500">
                     {currentHint + 1} of {hints.length}
                   </p>
@@ -116,11 +118,11 @@ export const GestureHints: FC<GestureHintsProps> = ({
                 <div
                   key={index}
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    index === currentHint 
-                      ? 'bg-blue-600' 
-                      : index < currentHint 
-                        ? 'bg-green-500' 
-                        : 'bg-gray-300'
+                    index === currentHint
+                      ? "bg-blue-600"
+                      : index < currentHint
+                      ? "bg-green-500"
+                      : "bg-gray-300"
                   }`}
                 />
               ))}
@@ -144,7 +146,7 @@ export const GestureHints: FC<GestureHintsProps> = ({
                 onClick={nextHint}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
-                {currentHint === hints.length - 1 ? 'Got it!' : 'Next'}
+                {currentHint === hints.length - 1 ? "Got it!" : "Next"}
               </button>
             </div>
           </div>

@@ -1,16 +1,14 @@
-import { FC, useState, useRef, useEffect } from "react";
-import { 
-  Plus, 
-  Copy, 
-  Download, 
-  Volume2, 
-  Book, 
-  HelpCircle, 
-  Settings,
-  X,
-  VolumeX
-} from "lucide-react";
 import useClickOutside from "@/shared/hooks/useClickOutside";
+import {
+  Book,
+  Copy,
+  Download,
+  HelpCircle,
+  Plus,
+  Settings,
+  X
+} from "lucide-react";
+import { FC, useEffect, useRef, useState } from "react";
 
 interface FloatingActionsProps {
   onCopyAll?: () => void;
