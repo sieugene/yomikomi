@@ -1,11 +1,10 @@
-// src/entities/OcrViewer/ui/CompactDictionaryLookup/index.tsx
-import { FC, useEffect, useRef } from "react";
-import { X, Book, Search, AlertCircle } from "lucide-react";
-import { useDictionaryLookupStore } from "@/entities/DictionaryLookup/hooks/useDictionaryLookupStore";
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
 import { SearchResultsPanel } from "@/entities/DictionaryLookup/ui/SearchResultsPanel";
-import { useStoreDictionarySearchSettings } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
 import useClickOutside from "@/shared/hooks/useClickOutside";
+import { Book, Search, X } from "lucide-react";
+import { FC, useRef } from "react";
+import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
+import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictionaryLookup";
 
 interface CompactDictionaryLookupProps {
   sentence: string;
@@ -20,8 +19,8 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
   onClose,
   className = "",
 }) => {
-  const { deepSearchMode } = useStoreDictionarySearchSettings();
   const {
+    deepSearchMode,
     clear,
     loading,
     handleWordClick,
@@ -31,10 +30,10 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
     error,
     panelOpen,
     searchStats,
-  } = useDictionaryLookupStore();
-  
+  } = useOcrCompactDictionaryLookup();
+
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   useClickOutside(containerRef, () => {
     if (isOpen) {
       clear();
@@ -42,34 +41,44 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
     }
   });
 
+  const resultContainerRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(resultContainerRef, () => {
+    clear();
+  });
+
   const handleClose = () => {
     clear();
     onClose();
   };
+
+  useBodyScrollLock(isOpen);
 
   if (!isOpen) return null;
 
   return (
     <>
       {/* Mobile Overlay */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 sm:hidden"
         onClick={handleClose}
       />
-      
+
       {/* Dictionary Panel */}
       <div
         ref={containerRef}
         className={`
-          fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50
-          sm:absolute sm:bottom-auto sm:left-0 sm:right-auto sm:min-w-80 sm:max-w-96
-          sm:rounded-lg sm:shadow-xl sm:border sm:border-gray-200
-          transform transition-all duration-300 ease-out
-          ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}
-          ${className}
-        `}
+        fixed inset-x-0 top-0 bg-white rounded-b-2xl shadow-2xl z-50
+        sm:min-w-80 sm:max-w-96 sm:rounded-lg sm:shadow-xl sm:border sm:border-gray-200
+        transform transition-all duration-300 ease-out
+        ${isOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}
+        ${className}
+      `}
         style={{
-          maxHeight: 'min(80vh, 600px)',
+          maxHeight: "100vh",
+          height: "-webkit-fill-available",
+          overflow: "hidden",
+          overflowY: "scroll"
         }}
       >
         {/* Header */}
@@ -79,11 +88,13 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
               <Book className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 text-sm">Dictionary</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">
+                Dictionary
+              </h3>
               <p className="text-xs text-gray-500">Tap words to translate</p>
             </div>
           </div>
-          
+
           <button
             onClick={handleClose}
             className="p-2 hover:bg-white/60 rounded-full transition-colors"
@@ -125,7 +136,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
             )}
 
             {(selectedToken || loading || error) && (
-              <div className="h-full">
+              <div className="h-full" ref={resultContainerRef}>
                 <SearchResultsPanel
                   results={groupedResults}
                   selectedToken={selectedToken}
