@@ -8,17 +8,15 @@ import { useDownloadText } from "../../hooks/useDownloadText";
 
 type Props = {
   imageUrl: string;
-  setCopyFeedback: Dispatch<SetStateAction<string | null>>;
   result: OCRResponse;
 };
 
 export const InteractiveOcrResult: React.FC<Props> = ({
   imageUrl,
   result,
-  setCopyFeedback,
 }) => {
   const { handleTextBlockClick, selectedTextBlock, handleReset } = useInteractiveOcr();
-  const { handleCopyFullText, handleCopyText } = useOcrCopy(setCopyFeedback);
+  const { handleCopyFullText } = useOcrCopy();
   const { handleDownloadText } = useDownloadText();
   const [showInfo, setShowInfo] = useState(false);
 
@@ -37,13 +35,6 @@ export const InteractiveOcrResult: React.FC<Props> = ({
 
   const handleTextBlockClickWithFeedback = (textBlock: any) => {
     handleTextBlockClick(textBlock);
-    
-    // Copy text to clipboard on mobile when selected
-    if (window.innerWidth < 640) {
-      navigator.clipboard.writeText(textBlock.text).then(() => {
-        handleCopyText(textBlock.text);
-      });
-    }
   };
 
   return (
@@ -121,7 +112,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
           Found {result.text_blocks.length} text blocks
           {selectedTextBlock && (
             <span className="ml-2 text-blue-600 font-medium">
-              • Selected: {selectedTextBlock.text.substring(0, 50)}...
+              • Selected: {selectedTextBlock.text.substring(0, 10)}...
             </span>
           )}
         </div>
@@ -165,71 +156,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({
         imageInfo={result.image_info}
       />
 
-      {/* Selected Text Block Details (Mobile) */}
-      {selectedTextBlock && (
-        <div className="sm:hidden mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-          <div className="flex items-start justify-between mb-2">
-            <div className="text-sm font-medium text-blue-900">Selected Text</div>
-            <div className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
-              {(selectedTextBlock.confidence * 100).toFixed(1)}% confidence
-            </div>
-          </div>
-          
-          <div className="text-blue-800 font-medium text-sm leading-relaxed mb-3">
-            {selectedTextBlock.text}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(selectedTextBlock.text);
-                handleCopyText(selectedTextBlock.text);
-              }}
-              className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-xs font-medium"
-            >
-              <Copy className="w-3 h-3 mr-1" />
-              Copy Text
-            </button>
-            
-            <button
-              onClick={handleReset}
-              className="flex items-center px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-xs font-medium"
-            >
-              <RotateCcw className="w-3 h-3 mr-1" />
-              Clear
-            </button>
-          </div>
-        </div>
-      )}
 
-      {/* Desktop Selected Text Block Details */}
-      {selectedTextBlock && (
-        <div className="hidden sm:block mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-start justify-between mb-2">
-            <div className="text-sm font-medium text-blue-900">Selected Text Block</div>
-            <div className="text-xs text-blue-600">
-              Confidence: {(selectedTextBlock.confidence * 100).toFixed(1)}%
-            </div>
-          </div>
-          
-          <div className="text-blue-800 font-medium mb-3">
-            {selectedTextBlock.text}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(selectedTextBlock.text);
-                handleCopyText(selectedTextBlock.text);
-              }}
-              className="flex items-center px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-            >
-              <Copy className="w-4 h-4 mr-1" />
-              Copy This Text
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

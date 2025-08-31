@@ -1,11 +1,10 @@
 // src/entities/OcrViewer/ui/TextBlock/index.tsx
 import type { TextBlock as TextBlockT } from "@/features/ocr/types";
-import { FC, useMemo, useState, useCallback } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
+import { useGestureHandler } from "../../../../shared/hooks/useGestureHandler";
+import { useCompactDictionary } from "../../hooks/useCompactDictionary";
 import { CompactDictionaryLookup } from "../CompactDictionaryLookup";
 import { ContextMenu } from "../ContextMenu";
-import { useCompactDictionary } from "../../hooks/useCompactDictionary";
-import { useGestureHandler } from "../../hooks/useGestureHandler";
-import { useSpeechSynthesis } from "../../hooks/useSpeechSynthesis";
 
 type Props = {
   textBlock: TextBlockT;
@@ -43,7 +42,6 @@ export const TextBlock: FC<Props> = ({
   const [isPressed, setIsPressed] = useState(false);
   
   const dictionary = useCompactDictionary();
-  const { speak, isSpeaking, stop: stopSpeech, speakWithAutoDetect } = useSpeechSynthesis();
 
   // Calculate scaled coordinates
   const coords = useMemo(() => {
@@ -138,13 +136,6 @@ export const TextBlock: FC<Props> = ({
     window.open(`https://www.google.com/search?q=${query}`, '_blank');
   }, [textBlock.text]);
 
-  const handleSpeak = useCallback(() => {
-    if (isSpeaking) {
-      stopSpeech();
-    } else {
-      speakWithAutoDetect(textBlock.text);
-    }
-  }, [speakWithAutoDetect, textBlock.text, isSpeaking, stopSpeech]);
 
   const handleShare = useCallback(async () => {
     if (navigator.share) {
@@ -166,17 +157,17 @@ export const TextBlock: FC<Props> = ({
     // Convert to touch event for gesture handler
     const touchEvent = {
       touches: [{ clientX: e.clientX, clientY: e.clientY }],
-    } as React.TouchEvent;
+    } as unknown;
     
-    handleTouchStart(touchEvent);
+    handleTouchStart(touchEvent as React.TouchEvent);
   }, [handleTouchStart]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     const touchEvent = {
       touches: [{ clientX: e.clientX, clientY: e.clientY }],
-    } as React.TouchEvent;
+    } as unknown;
     
-    handleTouchMove(touchEvent);
+    handleTouchMove(touchEvent as React.TouchEvent);
   }, [handleTouchMove]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
@@ -188,9 +179,9 @@ export const TextBlock: FC<Props> = ({
 
     const touchEvent = {
       changedTouches: [{ clientX: e.clientX, clientY: e.clientY }],
-    } as React.TouchEvent;
+    } as unknown;
     
-    handleTouchEnd(touchEvent);
+    handleTouchEnd(touchEvent as React.TouchEvent);
   }, [handleTouchEnd, isLongPressing, onTextClick, textBlock, showContextMenu]);
 
   const handlePointerCancel = useCallback(() => {
@@ -202,7 +193,7 @@ export const TextBlock: FC<Props> = ({
 
   // Dynamic styling based on state and settings
   const getBoundingBoxStyle = () => {
-    const baseClasses = "absolute cursor-pointer user-select-none touch-manipulation transition-all duration-150 ease-out";
+    const baseClasses = "overflow-hidden absolute cursor-pointer user-select-none touch-manipulation transition-all duration-150 ease-out";
     
     if (!showBoundingBoxes) return `${baseClasses} bg-transparent border-transparent`;
     
@@ -285,9 +276,6 @@ export const TextBlock: FC<Props> = ({
             style={{ fontSize: '10px' }}
           >
             {(textBlock.confidence * 100).toFixed(0)}%
-            {isSpeaking && (
-              <span className="ml-1 animate-pulse">🔊</span>
-            )}
           </div>
         )}
 
@@ -308,7 +296,6 @@ export const TextBlock: FC<Props> = ({
         onCopy={handleCopy}
         onTranslate={handleTranslate}
         onSearch={handleSearch}
-        onSpeak={handleSpeak}
         onShare={handleShare}
       />
 
