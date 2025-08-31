@@ -3,7 +3,7 @@ import type { TextBlock as TextBlockT } from "@/features/ocr/types";
 import { FC, useCallback, useMemo, useState } from "react";
 import { useGestureHandler } from "../../../../shared/hooks/useGestureHandler";
 import { useCompactDictionary } from "../../hooks/useCompactDictionary";
-import { CompactDictionaryLookup } from "../CompactDictionaryLookup";
+import { CompactDictionaryLookup } from "../../../OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
 import { ContextMenu } from "../ContextMenu";
 
 type Props = {
@@ -305,7 +305,6 @@ export const TextBlock: FC<Props> = ({
           sentence={textBlock.text}
           isOpen={dictionary.isOpen}
           onClose={dictionary.handleClose}
-          className="sm:absolute sm:top-full sm:left-0 sm:mt-2"
         />
       )}
     </>
