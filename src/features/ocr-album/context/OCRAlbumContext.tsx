@@ -194,7 +194,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         // Process with OCR
         const ocrResult = await OCRApi.performOCRWithPositions(
           file,
-          settings.apiEndpoint
+          settings.apiEndpoint,
+          settings.bearerToken
         );
 
         // Update with result
