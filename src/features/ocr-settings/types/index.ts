@@ -3,6 +3,7 @@ export interface OCRSettings {
   timeout: number;
   retryAttempts: number;
   batchSize: number;
+  bearerToken: string
 }
 
 export interface OCRSettingsContextType {
@@ -13,6 +14,7 @@ export interface OCRSettingsContextType {
 
 export const DEFAULT_OCR_SETTINGS: OCRSettings = {
   apiEndpoint: process.env.NEXT_PUBLIC_OCR_ENDPOINT || "",
+  bearerToken: "",
   timeout: 30000,
   retryAttempts: 3,
   batchSize: 5,

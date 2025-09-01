@@ -3,14 +3,22 @@ import { OCRResponse } from "../types";
 export class OCRApi {
   static async performOCRWithPositions(
     file: File,
-    api_endpoint: string
+    api_endpoint: string,
+    bearerToken?: string
   ): Promise<OCRResponse> {
     const formData = new FormData();
     formData.append("file", file);
 
+    debugger;
+
     const response = await fetch(`${api_endpoint}/ocr/with-positions/`, {
       method: "POST",
       body: formData,
+      headers: {
+        ...(bearerToken && {
+          Authorization: `Bearer ${bearerToken}`,
+        }),
+      },
     });
 
     if (!response.ok) {

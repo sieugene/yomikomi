@@ -55,6 +55,18 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             placeholder="http://ocr.api"
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Api token
+          </label>
+          <input
+            type="url"
+            value={localSettings.bearerToken}
+            onChange={(e) => handleChange("bearerToken", e.target.value)}
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="asdasdsad&sd"
+          />
+        </div>
 
         {/* Timeout */}
         <div>
