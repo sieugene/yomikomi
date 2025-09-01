@@ -1,18 +1,17 @@
-// src/entities/OcrViewer/ui/MobileSettingsPanel/index.tsx
-import { FC, useState } from "react";
-import { 
-  Settings, 
-  Eye, 
-  EyeOff, 
-  Type, 
-  Image as ImageIcon, 
+import {
   Book,
   ChevronDown,
   ChevronUp,
-  Sliders
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Settings,
+  Sliders,
+  Type,
 } from "lucide-react";
+import { FC, useRef, useState } from "react";
 
-interface MobileSettingsPanelProps {
+interface SettingsPanelProps {
   showBoundingBoxes: boolean;
   setShowBoundingBoxes: (value: boolean) => void;
   showDictionary: boolean;
@@ -25,7 +24,7 @@ interface MobileSettingsPanelProps {
   setFontTransparency: (value: number) => void;
 }
 
-export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
+export const SettingsPanel: FC<SettingsPanelProps> = ({
   showBoundingBoxes,
   setShowBoundingBoxes,
   showDictionary,
@@ -44,7 +43,7 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
   return (
     <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
       {/* Collapsed Header */}
-      <div 
+      <div
         className="flex items-center justify-between p-3 cursor-pointer select-none"
         onClick={toggleExpanded}
       >
@@ -55,11 +54,11 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
           <div>
             <h3 className="text-sm font-medium text-gray-900">View Settings</h3>
             <p className="text-xs text-gray-500">
-              {isExpanded ? 'Tap to collapse' : 'Tap to expand'}
+              {isExpanded ? "Tap to collapse" : "Tap to expand"}
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {/* Quick toggles when collapsed */}
           {!isExpanded && (
@@ -70,24 +69,28 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
                   setShowBoundingBoxes(!showBoundingBoxes);
                 }}
                 className={`p-2 rounded-full transition-colors ${
-                  showBoundingBoxes 
-                    ? 'bg-blue-100 text-blue-600' 
-                    : 'bg-gray-100 text-gray-400'
+                  showBoundingBoxes
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-gray-100 text-gray-400"
                 }`}
                 title="Toggle bounding boxes"
               >
-                {showBoundingBoxes ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                {showBoundingBoxes ? (
+                  <Eye className="w-4 h-4" />
+                ) : (
+                  <EyeOff className="w-4 h-4" />
+                )}
               </button>
-              
+
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDictionary(!showDictionary);
                 }}
                 className={`p-2 rounded-full transition-colors ${
-                  showDictionary 
-                    ? 'bg-green-100 text-green-600' 
-                    : 'bg-gray-100 text-gray-400'
+                  showDictionary
+                    ? "bg-green-100 text-green-600"
+                    : "bg-gray-100 text-gray-400"
                 }`}
                 title="Toggle dictionary"
               >
@@ -95,7 +98,7 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
               </button>
             </>
           )}
-          
+
           {isExpanded ? (
             <ChevronUp className="w-5 h-5 text-gray-400" />
           ) : (
@@ -144,25 +147,21 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-1">
                     <Type className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Text Scale</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Text Scale
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-500">{textScale.toFixed(1)}x</span>
+                  <span className="text-sm text-gray-500">
+                    {textScale.toFixed(1)}x
+                  </span>
                 </div>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min={0.5}
-                    max={3}
-                    step={0.1}
-                    value={textScale}
-                    onChange={(e) => setTextScale(parseFloat(e.target.value))}
-                    className="mobile-slider text-scale"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>0.5x</span>
-                    <span>3x</span>
-                  </div>
-                </div>
+                <Slider
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                  value={textScale}
+                  onChange={setTextScale}
+                />
               </div>
 
               {/* Font Transparency */}
@@ -170,25 +169,21 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-1">
                     <Sliders className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Text Opacity</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Text Opacity
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-500">{(fontTransparency * 100).toFixed(0)}%</span>
+                  <span className="text-sm text-gray-500">
+                    {(fontTransparency * 100).toFixed(0)}%
+                  </span>
                 </div>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    value={fontTransparency}
-                    onChange={(e) => setFontTransparency(parseFloat(e.target.value))}
-                    className="mobile-slider text-opacity"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>0%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
+                <Slider
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={fontTransparency}
+                  onChange={setFontTransparency}
+                />
               </div>
 
               {/* Image Transparency */}
@@ -196,30 +191,93 @@ export const MobileSettingsPanel: FC<MobileSettingsPanelProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-1">
                     <ImageIcon className="w-4 h-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Image Opacity</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Image Opacity
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-500">{(imageTransparency * 100).toFixed(0)}%</span>
+                  <span className="text-sm text-gray-500">
+                    {(imageTransparency * 100).toFixed(0)}%
+                  </span>
                 </div>
-                <div className="relative">
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.1}
-                    value={imageTransparency}
-                    onChange={(e) => setImageTransparency(parseFloat(e.target.value))}
-                    className="mobile-slider image-opacity"
-                  />
-                  <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>0%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
+                <Slider
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={imageTransparency}
+                  onChange={setImageTransparency}
+                />
               </div>
             </div>
           </div>
         </div>
       )}
+    </div>
+  );
+};
+
+interface SliderProps {
+  min: number;
+  max: number;
+  step?: number;
+  value: number;
+  onChange: (val: number) => void;
+  className?: string;
+}
+
+export const Slider: React.FC<SliderProps> = ({
+  min,
+  max,
+  step = 0.1,
+  value,
+  onChange,
+  className,
+}) => {
+  const sliderRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!sliderRef.current) return;
+    const rect = sliderRef.current.getBoundingClientRect();
+    const x = e.touches[0].clientX - rect.left;
+    const newRatio = Math.min(Math.max(x / rect.width, 0), 1);
+    const newValue = min + newRatio * (max - min);
+
+    const steppedValue = Math.round(newValue / step) * step;
+    onChange(steppedValue);
+  };
+
+  const fillPercent = ((value - min) / (max - min)) * 100;
+
+  return (
+    <div
+      ref={sliderRef}
+      className={`range-wrapper relative w-full h-8 ${className || ""}`}
+      onTouchMove={handleTouchMove}
+      onMouseMove={(e) => {
+        if (e.buttons !== 1) return;
+        if (!sliderRef.current) return;
+        const rect = sliderRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const newRatio = Math.min(Math.max(x / rect.width, 0), 1);
+        const newValue = min + newRatio * (max - min);
+        const steppedValue = Math.round(newValue / step) * step;
+        onChange(steppedValue);
+      }}
+    >
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        className="absolute inset-0 w-full h-full opacity-0"
+      />
+      <div className="bar bg-gray-300 h-2 rounded mt-3">
+        <div
+          className="fill bg-blue-500 h-2 rounded"
+          style={{ width: `${fillPercent}%` }}
+        />
+      </div>
     </div>
   );
 };
