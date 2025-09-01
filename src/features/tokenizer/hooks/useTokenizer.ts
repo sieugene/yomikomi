@@ -23,12 +23,12 @@ export const useTokenizer = (): TokenizerHookReturn => {
   const { onFill } = useDictTokenizer();
 
   const tokenizeText = async (text: string): Promise<DisplayToken[]> => {
-    if (!tokenizer) return [];
     try {
-      const tokeniRes = tokenizer.tokenize(text);
+      const tokeniRes = tokenizer!.tokenize(text);
       const tokenizeText = await onFill(tokeniRes);
       return tokenizeText;
     } catch (err) {
+      debugger
       console.error("Tokenization error:", err);
       return [];
     }

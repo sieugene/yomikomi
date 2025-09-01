@@ -5,7 +5,7 @@ export const useTextBlockSettings = () => {
   const [textScale, setTextScale] = useState(1);
   const [imageTransparency, setImageTransparency] = useState(1);
   const [fontTransparency, setFontTransparency] = useState(1);
-  const [showDictionary, setShowDictionary] = useState(false);
+  const [showDictionary, setShowDictionary] = useState(true);
 
   return {
     showBoundingBoxes,

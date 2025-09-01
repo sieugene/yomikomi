@@ -17,12 +17,11 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
   selectedWordId,
   className = "",
 }) => {
-  const { tokenizeText, isReady } = useTokenizer();
+  const { tokenizeText, isReady, tokenizer } = useTokenizer();
 
   const { data } = useSWR(
-    sentence && isReady ? ["tokenize", sentence] : null,
+    sentence && isReady && !!tokenizer?.tokenize ? ["tokenize", sentence] : null,
     async () => {
-      if (!tokenizeText || !sentence) return null;
       const result = await tokenizeText(sentence);
       return result;
     },
@@ -41,7 +40,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 
   return (
     <>
-      {data && data.length && (
+      {data && data.length ? (
         <Tokens
           tokens={data}
           onWordClick={onWordClick}
@@ -49,6 +48,8 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
           className={className}
           selectedWordId={selectedWordId}
         />
+      ) : (
+        "Tokens not found"
       )}
     </>
   );
