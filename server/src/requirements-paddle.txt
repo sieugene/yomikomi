@@ -1,0 +1,8 @@
+fastapi==0.111.1
+uvicorn==0.30.6
+paddlepaddle==2.6.1; sys_platform != 'darwin' or 'arm' not in platform_machine
+paddlepaddle==2.6.1; sys_platform == 'darwin' and 'arm' in platform_machine
+paddleocr==2.7.0.3
+python-multipart==0.0.9
+pillow==10.4.0
+numpy==1.26.4

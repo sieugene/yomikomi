@@ -120,57 +120,9 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
   Serializable: 'Serializable'
 });
 
-exports.Prisma.CollectionScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.NoteScalarFieldEnum = {
-  id: 'id',
-  noteId: 'noteId',
-  fields: 'fields',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  collectionId: 'collectionId'
-};
-
-exports.Prisma.MediaScalarFieldEnum = {
-  id: 'id',
-  path: 'path',
-  type: 'type',
-  originalName: 'originalName',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  collectionId: 'collectionId'
-};
-
-exports.Prisma.SortOrder = {
-  asc: 'asc',
-  desc: 'desc'
-};
-
-exports.Prisma.JsonNullValueInput = {
-  JsonNull: Prisma.JsonNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
-exports.Prisma.JsonNullValueFilter = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull,
-  AnyNull: Prisma.AnyNull
-};
-
 
 exports.Prisma.ModelName = {
-  Collection: 'Collection',
-  Note: 'Note',
-  Media: 'Media'
+
 };
 
 /**

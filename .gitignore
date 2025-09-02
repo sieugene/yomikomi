@@ -31,7 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
 
 # vercel
 .vercel
@@ -42,3 +42,8 @@ next-env.d.ts
 
 prisma/dev.db
 prisma/dev.db-journal
+
+src/shared/data/dict/JMdict/*.json
+src/shared/data/dict/JMdict/*.zip
+src/shared/data/dict/JMdict/*.sqlite
+src/shared/data/dict/kuromoji/*.gz

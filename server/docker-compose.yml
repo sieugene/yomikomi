@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  ocr-paddle:
+    build:
+      context: .
+      dockerfile: Dockerfile-paddle
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=Asia/Tokyo
+      - OCR_ENGINE=paddle
+      - OCR_LANG=japan
+      - USE_GPU=false
+    volumes:
+      - ./src:/app
+
+  ocr-yomitoku:
+    build:
+      context: .
+      dockerfile: Dockerfile-yomitoku
+    ports:
+      - "8001:8000"
+    environment:
+      - TZ=Asia/Tokyo
+      - OCR_ENGINE=yomitoku
+      - OCR_LANG=japan
+      - USE_GPU=false
+    volumes:
+      - ./src:/app

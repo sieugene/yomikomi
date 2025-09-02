@@ -1,0 +1,4 @@
+https://github.com/yomidevs/jmdict-yomitan
+
+Download dictionary, place zip file in src/shared/data/dict/JMdict
+run make-dictionary command

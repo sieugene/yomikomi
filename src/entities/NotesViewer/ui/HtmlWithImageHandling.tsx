@@ -1,5 +1,5 @@
 "use client";
-import { FormattedImportData } from "@/features/Collection/types";
+import { FormattedImportData } from '@/features/AnkiParser/types';
 import { useEffect, useRef, useState } from "react";
 
 export const HtmlWithImageHandling = ({
