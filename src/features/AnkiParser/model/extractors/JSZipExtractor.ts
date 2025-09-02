@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import { Extractor } from "../Extractor";
 import protobuf from "protobufjs";
-import { PROTO_IMPORT_EXPORT } from "@/shared/lib/parser/protos";
+import { PROTO_IMPORT_EXPORT } from "@/features/AnkiParser/lib/parser/protos";
 import initDWebZstdModule, { decompress } from "@dweb-browser/zstd-wasm";
 
 const initDWebZstd = initDWebZstdModule as unknown as (

@@ -6,9 +6,7 @@ import { useEffect, useState } from "react";
 
 export const useHealth = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null);
-  const servicesIsActive =
-    health?.services.database === "online" &&
-    health?.services.minio === "online";
+  const servicesIsActive = health?.services.database === "online";
 
   useEffect(() => {
     (async () => {

@@ -1,56 +1,55 @@
-import { ApiResponse, ImportFormData } from "@/infrastructure/api/types";
+import { ApiResponse } from "@/infrastructure/api/types";
+import { IpadicFeatures } from "kuromoji";
 
 const API_ENDPOINTS = {
-  base: "/api/import",
-  import: "/api/import",
-  media: (filename: string) => `/api/media/${filename}`,
-  notes: "/api/notes",
-  collection: (collectionId: string) => `/api/collection/${collectionId}`,
-  collections: `/api/collection`,
   health: "/api/health",
+  dictLookup: "api/dict-lookup",
+  ocr: "http://localhost:8000/ocr/with-positions/",
 };
 
 class Api {
   constructor() {}
 
-  // Import
-  async upload(formData: ImportFormData) {
-    const form = new FormData();
+  // OCR
+  async performOCR(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
 
-    if (formData.file) {
-      form.append("file", formData.file);
-    }
-
-    if (formData.collectionName) {
-      form.append("collectionName", formData.collectionName);
-    }
-    const response = await fetch(API_ENDPOINTS.import, {
+    const response = await fetch(API_ENDPOINTS.ocr, {
       method: "POST",
-      body: form,
+      body: formData,
     });
+
     if (!response.ok) {
-      throw new Error("Failed to upload file");
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.detail || `OCR failed with status: ${response.status}`
+      );
     }
-    const json = (await response.json()) as ApiResponse["Import"];
-    return json;
+
+    return await response.json();
   }
 
-  // Collection
-  async getCollectionById(collectionId: string) {
-    const response = await fetch(API_ENDPOINTS.collection(collectionId));
-    if (!response.ok) {
-      throw new Error("Failed to get collection by id");
-    }
-    const json = (await response.json()) as ApiResponse["Collection"]["ById"];
-    return json;
-  }
+  // TODO deprecated
+  // Dict-lookup
+  async lookupDictionary(sentence: string, tokens: IpadicFeatures[]) {
+    const response = await fetch(`${API_ENDPOINTS.dictLookup}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        tokens: tokens,
+        sentence: encodeURIComponent(sentence),
+      }),
+    });
 
-  async getAllCollections() {
-    const response = await fetch(API_ENDPOINTS.collections);
     if (!response.ok) {
-      throw new Error("Failed to get all collections");
+      throw new Error("Failed to fetch dictionary lookup");
     }
-    const json = (await response.json()) as ApiResponse["Collection"]["All"];
+
+    const json = (await response.json()) as ApiResponse["DictLookup"]["GET"];
+
     return json;
   }
 

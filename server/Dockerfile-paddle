@@ -1,0 +1,27 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies for PaddleOCR
+RUN apt-get update && apt-get install -y \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install dependencies
+COPY src/requirements-paddle.txt .
+RUN pip install --no-cache-dir -r requirements-paddle.txt
+
+# Copy application code
+COPY src/ .
+
+# Environment variables
+ENV PYTHONPATH=/app
+ENV OCR_ENGINE=paddle
+
+# Expose FastAPI port
+EXPOSE 8000
+
+# Command to run FastAPI
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

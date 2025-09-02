@@ -1,10 +1,10 @@
 "use client";
-import { FormattedImportData } from "@/features/Collection/types";
 import { useState } from "react";
 import { useSqlJs } from "../context/SqlJsProvider";
 import { Deck } from "../model/Deck";
 import { Extractor } from "../model/Extractor";
-import { useStoreCollection } from "@/features/Collection/context/StoreCollectionContext";
+import { useStoreCollection } from "@/features/AnkiParser/context/StoreCollectionContext";
+import { FormattedImportData } from '../types';
 
 export const useAnkiParser = (type: string) => {
   const { add } = useStoreCollection();
