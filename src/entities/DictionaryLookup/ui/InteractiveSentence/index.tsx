@@ -19,16 +19,19 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 }) => {
   const { tokenizeText, isReady, tokenizer } = useTokenizer();
 
-  const { data } = useSWR(
-    sentence && isReady && !!tokenizer?.tokenize ? ["tokenize", sentence] : null,
+  const { data, isLoading } = useSWR(
+    sentence.length && isReady && !!tokenizer?.tokenize
+      ? ["tokenize", sentence, tokenizer]
+      : null,
     async () => {
       const result = await tokenizeText(sentence);
+
       return result;
     },
     { revalidateOnFocus: false }
   );
 
-  if (!isReady) {
+  if (!isReady || isLoading) {
     return (
       <div className={`p-4 bg-white rounded-lg border ${className}`}>
         <div className="animate-pulse">
@@ -49,7 +52,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
           selectedWordId={selectedWordId}
         />
       ) : (
-        "Tokens not found"
+        "Tokens not found or sentence is empty."
       )}
     </>
   );

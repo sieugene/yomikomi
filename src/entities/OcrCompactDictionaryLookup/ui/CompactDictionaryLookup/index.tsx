@@ -11,6 +11,7 @@ interface CompactDictionaryLookupProps {
   isOpen: boolean;
   onClose: () => void;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
@@ -18,6 +19,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
   isOpen,
   onClose,
   className = "",
+  children,
 }) => {
   const {
     deepSearchMode,
@@ -72,7 +74,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
           maxHeight: "100vh",
           height: "-webkit-fill-available",
           overflow: "hidden",
-          overflowY: "scroll"
+          overflowY: "scroll",
         }}
       >
         {/* Header */}
@@ -105,6 +107,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
             <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
               Selected Text
             </div>
+            {children || <></>}
             <InteractiveSentence
               sentence={sentence}
               onWordClick={handleWordClick}
