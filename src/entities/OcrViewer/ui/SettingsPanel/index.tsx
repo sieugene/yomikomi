@@ -1,3 +1,4 @@
+import useClickOutside from "@/shared/hooks/useClickOutside";
 import {
   Book,
   ChevronDown,
@@ -9,7 +10,7 @@ import {
   Sliders,
   Type,
 } from "lucide-react";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 interface SettingsPanelProps {
   showBoundingBoxes: boolean;
@@ -40,8 +41,16 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
 
   const toggleExpanded = () => setIsExpanded(!isExpanded);
 
+  const settingsRef = useRef<HTMLDivElement>(null);
+  useClickOutside(settingsRef, () => {
+    setIsExpanded(false);
+  });
+
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm">
+    <div
+      className="sticky top-0 z-30 bg-white border-b border-gray-200 shadow-sm"
+      ref={settingsRef}
+    >
       {/* Collapsed Header */}
       <div
         className="flex items-center justify-between p-3 cursor-pointer select-none"
@@ -156,8 +165,8 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
                   </span>
                 </div>
                 <Slider
-                  min={0.5}
-                  max={3}
+                  min={2}
+                  max={32}
                   step={0.1}
                   value={textScale}
                   onChange={setTextScale}
@@ -246,6 +255,30 @@ export const Slider: React.FC<SliderProps> = ({
   };
 
   const fillPercent = ((value - min) / (max - min)) * 100;
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const handleTouchMoveNative = (e: TouchEvent) => {
+      e.preventDefault(); // disable scrolling while sliding
+      if (!sliderRef.current) return;
+      const rect = slider.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const newRatio = Math.min(Math.max(x / rect.width, 0), 1);
+      const newValue = min + newRatio * (max - min);
+      const steppedValue = Math.round(newValue / step) * step;
+      onChange(steppedValue);
+    };
+
+    slider.addEventListener("touchmove", handleTouchMoveNative, {
+      passive: false,
+    });
+
+    return () => {
+      slider.removeEventListener("touchmove", handleTouchMoveNative);
+    };
+  }, [min, max, step, onChange]);
 
   return (
     <div

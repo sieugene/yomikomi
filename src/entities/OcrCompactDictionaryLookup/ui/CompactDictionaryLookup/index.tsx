@@ -41,12 +41,6 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
     }
   });
 
-  const resultContainerRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(resultContainerRef, () => {
-    clear();
-  });
-
   const handleClose = () => {
     clear();
     onClose();
@@ -136,7 +130,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
             )}
 
             {(selectedToken || loading || error) && (
-              <div className="h-full" ref={resultContainerRef}>
+              <div className="h-full">
                 <SearchResultsPanel
                   results={groupedResults}
                   selectedToken={selectedToken}
@@ -147,7 +141,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
                   isOpen={panelOpen}
                   onClose={() => clear()}
                   baseBottom={0}
-                  className="h-full border-0 shadow-none bg-transparent"
+                  className="h-full border-0 shadow-none bg-transparent relative max-h-none"
                 />
               </div>
             )}

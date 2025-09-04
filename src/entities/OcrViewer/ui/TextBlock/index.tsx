@@ -67,18 +67,13 @@ export const TextBlock: FC<Props> = ({
     };
   }, [displayDimensions, originalDimensions, textBlock]);
 
-  // Calculate responsive font size
   const fontSize = useMemo(() => {
     if (!coords) return 12;
 
-    const baseSize = Math.min(coords.height / 3, 12);
+    const baseSize = Math.min(coords.height / 3, 4);
     const scaledSize = baseSize * textScale;
 
-    // Ensure minimum readable size on mobile
-    const minSize = window.innerWidth < 640 ? 10 : 8;
-    const maxSize = window.innerWidth < 640 ? 16 : 20;
-
-    return Math.max(minSize, Math.min(maxSize, scaledSize));
+    return scaledSize;
   }, [coords, textScale]);
 
   // Gesture handlers
@@ -237,7 +232,9 @@ export const TextBlock: FC<Props> = ({
   return (
     <>
       <div
-        className={`${getBoundingBoxStyle()} ${isSelected ? "z-20" : "z-10"}`}
+        className={`${getBoundingBoxStyle()} ${
+          isSelected ? "z-20" : "z-10"
+        } overflow-y-scroll`}
         style={{
           left: coords.x,
           top: coords.y,
@@ -267,17 +264,16 @@ export const TextBlock: FC<Props> = ({
         {
           <div
             className={`
-              absolute inset-0 flex items-center justify-center p-1
+              flex items-center justify-center
               ${getTextStyle()}
             `}
             style={{
               fontSize: `${fontSize}px`,
               opacity: fontTransparency,
-              lineHeight: "1.1",
             }}
           >
             <span
-              className="text-center break-words black font-bold"
+              className="text-left break-words black"
               style={{
                 textShadow: "0 1px 2px rgba(255,255,255,0.8)",
               }}
