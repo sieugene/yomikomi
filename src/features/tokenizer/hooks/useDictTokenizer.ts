@@ -78,18 +78,17 @@ function mergeTokensAsIpadic(
 }
 
 export const useDictTokenizer = () => {
-  const { coordinator } = useSearchCore();
+  const { coordinator, loading } = useSearchCore();
 
   const onFill = async (tokens: IpadicFeatures[]): Promise<DisplayToken[]> => {
     const by_basic = tokens.map((t) => t.basic_form);
     const combinations = uniqueArray(generateTokenCombinations(by_basic));
-
-    if (coordinator) {
-      const foundEntries = await coordinator.checkTokensAsync(combinations);
-      return mergeTokensAsIpadic(tokens, foundEntries);
+    if (!coordinator) {
+      throw new Error("Dictionary coordinator not initialized");
     }
-    return [];
+    const foundEntries = await coordinator.checkTokensAsync(combinations);
+    return mergeTokensAsIpadic(tokens, foundEntries);
   };
 
-  return { onFill };
+  return { onFill, loading };
 };

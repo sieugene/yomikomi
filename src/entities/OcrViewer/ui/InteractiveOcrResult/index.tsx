@@ -1,10 +1,18 @@
 import { OCRResponse, TextBlock } from "@/features/ocr/types";
-import { Copy, Download, Info, RotateCcw } from "lucide-react";
+import {
+  BookOpenTextIcon,
+  Copy,
+  Download,
+  Info,
+  RotateCcw,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useDownloadText } from "../../hooks/useDownloadText";
 import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
 import { useOcrCopy } from "../../hooks/useOcrCopy";
 import { ImageWithTextOverlays } from "../ImageWithTextOverlays";
+import Link from "next/link";
+import { ROUTES } from "@/shared/routes";
 
 type Props = {
   imageUrl: string;
@@ -72,6 +80,16 @@ export const InteractiveOcrResult: React.FC<Props> = ({ imageUrl, result }) => {
               <Copy className="w-4 h-4 mr-1" />
               Copy All
             </button>
+            <Link
+              href={ROUTES.simpleReader(result.full_text || "")}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <button className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors hover:bg-blue-700">
+                <BookOpenTextIcon className="w-4 h-4 mr-1" />
+                Open in analyzer
+              </button>
+            </Link>
 
             <button
               onClick={() => handleDownloadText(result)}

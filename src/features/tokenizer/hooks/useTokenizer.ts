@@ -20,7 +20,7 @@ export const useTokenizer = (): TokenizerHookReturn => {
     return tokenizer;
   });
 
-  const { onFill } = useDictTokenizer();
+  const { onFill, loading } = useDictTokenizer();
 
   const tokenizeText = async (text: string): Promise<DisplayToken[]> => {
     try {
@@ -28,7 +28,6 @@ export const useTokenizer = (): TokenizerHookReturn => {
       const tokenizeText = await onFill(tokeniRes);
       return tokenizeText;
     } catch (err) {
-      debugger
       console.error("Tokenization error:", err);
       return [];
     }
@@ -36,7 +35,7 @@ export const useTokenizer = (): TokenizerHookReturn => {
 
   return {
     tokenizer: tokenizer ?? null,
-    isReady: Boolean(tokenizer) && !isLoading,
+    isReady: Boolean(tokenizer) && !isLoading && !loading,
     error: error
       ? error instanceof Error
         ? error.message
