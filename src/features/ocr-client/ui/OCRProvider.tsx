@@ -57,12 +57,11 @@ export function OCRProvider({ children }: { children: ReactNode }) {
     
     try {
       console.log('Creating Gutenye OCR instance...');
-      debugger
       const ocr = await window.GutenyeOCR.default.create({
         models: {
-          detectionPath: 'http://localhost:3000/ocr/ch_PP-OCRv4_det_infer.onnx',
-          recognitionPath: 'http://localhost:3000/ocr/ch_PP-OCRv4_rec_infer.onnx',
-          dictionaryPath: "http://localhost:3000/ocr/ppocr_keys_v1.txt"
+          detectionPath: '/ocr/ch_PP-OCRv4_det_infer.onnx',
+          recognitionPath: '/ocr/ch_PP-OCRv4_rec_infer.onnx',
+          dictionaryPath: "/ocr/ppocr_keys_v1.txt"
         }
       });
       
@@ -90,7 +89,7 @@ export function OCRProvider({ children }: { children: ReactNode }) {
     }}>
 
       <Script
-        src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
+        src="/tesseract/tesseract.min.js"
         strategy="afterInteractive"
       />
       
