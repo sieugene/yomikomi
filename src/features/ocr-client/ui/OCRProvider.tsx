@@ -7,13 +7,14 @@ import {
   useContext,
   useState
 } from "react";
+import Tesseract from "tesseract.js";
 
 interface OCRContextProps {
-  tesseractWorker: any | null;
-  gutenyeOCR: any | null;
+  tesseractWorker: Tesseract.Worker | null;
+  gutenyeOCR: Window["GutenyeOCR"]["instance"] | null;
   ocrReady: boolean;
-  createTesseractWorker: (lang?: string) => Promise<any>;
-  createGutenyeOCR: () => Promise<any>;
+  createTesseractWorker: (lang?: string) => Promise<Tesseract.Worker | null>;
+  createGutenyeOCR: () => Promise<Window["GutenyeOCR"]["instance"] | null>;
 }
 
 const OCRContext = createContext<OCRContextProps>({
@@ -27,8 +28,8 @@ const OCRContext = createContext<OCRContextProps>({
 export const useOCR = () => useContext(OCRContext);
 
 export function OCRProvider({ children }: { children: ReactNode }) {
-  const [tesseractWorker, setTesseractWorker] = useState<any>(null);
-  const [gutenyeOCR, setGutenyeOCR] = useState<any>(null);
+  const [tesseractWorker, setTesseractWorker] = useState<Tesseract.Worker | null>(null);
+  const [gutenyeOCR, setGutenyeOCR] = useState<Window["GutenyeOCR"]["instance"] | null>(null);
   const [ocrReady, setOcrReady] = useState(false);
 
   const createTesseractWorker = async (lang: string = 'jpn') => {
@@ -39,7 +40,7 @@ export function OCRProvider({ children }: { children: ReactNode }) {
     try {
       console.log(`Creating Tesseract worker for ${lang}...`);
       const worker = await window.Tesseract.createWorker(lang, 1, {
-        logger: (m: any) => console.log('Tesseract:', m)
+        logger: (m) => console.log('Tesseract:', m)
       });
       
       setTesseractWorker(worker);
@@ -102,11 +103,4 @@ export function OCRProvider({ children }: { children: ReactNode }) {
       {children}
     </OCRContext.Provider>
   );
-}
-
-declare global {
-  interface Window {
-    Tesseract: any;
-    GutenyeOCR: any;
-  }
 }
