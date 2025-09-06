@@ -1,4 +1,3 @@
-// components/DualOCR.tsx - использует оба движка
 "use client";
 
 import React, { useState, useRef } from 'react';
@@ -22,7 +21,6 @@ const processWithGutenye = async (imageFile: File) => {
       setGutenyeInstance(ocr);
     }
 
-    // Конвертируем файл в base64
     const reader = new FileReader();
     const imageData: string = await new Promise((resolve, reject) => {
       reader.onload = () => resolve(reader.result as string);
@@ -30,7 +28,7 @@ const processWithGutenye = async (imageFile: File) => {
       reader.readAsDataURL(imageFile);
     });
 
-    const results = await ocr.detect(imageData); // передаем base64
+    const results = await ocr.detect(imageData);
     console.log('Gutenye Results:', results);
 
     if (results && results.length > 0) {
