@@ -9,8 +9,6 @@ export class OCRApi {
     const formData = new FormData();
     formData.append("file", file);
 
-    debugger;
-
     const response = await fetch(`${api_endpoint}/ocr/with-positions/`, {
       method: "POST",
       body: formData,
