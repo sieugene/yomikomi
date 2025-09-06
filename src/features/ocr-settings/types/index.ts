@@ -4,6 +4,7 @@ export interface OCRSettings {
   retryAttempts: number;
   batchSize: number;
   bearerToken: string
+   isClientSide: boolean
 }
 
 export interface OCRSettingsContextType {
@@ -18,4 +19,5 @@ export const DEFAULT_OCR_SETTINGS: OCRSettings = {
   timeout: 30000,
   retryAttempts: 3,
   batchSize: 5,
+  isClientSide: true
 };

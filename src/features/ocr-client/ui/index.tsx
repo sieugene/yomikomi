@@ -9,8 +9,8 @@ const DualOCR = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [ocrResult, setOcrResult] = useState('');
   const [currentEngine, setCurrentEngine] = useState<'tesseract' | 'gutenye'>('gutenye');
-  const [tesseractWorker, setTesseractWorker] = useState<any>(null);
-  const [gutenyeInstance, setGutenyeInstance] = useState<any>(null);
+  const [tesseractWorker, setTesseractWorker] = useState<Tesseract.Worker | null>(null);
+  const [gutenyeInstance, setGutenyeInstance] = useState<Window["GutenyeOCR"]["instance"] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 const processWithGutenye = async (imageFile: File) => {
@@ -28,12 +28,12 @@ const processWithGutenye = async (imageFile: File) => {
       reader.readAsDataURL(imageFile);
     });
 
-    const results = await ocr.detect(imageData);
+    const results = await ocr!.detect(imageData);
     console.log('Gutenye Results:', results);
 
     if (results && results.length > 0) {
       const extractedText = results
-        .map((result: any, index: number) => {
+        .map((result: { text: string; confidence: number }, index: number) => {
           const confidence = result.confidence ? ` (${(result.confidence * 100).toFixed(1)}%)` : '';
           return `${index + 1}. ${result.text}${confidence}`;
         })
@@ -62,6 +62,9 @@ const processWithGutenye = async (imageFile: File) => {
       }
       
       console.log('Running Tesseract OCR...');
+      if (!worker) {
+        throw new Error('Tesseract worker is not initialized.');
+      }
       const { data: { text } } = await worker.recognize(imageFile);
       
       setOcrResult(`📝 Tesseract Results:\n\n${text || 'No text detected'}`);
@@ -97,10 +100,10 @@ const processWithGutenye = async (imageFile: File) => {
     setOcrResult('🔄 Comparing both engines...\n');
     
     try {
-      const [gutenyeResult, tesseractResult] = await Promise.allSettled([
-        processWithGutenye(selectedImage).then(() => 'gutenye-done'),
-        processWithTesseract(selectedImage).then(() => 'tesseract-done')
-      ]);
+      // const [gutenyeResult, tesseractResult] = await Promise.allSettled([
+      //   processWithGutenye(selectedImage).then(() => 'gutenye-done'),
+      //   processWithTesseract(selectedImage).then(() => 'tesseract-done')
+      // ]);
       
       setOcrResult(prev => `${prev}\n\n✅ Comparison completed!`);
       

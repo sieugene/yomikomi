@@ -15,6 +15,9 @@ import {
 import { OCRAlbumIndexedDB } from "../services/indexedDbService";
 import { OCRApi } from "@/features/ocr/api/ocrApi";
 import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
+import { useOCR } from "@/features/ocr-client/ui/OCRProvider";
+import { OCRResponse } from "@/features/ocr/types";
+import { adaptTesseractResult } from "../lib/adapter";
 
 const OCRAlbumContext = createContext<OCRAlbumContextType | undefined>(
   undefined
@@ -24,12 +27,33 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { settings } = useOCRSettings();
+  const { createTesseractWorker } = useOCR();
   const db = useRef(new OCRAlbumIndexedDB());
   const [albums, setAlbums] = useState<OCRAlbumAlbum[]>([]);
   const [currentAlbum, setCurrentAlbum] = useState<OCRAlbumAlbum | null>(null);
   const [batchProgress, setBatchProgress] =
     useState<BatchProcessingProgress | null>(null);
   const [isDbReady, setIsDbReady] = useState(false);
+  const [tesseractWorker, setTesseractWorker] = useState<Tesseract.Worker | null>(null);
+
+  const processWithTesseract = async (imageFile: File) => {
+    try {
+      console.log("Processing with Tesseract...");
+
+      let worker = tesseractWorker;
+      if (!worker) {
+        worker = await createTesseractWorker("jpn");
+        setTesseractWorker(worker);
+      }
+
+      console.log("Running Tesseract OCR...");
+      const data = await worker?.recognize(imageFile);
+
+      return data;
+    } catch (error) {
+      console.error("Tesseract Error:", error);
+    }
+  };
 
   // Initialize IndexedDB
   useEffect(() => {
@@ -191,12 +215,38 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
           throw new Error("File not found");
         }
 
-        // Process with OCR
-        const ocrResult = await OCRApi.performOCRWithPositions(
-          file,
-          settings.apiEndpoint,
-          settings.bearerToken
-        );
+        let ocrResult: OCRResponse;
+
+        if (settings.isClientSide) {
+          const response = await processWithTesseract(file);
+          if(!response) throw new Error("Tesseract processing failed");
+
+          const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+            return new Promise((resolve, reject) => {
+              const img = new window.Image();
+              img.onload = () => {
+                resolve({ width: img.width, height: img.height });
+              };
+              img.onerror = reject;
+              img.src = URL.createObjectURL(file);
+            });
+          };
+
+          const { width, height } = await getImageDimensions(file);
+
+          ocrResult = adaptTesseractResult(response, {
+            width,
+            height,
+            format: file.type,
+          });
+        } else {
+          // Process with api OCR
+          ocrResult = await OCRApi.performOCRWithPositions(
+            file,
+            settings.apiEndpoint,
+            settings.bearerToken
+          );
+        }
 
         // Update with result
         const completedImage: OCRAlbumImage = {
