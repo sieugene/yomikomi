@@ -60,9 +60,9 @@ export function OCRProvider({ children }: { children: ReactNode }) {
       console.log('Creating Gutenye OCR instance...');
       const ocr = await window.GutenyeOCR.default.create({
         models: {
-          detectionPath: '/ocr/ch_PP-OCRv4_det_infer.onnx',
-          recognitionPath: '/ocr/ch_PP-OCRv4_rec_infer.onnx',
-          dictionaryPath: "/ocr/ppocr_keys_v1.txt"
+          detectionPath: '/ocr/multilingual_det_infer.onnx',
+          recognitionPath: '/ocr/japan_rec_infer.onnx',
+          dictionaryPath: "/ocr/japan_keys.txt"
         }
       });
       
