@@ -2,32 +2,35 @@ import Tesseract from "tesseract.js";
 
 export {};
 
-type GutenyeOCR = {
-  detect: (
-    image: File | string
-  ) => Promise<{ text: string; confidence: number }[]>;
-  new (options: { lang: string; workerPath: string }): {
-    load: () => Promise<void>;
-    recognize: (
-      image: File | string
-    ) => Promise<{ text: string; confidence: number }[]>;
-    terminate: () => Promise<void>;
-  };
-};
-
 declare global {
+  // Define the GutenyeOCR type
+  type GutenyeOCRCreateOptions = {
+    models: {
+      detectionPath: string;
+      recognitionPath: string;
+      dictionaryPath: string;
+    };
+  };
+  type Point = [number, number];
+  interface OCRBox {
+    mean: number;
+    text: string;
+    box: [Point, Point, Point, Point];
+  }
+  type GutenyeOCRResult = OCRBox[];
+
+  type GutenyeOCR = {
+    detect: (
+      image: File | string
+    ) => Promise<GutenyeOCRResult>;
+  };
+  // Extend the Window interface
   interface Window {
     Tesseract: typeof Tesseract;
     GutenyeOCR: {
       instance?: GutenyeOCR;
       default: {
-        create: (options: {
-          models: {
-            detectionPath: string;
-            recognitionPath: string;
-            dictionaryPath: string;
-          };
-        }) => Promise<GutenyeOCR>;
+        create: (options: GutenyeOCRCreateOptions) => Promise<GutenyeOCR>;
       };
     };
   }

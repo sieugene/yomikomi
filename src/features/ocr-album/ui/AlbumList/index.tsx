@@ -10,14 +10,21 @@ import {
 } from "lucide-react";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { OCRAlbumAlbum } from "../../types";
+import { useOCR } from "@/features/ocr-client/context/OCRProvider";
 
 interface AlbumListProps {
   onAlbumSelect: (album: OCRAlbumAlbum) => void;
 }
 
 export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
-  const { albums, deleteAlbum, startBatchProcessing, batchProgress } =
-    useOCRAlbum();
+  const {
+    albums,
+    deleteAlbum,
+    startBatchProcessing,
+    batchProgress,
+    isDbReady,
+  } = useOCRAlbum();
+  const { ocrReady } = useOCR();
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -90,6 +97,14 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
       console.error("Failed to delete album:", error);
     }
   };
+
+  if (!isDbReady || !ocrReady) {
+    return (
+      <div>
+        <h3>Is loading...</h3>
+      </div>
+    );
+  }
 
   if (albums.length === 0) {
     return (
