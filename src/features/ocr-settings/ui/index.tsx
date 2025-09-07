@@ -2,6 +2,7 @@ import { Modal } from "@/shared/ui/Modal";
 import { RotateCcw, Save } from "lucide-react";
 import React, { useState } from "react";
 import { useOCRSettings } from "../context/OCRSettingsContext";
+import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
 
 interface OCRSettingsPanelProps {
   isOpen: boolean;
@@ -63,7 +64,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             />
           </button>
         </div>
-        {!localSettings.isClientSide && (
+        {!localSettings.isClientSide ? (
           <>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -141,6 +142,25 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
               />
               <p className="text-xs text-gray-500 mt-1">
                 Number of files to process simultaneously
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                OCR Engine
+              </label>
+              <select
+                value={localSettings.clientEngine}
+                onChange={(e) => handleChange("clientEngine", e.target.value)}
+                className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value={OCR_ENGINE.TESSERACT}>Tesseract</option>
+                <option value={OCR_ENGINE.GUTENYE}>Gutenye</option>
+              </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Select OCR engine to run in browser
               </p>
             </div>
           </>
