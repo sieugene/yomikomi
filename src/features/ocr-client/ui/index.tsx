@@ -1,93 +1,149 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { useOCR } from './OCRProvider';
+import React, { useState, useRef } from "react";
+import { useOCR } from "./OCRProvider";
 
 const DualOCR = () => {
   const { ocrReady, createTesseractWorker, createGutenyeOCR } = useOCR();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [ocrResult, setOcrResult] = useState('');
-  const [currentEngine, setCurrentEngine] = useState<'tesseract' | 'gutenye'>('gutenye');
-  const [tesseractWorker, setTesseractWorker] = useState<Tesseract.Worker | null>(null);
-  const [gutenyeInstance, setGutenyeInstance] = useState<Window["GutenyeOCR"]["instance"] | null>(null);
+  const [ocrResult, setOcrResult] = useState("");
+  const [currentEngine, setCurrentEngine] = useState<"tesseract" | "gutenye">(
+    "gutenye"
+  );
+  const [tesseractWorker, setTesseractWorker] =
+    useState<Tesseract.Worker | null>(null);
+  const [gutenyeInstance, setGutenyeInstance] = useState<
+    Window["GutenyeOCR"]["instance"] | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-const processWithGutenye = async (imageFile: File) => {
-  try {
-    let ocr = gutenyeInstance;
-    if (!ocr) {
-      ocr = await createGutenyeOCR();
-      setGutenyeInstance(ocr);
+  const processWithGutenye = async (imageFile: File) => {
+    try {
+      let ocr = gutenyeInstance;
+      if (!ocr) {
+        ocr = await createGutenyeOCR();
+        setGutenyeInstance(ocr);
+      }
+
+      const reader = new FileReader();
+      const imageData: string = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
+
+      const results = await ocr!.detect(imageData);
+      console.log("Gutenye Results:", results);
+
+      if (results && results.length > 0) {
+        const extractedText = results
+          .map(
+            (result: { text: string; confidence: number }, index: number) => {
+              const confidence = result.confidence
+                ? ` (${(result.confidence * 100).toFixed(1)}%)`
+                : "";
+              return `${index + 1}. ${result.text}${confidence}`;
+            }
+          )
+          .join("\n");
+
+        setOcrResult(`🚀 Gutenye OCR Results:\n\n${extractedText}`);
+      } else {
+        setOcrResult("Gutenye: No text detected");
+      }
+    } catch (error) {
+      console.error("Gutenye OCR Error:", error);
+      setOcrResult(`Gutenye Error: ${(error as Error).message}`);
     }
-
-    const reader = new FileReader();
-    const imageData: string = await new Promise((resolve, reject) => {
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(imageFile);
-    });
-
-    const results = await ocr!.detect(imageData);
-    console.log('Gutenye Results:', results);
-
-    if (results && results.length > 0) {
-      const extractedText = results
-        .map((result: { text: string; confidence: number }, index: number) => {
-          const confidence = result.confidence ? ` (${(result.confidence * 100).toFixed(1)}%)` : '';
-          return `${index + 1}. ${result.text}${confidence}`;
-        })
-        .join('\n');
-
-      setOcrResult(`🚀 Gutenye OCR Results:\n\n${extractedText}`);
-    } else {
-      setOcrResult('Gutenye: No text detected');
-    }
-
-  } catch (error) {
-    console.error('Gutenye OCR Error:', error);
-    setOcrResult(`Gutenye Error: ${(error as Error).message}`);
-  }
-};
-
+  };
 
   const processWithTesseract = async (imageFile: File) => {
     try {
-      console.log('Processing with Tesseract...');
-      
+      console.log("Processing with Tesseract...");
+
       let worker = tesseractWorker;
       if (!worker) {
-        worker = await createTesseractWorker('jpn');
+        worker = await createTesseractWorker("jpn");
         setTesseractWorker(worker);
       }
-      
-      console.log('Running Tesseract OCR...');
+
+      console.log("Running Tesseract OCR...");
       if (!worker) {
-        throw new Error('Tesseract worker is not initialized.');
+        throw new Error("Tesseract worker is not initialized.");
       }
-      const { data: { text } } = await worker.recognize(imageFile);
-      
-      setOcrResult(`📝 Tesseract Results:\n\n${text || 'No text detected'}`);
-      
+      const {
+        data: { text },
+      } = await worker.recognize(imageFile);
+
+      setOcrResult(`📝 Tesseract Results:\n\n${text || "No text detected"}`);
     } catch (error) {
-      console.error('Tesseract Error:', error);
+      console.error("Tesseract Error:", error);
       setOcrResult(`Tesseract Error: ${(error as Error).message}`);
     }
   };
 
+  const resizeImageLetterbox = (file: File, size = 960): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        if (!e.target?.result) return reject("Failed to read file");
+        img.src = e.target.result as string;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("Cannot get canvas context");
+
+        ctx.fillStyle = "white"; // фон
+        ctx.fillRect(0, 0, size, size);
+
+        const ratio = Math.min(size / img.width, size / img.height);
+        const newWidth = img.width * ratio;
+        const newHeight = img.height * ratio;
+        const xOffset = (size - newWidth) / 2;
+        const yOffset = (size - newHeight) / 2;
+
+        ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const resizedFile = new File([blob], file.name, {
+              type: file.type,
+              lastModified: Date.now(),
+            });
+            resolve(resizedFile);
+          } else reject("Canvas toBlob failed");
+        }, file.type);
+      };
+
+      img.onerror = reject;
+      reader.onerror = reject;
+
+      reader.readAsDataURL(file);
+    });
+  };
+
   const processImage = async () => {
     if (!selectedImage || !ocrReady) return;
-    
+
     setIsProcessing(true);
-    
+
+    const resizedFile = await resizeImageLetterbox(selectedImage, 960);
     try {
-      if (currentEngine === 'gutenye') {
-        await processWithGutenye(selectedImage);
+      if (currentEngine === "gutenye") {
+        await processWithGutenye(resizedFile);
       } else {
-        await processWithTesseract(selectedImage);
+        await processWithTesseract(resizedFile);
       }
     } catch (error) {
-      console.error('Processing error:', error);
+      console.error("Processing error:", error);
     } finally {
       setIsProcessing(false);
     }
@@ -95,20 +151,19 @@ const processWithGutenye = async (imageFile: File) => {
 
   const compareEngines = async () => {
     if (!selectedImage || !ocrReady) return;
-    
+
     setIsProcessing(true);
-    setOcrResult('🔄 Comparing both engines...\n');
-    
+    setOcrResult("🔄 Comparing both engines...\n");
+
     try {
       // const [gutenyeResult, tesseractResult] = await Promise.allSettled([
       //   processWithGutenye(selectedImage).then(() => 'gutenye-done'),
       //   processWithTesseract(selectedImage).then(() => 'tesseract-done')
       // ]);
-      
-      setOcrResult(prev => `${prev}\n\n✅ Comparison completed!`);
-      
+
+      setOcrResult((prev) => `${prev}\n\n✅ Comparison completed!`);
     } catch (error) {
-      console.error('Comparison error:', error);
+      console.error("Comparison error:", error);
     } finally {
       setIsProcessing(false);
     }
@@ -116,13 +171,15 @@ const processWithGutenye = async (imageFile: File) => {
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       setSelectedImage(file);
-      setOcrResult('');
-      
+      setOcrResult("");
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = document.getElementById('preview-image') as HTMLImageElement;
+        const img = document.getElementById(
+          "preview-image"
+        ) as HTMLImageElement;
         if (img && e.target?.result) {
           img.src = e.target.result as string;
         }
@@ -137,7 +194,9 @@ const processWithGutenye = async (imageFile: File) => {
         <div className="flex items-center justify-center p-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Loading OCR Engines...</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Loading OCR Engines...
+            </h2>
             <p className="text-gray-600">Loading Tesseract.js + Gutenye OCR</p>
           </div>
         </div>
@@ -151,17 +210,19 @@ const processWithGutenye = async (imageFile: File) => {
         <span className="text-2xl">🔥</span>
         Dual Japanese OCR (Local Files)
       </h1>
-      
+
       {/* Engine selector */}
       <div className="mb-6 flex gap-4 items-center">
-        <label className="text-sm font-medium text-gray-700">Choose Engine:</label>
+        <label className="text-sm font-medium text-gray-700">
+          Choose Engine:
+        </label>
         <label className="flex items-center gap-2">
           <input
             type="radio"
             name="engine"
             value="gutenye"
-            checked={currentEngine === 'gutenye'}
-            onChange={(e) => setCurrentEngine(e.target.value as 'gutenye')}
+            checked={currentEngine === "gutenye"}
+            onChange={(e) => setCurrentEngine(e.target.value as "gutenye")}
             className="text-blue-600"
           />
           <span>🚀 Gutenye OCR (PaddleOCR)</span>
@@ -171,26 +232,30 @@ const processWithGutenye = async (imageFile: File) => {
             type="radio"
             name="engine"
             value="tesseract"
-            checked={currentEngine === 'tesseract'}
-            onChange={(e) => setCurrentEngine(e.target.value as 'tesseract')}
+            checked={currentEngine === "tesseract"}
+            onChange={(e) => setCurrentEngine(e.target.value as "tesseract")}
             className="text-blue-600"
           />
           <span>📝 Tesseract.js</span>
         </label>
       </div>
-      
+
       {/* File Upload */}
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Select Japanese text image
         </label>
-        <div 
+        <div
           className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
           <span className="text-4xl mb-2 block">📄</span>
-          <p className="text-gray-600">Click to upload image or drag and drop</p>
-          <p className="text-sm text-gray-500 mt-1">PNG, JPG, JPEG up to 10MB</p>
+          <p className="text-gray-600">
+            Click to upload image or drag and drop
+          </p>
+          <p className="text-sm text-gray-500 mt-1">
+            PNG, JPG, JPEG up to 10MB
+          </p>
         </div>
         <input
           ref={fileInputRef}
@@ -206,9 +271,9 @@ const processWithGutenye = async (imageFile: File) => {
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-2">Image Preview:</h3>
           <div className="border rounded-lg p-4 bg-gray-50">
-            <img 
+            <img
               id="preview-image"
-              alt="Preview" 
+              alt="Preview"
               className="max-w-full max-h-96 mx-auto rounded shadow"
             />
           </div>
@@ -230,12 +295,13 @@ const processWithGutenye = async (imageFile: File) => {
               </>
             ) : (
               <>
-                {currentEngine === 'gutenye' ? '🚀' : '📝'}
-                Extract with {currentEngine === 'gutenye' ? 'Gutenye' : 'Tesseract'}
+                {currentEngine === "gutenye" ? "🚀" : "📝"}
+                Extract with{" "}
+                {currentEngine === "gutenye" ? "Gutenye" : "Tesseract"}
               </>
             )}
           </button>
-          
+
           <button
             onClick={compareEngines}
             disabled={isProcessing}
@@ -247,9 +313,7 @@ const processWithGutenye = async (imageFile: File) => {
                 Comparing...
               </>
             ) : (
-              <>
-                ⚡ Compare Both Engines
-              </>
+              <>⚡ Compare Both Engines</>
             )}
           </button>
         </div>
@@ -266,7 +330,6 @@ const processWithGutenye = async (imageFile: File) => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
