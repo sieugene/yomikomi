@@ -279,6 +279,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         // Update with result
         const completedImage: OCRAlbumImage = {
           ...updatedImage,
+          // TODO because make resize (originalFile)
+          originalFile: file,
           status: "completed",
           ocrResult,
           processedAt: new Date(),
