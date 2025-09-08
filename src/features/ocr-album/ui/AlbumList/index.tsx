@@ -7,6 +7,7 @@ import {
   CheckCircle,
   AlertCircle,
   Image,
+  AlertTriangle,
 } from "lucide-react";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { OCRAlbumAlbum } from "../../types";
@@ -98,7 +99,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  if (!isDbReady || !ocrReady) {
+  if (!isDbReady) {
     return (
       <div>
         <h3>Is loading...</h3>
@@ -122,6 +123,15 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
 
   return (
     <div className="space-y-4">
+      {!ocrReady && (
+        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+          <div className="flex items-center text-sm text-yellow-800">
+            <AlertTriangle className="w-4 h-4 mr-2 text-yellow-600" />
+            OCR is still initializing or something went wrong. Processing may be
+            unstable.
+          </div>
+        </div>
+      )}
       {albums.map((album) => (
         <div
           key={album.id}
