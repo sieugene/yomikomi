@@ -3,7 +3,6 @@ import { OCRResponse } from "@/features/ocr/types";
 export interface OCRAlbumImage {
   id: string;
   filename: string;
-  originalFile: File;
   processedAt: Date;
   status: "pending" | "processing" | "completed" | "failed";
   ocrResult?: OCRResponse;
@@ -37,7 +36,8 @@ export interface BatchProcessingProgress {
 }
 
 export interface OCRAlbumContextType {
-  isDbReady: boolean
+  getImageFile: (imageId: string) => Promise<File | null>;
+  isDbReady: boolean;
   albums: OCRAlbumAlbum[];
   currentAlbum: OCRAlbumAlbum | null;
   batchProgress: BatchProcessingProgress | null;
