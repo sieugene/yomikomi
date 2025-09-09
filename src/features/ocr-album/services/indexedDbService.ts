@@ -2,7 +2,7 @@ import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
 import { OCRAlbumAlbum, OCRAlbumImage } from "../types";
 
 const DB_NAME = "OCRAlbumDB";
-const DB_VERSION = 2;
+const DB_VERSION = 1;
 const ALBUMS_STORE = "albums";
 const IMAGES_STORE = "images";
 const FILES_STORE = "files";
