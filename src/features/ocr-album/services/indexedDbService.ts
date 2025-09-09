@@ -85,7 +85,6 @@ export class OCRAlbumIndexedDB {
   private async _initWithRetry(retries = 3): Promise<void> {
     for (let i = 0; i < retries; i++) {
       try {
-        throw new Error("f"); // --- IGNORE ---
         await this._initDatabase();
         this.ready = true;
         this.files.cleanupOldFiles().catch(console.error);
