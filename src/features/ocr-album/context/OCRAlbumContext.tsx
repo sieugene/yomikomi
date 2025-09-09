@@ -139,7 +139,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     const images: OCRAlbumImage[] = sortedFiles.map((file, index) => ({
       id: `image_${albumId}_${index}`,
       filename: generateFilename(file.name, index),
-      originalFile: file,
       processedAt: now,
       status: "pending",
       order: index,
@@ -153,9 +152,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       await db.current.createAlbum(album);
 
       // Store images and files
-      for (const image of images) {
-        await db.current.createImage(image);
-        await db.current.storeFile(`file_${image.id}`, image.originalFile);
+      for (const [index, image] of images.entries()) {
+        await db.current.createImage(image, sortedFiles[index]);
       }
 
       await loadAlbums();
@@ -233,10 +231,9 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         const updatedImage = { ...image, status: "processing" as const };
         await db.current.updateImage(updatedImage);
 
-        // Get the file
-        // const file = await db.current.getFile(`file_${image.id}`);
-        const dbFile = await db.current.getFile(`file_${image.id}`);
+        const dbFile = await db.current.getImageFile(image.id);
         const file = await resizeImageLetterbox(dbFile!, 960);
+
         if (!file) {
           throw new Error("File not found");
         }
@@ -259,7 +256,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
           if (settings.clientEngine === OCR_ENGINE.GUTENYE) {
             const response = await processWithGutenye(file);
             if (!response) throw new Error("GUTENYE processing failed");
-             ocrResult = adaptGutenyeOCR(response, {
+            ocrResult = adaptGutenyeOCR(response, {
               width,
               height,
               format: file.type,
@@ -276,16 +273,14 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (!ocrResult) throw new Error("OCR result is missing");
 
-        // Update with result
+        //  Update with result
         const completedImage: OCRAlbumImage = {
           ...updatedImage,
-          // TODO because make resize (originalFile)
-          originalFile: file,
           status: "completed",
           ocrResult,
           processedAt: new Date(),
         };
-        await db.current.updateImage(completedImage);
+        await db.current.updateImage(completedImage, file);
 
         return { success: true, image: completedImage };
       } catch (error) {
@@ -309,6 +304,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!isDbReady) throw new Error("Database not ready");
 
     const images = await db.current.getAlbumImages(albumId);
+
     const pendingImages = images.filter(
       (img) => img.status === "pending" || img.status === "failed"
     );
@@ -400,7 +396,13 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     setBatchProgress(null);
   };
 
+  const getImageFile = async (imageId: string): Promise<File | null> => {
+    if (!isDbReady) return null;
+    return await db.current.getImageFile(imageId);
+  };
+
   const value: OCRAlbumContextType = {
+    getImageFile,
     isDbReady,
     albums,
     currentAlbum,

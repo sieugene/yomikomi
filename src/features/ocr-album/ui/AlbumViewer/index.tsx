@@ -2,18 +2,24 @@
 
 import { OcrViewer } from "@/entities/OcrViewer/ui";
 import { MobileNavigation } from "@/entities/OcrViewer/ui/MobileNavigation";
-import Link from "next/link";
 import { ROUTES } from "@/shared/routes";
 import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Home,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
 import { FC, useMemo } from "react";
 import useSWR from "swr";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
-import { ChevronLeft, ChevronRight, Home, AlertCircle, Loader2 } from "lucide-react";
 
 type Props = ALBUM_PAGE_PARAMS;
 
 export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
-  const { getAlbumImages, getAlbum, isDbReady } = useOCRAlbum();
+  const { getAlbumImages, getAlbum, isDbReady, getImageFile } = useOCRAlbum();
 
   const { data: images, isLoading: imagesLoading } = useSWR(
     albumId && isDbReady ? `album-images-${albumId}` : null,
@@ -37,8 +43,12 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center p-8">
           <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-blue-600" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Loading Album</h2>
-          <p className="text-gray-600">Please wait while we load your OCR results...</p>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+            Loading Album
+          </h2>
+          <p className="text-gray-600">
+            Please wait while we load your OCR results...
+          </p>
         </div>
       </div>
     );
@@ -50,8 +60,12 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Invalid Album</h2>
-          <p className="text-gray-600 mb-4">The album ID is missing or invalid.</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Invalid Album
+          </h2>
+          <p className="text-gray-600 mb-4">
+            The album ID is missing or invalid.
+          </p>
           <Link
             href={ROUTES.home}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -69,9 +83,12 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <div className="text-center max-w-md">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-orange-500" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Page Not Found</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Page Not Found
+          </h2>
           <p className="text-gray-600 mb-4">
-            Page {page} doesnt exist in this album. There are {totalPages} pages available.
+            Page {page} doesnt exist in this album. There are {totalPages} pages
+            available.
           </p>
           <div className="space-y-2">
             <Link
@@ -115,7 +132,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
                 Back to Albums
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">
-                {album?.name || 'OCR Album'}
+                {album?.name || "OCR Album"}
               </h1>
               <p className="text-gray-600">
                 Image {pageData.order + 1} of {totalPages} • {pageData.filename}
@@ -142,13 +159,20 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
                 Image {pageData.order + 1} • {pageData.filename}
               </div>
               {pageData.status && (
-                <div className={`text-xs mt-1 font-medium ${
-                  pageData.status === 'completed' ? 'text-green-600' :
-                  pageData.status === 'failed' ? 'text-red-600' :
-                  pageData.status === 'processing' ? 'text-blue-600' :
-                  'text-gray-600'
-                }`}>
-                  Status: {pageData.status.charAt(0).toUpperCase() + pageData.status.slice(1)}
+                <div
+                  className={`text-xs mt-1 font-medium ${
+                    pageData.status === "completed"
+                      ? "text-green-600"
+                      : pageData.status === "failed"
+                      ? "text-red-600"
+                      : pageData.status === "processing"
+                      ? "text-blue-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  Status:{" "}
+                  {pageData.status.charAt(0).toUpperCase() +
+                    pageData.status.slice(1)}
                 </div>
               )}
             </div>
@@ -156,9 +180,10 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
 
           {/* OCR Viewer */}
           <OcrViewer
-            originalFile={pageData.originalFile}
+            id={pageData.id}
             ocrResult={pageData.ocrResult}
             error={pageData.error}
+            getImageFile={getImageFile}
           />
         </div>
       </div>
@@ -169,7 +194,9 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
           <div className="flex items-center justify-between">
             <NavButton
               label="Previous Page"
-              href={prevPage ? ROUTES.album({ albumId, page: prevPage }) : undefined}
+              href={
+                prevPage ? ROUTES.album({ albumId, page: prevPage }) : undefined
+              }
               disabled={!prevPage}
               variant="secondary"
               icon={<ChevronLeft className="w-4 h-4" />}
@@ -190,7 +217,9 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
 
             <NavButton
               label="Next Page"
-              href={nextPage ? ROUTES.album({ albumId, page: nextPage }) : undefined}
+              href={
+                nextPage ? ROUTES.album({ albumId, page: nextPage }) : undefined
+              }
               disabled={!nextPage}
               variant="primary"
               icon={<ChevronRight className="w-4 h-4" />}
@@ -221,7 +250,8 @@ const NavButton: FC<NavButtonProps> = ({
   icon,
   iconPosition = "left",
 }) => {
-  const baseClasses = "inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors";
+  const baseClasses =
+    "inline-flex items-center px-4 py-2 rounded-lg font-medium transition-colors";
   const variants = {
     primary: disabled
       ? "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -240,7 +270,9 @@ const NavButton: FC<NavButtonProps> = ({
   );
 
   if (disabled || !href) {
-    return <div className={`${baseClasses} ${variants[variant]}`}>{content}</div>;
+    return (
+      <div className={`${baseClasses} ${variants[variant]}`}>{content}</div>
+    );
   }
 
   return (

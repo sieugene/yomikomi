@@ -10,10 +10,21 @@ import { GestureHints } from "./GestureHints";
 import { InteractiveOcrResult } from "./InteractiveOcrResult";
 import { OcrFailure } from "./OcrFailure";
 import { MobileUsageTips } from "./MobileUsageTips";
+import useSWR from "swr";
 
-type Props = Pick<OCRAlbumImage, "originalFile" | "ocrResult" | "error">;
+type Props = Pick<OCRAlbumImage, "ocrResult" | "error" | "id"> & {
+  getImageFile: (imageId: string) => Promise<File | null>;
+};
 
-export const OcrViewer: FC<Props> = ({ originalFile, ocrResult, error }) => {
+export const OcrViewer: FC<Props> = ({
+  getImageFile,
+  ocrResult,
+  error,
+  id,
+}) => {
+  const { data: originalFile } = useSWR(`image-file-${id}`, () =>
+    getImageFile(id)
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(!!originalFile);
 
