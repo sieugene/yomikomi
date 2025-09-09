@@ -94,7 +94,22 @@ export class OCRAlbumIndexedDB {
           await new Promise((r) => setTimeout(r, 2 ** i * 1000));
       }
     }
+    await this.reset();
     throw new Error("Failed to initialize IndexedDB");
+  }
+
+  async reset(): Promise<void> {
+    this.ready = false;
+    this.initPromise = null;
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.deleteDatabase(DB_NAME);
+      req.onsuccess = () => {
+        console.log("Database deleted successfully");
+        resolve();
+      };
+      req.onerror = () => reject(req.error);
+      req.onblocked = () => console.warn("Database deletion blocked");
+    });
   }
 
   private async _initDatabase(): Promise<void> {
