@@ -1,10 +1,16 @@
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 10,
+  userScalable: true,
+};
+
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body>{children}</body>
-    </html>
+    <>
+      <main>{children}</main>
+    </>
   );
 }
