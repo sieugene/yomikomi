@@ -1,8 +1,9 @@
 import type { TextBlock as TextBlockT } from "@/features/ocr/types";
 import { FC, useCallback, useMemo, useState } from "react";
-import { useGestureHandler } from "../../../../shared/hooks/useGestureHandler";
-import { useCompactDictionary } from "../../hooks/useCompactDictionary";
+
+import { useDoubleTap } from "@/shared/hooks/useDoubleTap";
 import { CompactDictionaryLookup } from "../../../OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
+import { useCompactDictionary } from "../../hooks/useCompactDictionary";
 import { ContextMenu } from "../ContextMenu";
 
 type Props = {
@@ -37,11 +38,6 @@ export const TextBlock: FC<Props> = ({
   showDictionary,
 }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({
-    x: 0,
-    y: 0,
-  });
-  const [isPressed, setIsPressed] = useState(false);
 
   const dictionary = useCompactDictionary();
 
@@ -76,43 +72,18 @@ export const TextBlock: FC<Props> = ({
     return scaledSize;
   }, [coords, textScale]);
 
-  // Gesture handlers
-  const handleLongPress = useCallback(
-    (x: number, y: number) => {
-      setContextMenuPosition({ x, y });
+  const handleDoubleTap = useCallback(
+    () => {
       setShowContextMenu(true);
       onTextClick(textBlock);
-
-      // Haptic feedback
-      if ("vibrate" in navigator) {
-        navigator.vibrate(50);
-      }
+      // dictionary.handleToggle(textBlock.text);
     },
-    [onTextClick, textBlock]
+    [dictionary, showDictionary, textBlock.text]
   );
 
-  const handleDoubleTap = useCallback(() => {
-    if (showDictionary) {
-      dictionary.handleToggle(textBlock.text);
-    }
-  }, [dictionary, showDictionary, textBlock.text]);
-
-  const handleSwipeUp = useCallback(() => {
-    if (isSelected && showDictionary) {
-      dictionary.handleOpen(textBlock.text);
-    }
-  }, [dictionary, isSelected, showDictionary, textBlock.text]);
-
-  const {
-    handleTouchStart,
-    handleTouchMove,
-    handleTouchEnd,
-    handleTouchCancel,
-    isLongPressing,
-  } = useGestureHandler({
-    onLongPress: handleLongPress,
+  const { handleTouchEnd } = useDoubleTap({
     onDoubleTap: handleDoubleTap,
-    onSwipeUp: handleSwipeUp,
+    doubleTapDelay: 800,
   });
 
   // Context menu actions
@@ -149,54 +120,6 @@ export const TextBlock: FC<Props> = ({
     }
   }, [textBlock.text]);
 
-  // Touch event handlers with gesture support
-  const handlePointerDown = useCallback(
-    (e: React.PointerEvent) => {
-      setIsPressed(true);
-
-      // Convert to touch event for gesture handler
-      const touchEvent = {
-        touches: [{ clientX: e.clientX, clientY: e.clientY }],
-      } as unknown;
-
-      handleTouchStart(touchEvent as React.TouchEvent);
-    },
-    [handleTouchStart]
-  );
-
-  const handlePointerMove = useCallback(
-    (e: React.PointerEvent) => {
-      const touchEvent = {
-        touches: [{ clientX: e.clientX, clientY: e.clientY }],
-      } as unknown;
-
-      handleTouchMove(touchEvent as React.TouchEvent);
-    },
-    [handleTouchMove]
-  );
-
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent) => {
-      setIsPressed(false);
-
-      if (!isLongPressing && !showContextMenu) {
-        onTextClick(textBlock);
-      }
-
-      const touchEvent = {
-        changedTouches: [{ clientX: e.clientX, clientY: e.clientY }],
-      } as unknown;
-
-      handleTouchEnd(touchEvent as React.TouchEvent);
-    },
-    [handleTouchEnd, isLongPressing, onTextClick, textBlock, showContextMenu]
-  );
-
-  const handlePointerCancel = useCallback(() => {
-    setIsPressed(false);
-    handleTouchCancel();
-  }, [handleTouchCancel]);
-
   if (!coords) return null;
 
   // Dynamic styling based on state and settings
@@ -208,19 +131,14 @@ export const TextBlock: FC<Props> = ({
       return `${baseClasses} bg-transparent border-transparent`;
 
     if (isSelected) {
-      return `${baseClasses} bg-blue-500/20 border-2 border-blue-500 shadow-lg shadow-blue-500/20 ${
-        isPressed || isLongPressing ? "bg-blue-500/30 scale-[1.02]" : ""
-      }`;
+      return `${baseClasses} bg-blue-500/20 shadow-lg shadow-blue-500/20`;
     }
 
-    return `${baseClasses} bg-green-500/10 border border-green-400 hover:bg-green-500/20 ${
-      isPressed ? "bg-green-500/25 scale-[1.01]" : ""
-    }`;
+    return `${baseClasses} bg-green-500/10 hover:bg-green-500/20`;
   };
 
   const getTextStyle = () => {
-    const baseClasses =
-      "pointer-events-none select-none font-medium transition-all duration-150";
+    const baseClasses = "select-none font-medium transition-all duration-150";
 
     if (isSelected) {
       return `${baseClasses} text-blue-900 drop-shadow-sm`;
@@ -233,19 +151,19 @@ export const TextBlock: FC<Props> = ({
     <>
       <div
         className={`${getBoundingBoxStyle()} ${
-          isSelected ? "z-20" : "z-10"
-        } overflow-y-scroll`}
+          isSelected ? "z-20 overflow-y-scroll" : "z-10"
+        }`}
         style={{
           left: coords.x,
           top: coords.y,
           width: coords.width,
           height: coords.height,
         }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerCancel}
-        onPointerLeave={() => setIsPressed(false)}
+        onClick={() => {
+          onTextClick(textBlock);
+        }}
+        onTouchEnd={isSelected ? handleTouchEnd : () => {}}
+        onMouseUp={isSelected ? handleTouchEnd : () => {}}
         title={`${textBlock.text} (${(textBlock.confidence * 100).toFixed(
           1
         )}%)`}
@@ -255,16 +173,10 @@ export const TextBlock: FC<Props> = ({
         aria-pressed={isSelected}
         data-text-block-id={textBlock.id}
       >
-        {/* Long press indicator */}
-        {isLongPressing && (
-          <div className="absolute inset-0 bg-orange-500/30 rounded animate-pulse border-2 border-orange-500" />
-        )}
-
         {/* Text overlay - only show when selected or pressed */}
         {
           <div
             className={`
-              flex items-center justify-center
               ${getTextStyle()}
             `}
             style={{
@@ -273,9 +185,11 @@ export const TextBlock: FC<Props> = ({
             }}
           >
             <span
-              className="text-left break-words black"
+              className="text-left break-words black block max-w"
               style={{
                 textShadow: "0 1px 2px rgba(255,255,255,0.8)",
+                textAlign: "justify",
+                textAlignLast: "justify",
               }}
             >
               {textBlock.text}
@@ -296,7 +210,7 @@ export const TextBlock: FC<Props> = ({
         {/* Selection indicator dots */}
         {isSelected && (
           <div className="absolute -top-2 -right-2 z-30">
-            <div className="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-sm animate-pulse" />
+            <div className="w-3 h-3 bg-blue-600 rounded-full border-white shadow-sm animate-pulse" />
           </div>
         )}
       </div>
@@ -304,7 +218,7 @@ export const TextBlock: FC<Props> = ({
       {/* Context Menu */}
       <ContextMenu
         isOpen={showContextMenu}
-        position={contextMenuPosition}
+        coordsY={coords.y}
         selectedText={textBlock.text}
         onClose={() => setShowContextMenu(false)}
         onCopy={handleCopy}

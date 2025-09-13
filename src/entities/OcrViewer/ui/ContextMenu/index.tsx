@@ -1,10 +1,10 @@
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { Book, Bookmark, Copy, Search, Share2, X } from "lucide-react";
-import { FC, useEffect, useRef } from "react";
+import { FC, useRef } from "react";
 
 interface ContextMenuProps {
+  coordsY: number;
   isOpen: boolean;
-  position: { x: number; y: number };
   selectedText: string;
   onClose: () => void;
   onCopy: () => void;
@@ -15,8 +15,8 @@ interface ContextMenuProps {
 }
 
 export const ContextMenu: FC<ContextMenuProps> = ({
+  coordsY,
   isOpen,
-  position,
   selectedText,
   onClose,
   onCopy,
@@ -28,40 +28,6 @@ export const ContextMenu: FC<ContextMenuProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   useClickOutside(menuRef, onClose);
-
-  // Position adjustment to keep menu in viewport
-  useEffect(() => {
-    if (!isOpen || !menuRef.current) return;
-
-    const menu = menuRef.current;
-    const rect = menu.getBoundingClientRect();
-    const viewport = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-
-    let adjustedX = position.x;
-    let adjustedY = position.y;
-
-    // Adjust horizontal position
-    if (adjustedX + rect.width > viewport.width - 20) {
-      adjustedX = viewport.width - rect.width - 20;
-    }
-    if (adjustedX < 20) {
-      adjustedX = 20;
-    }
-
-    // Adjust vertical position
-    if (adjustedY + rect.height > viewport.height - 20) {
-      adjustedY = position.y - rect.height - 10;
-    }
-    if (adjustedY < 20) {
-      adjustedY = 20;
-    }
-
-    menu.style.left = `${adjustedX}px`;
-    menu.style.top = `${adjustedY}px`;
-  }, [isOpen, position]);
 
   if (!isOpen) return null;
 
@@ -112,16 +78,12 @@ export const ContextMenu: FC<ContextMenuProps> = ({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
       style={{
-        left: position.x,
-        top: position.y,
-        minWidth: "200px",
-        maxWidth: "280px",
-        transform: "translateZ(0)", // Force hardware acceleration
+        top: coordsY,
       }}
+      className="absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-30 min-w-[200px] max-w-[280px]"
     >
-      {/* Header with selected text */}
+      {/* Header */}
       <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-100">
         <div className="flex items-start justify-between">
           <div className="flex-1 mr-2">
@@ -150,11 +112,9 @@ export const ContextMenu: FC<ContextMenuProps> = ({
               item.action();
               onClose();
             }}
-            className={`
-              w-full flex items-center px-4 py-3 text-left text-sm font-medium
+            className={`w-full flex items-center px-4 py-3 text-left text-sm font-medium
               transition-colors duration-150 hover:bg-gray-50 active:bg-gray-100
-              ${item.color || "text-gray-700"}
-            `}
+              ${item.color || "text-gray-700"}`}
           >
             <span className={`mr-3 ${item.color || "text-gray-500"}`}>
               {item.icon}
@@ -169,11 +129,9 @@ export const ContextMenu: FC<ContextMenuProps> = ({
         ))}
       </div>
 
-      {/* Mobile-specific hint */}
-      <div className="sm:hidden px-4 py-2 bg-gray-50 border-t border-gray-100">
-        <div className="text-xs text-gray-500 text-center">
-          Long press for more options
-        </div>
+      {/* Mobile hint */}
+      <div className="sm:hidden px-4 py-2 bg-gray-50 border-t border-gray-100 text-center text-xs text-gray-500">
+        Long press for more options
       </div>
     </div>
   );
