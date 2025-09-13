@@ -101,9 +101,12 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden h-full">
           {/* Sentence Section */}
-          <div className="p-4 border-b border-gray-50 bg-gray-50/50">
+          <div
+            className="p-4 border-b border-gray-50 bg-gray-50/50"
+            style={{ height: "40%", overflow: "hidden", overflowY: "scroll" }}
+          >
             <div className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wide">
               Selected Text
             </div>
@@ -117,7 +120,10 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
           </div>
 
           {/* Results Section */}
-          <div className="flex-1 min-h-0">
+          <div
+            className="flex-1 min-h-0"
+            style={{ height: "60%", overflowY: "scroll" }}
+          >
             {!selectedToken && !loading && (
               <div className="p-6 text-center">
                 <div className="inline-flex p-3 bg-blue-50 rounded-full mb-3">
