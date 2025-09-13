@@ -67,11 +67,11 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
             The album ID is missing or invalid.
           </p>
           <Link
-            href={ROUTES.home}
+            href={ROUTES.albums}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Home className="w-4 h-4 mr-2" />
-            Go Home
+            Go to albums
           </Link>
         </div>
       </div>
@@ -98,7 +98,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
               Go to First Page
             </Link>
             <Link
-              href={ROUTES.home}
+              href={ROUTES.albums}
               className="block w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
             >
               Back to Albums
@@ -125,7 +125,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
           <div className="flex items-center justify-between">
             <div>
               <Link
-                href={ROUTES.home}
+                href={ROUTES.albums}
                 className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-2"
               >
                 <Home className="w-4 h-4 mr-1" />
