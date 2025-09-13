@@ -261,7 +261,6 @@ export const Slider: React.FC<SliderProps> = ({
     if (!slider) return;
 
     const handleTouchMoveNative = (e: TouchEvent) => {
-      e.preventDefault(); // disable scrolling while sliding
       if (!sliderRef.current) return;
       const rect = slider.getBoundingClientRect();
       const x = e.touches[0].clientX - rect.left;

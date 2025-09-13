@@ -1,10 +1,10 @@
 // src/entities/OcrViewer/ui/ImageWithTextOverlays/index.tsx
 "use client";
 import { ImageInfo, TextBlock as TextBlockT } from "@/features/ocr/types";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTextBlockSettings } from "../../hooks/useTextBlockSettings";
-import { TextBlock } from "../TextBlock";
 import { SettingsPanel } from "../SettingsPanel";
+import { TextBlock } from "../TextBlock";
 
 interface ImageWithTextOverlaysProps {
   imageUrl: string;
@@ -95,26 +95,6 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
     };
   }, [imageUrl]);
 
-  // Prevent zoom on double tap for better UX
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length > 1) {
-        e.preventDefault();
-      }
-    };
-
-    container.addEventListener("touchstart", handleTouchStart, {
-      passive: false,
-    });
-
-    return () => {
-      container.removeEventListener("touchstart", handleTouchStart);
-    };
-  }, []);
-
   if (imageError) {
     return (
       <div className="flex items-center justify-center min-h-64 bg-gray-50 rounded-lg border-2 border-gray-200">
@@ -162,13 +142,9 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
       <div
         ref={containerRef}
         className={`
-          relative inline-block w-full bg-white
-          touch-pan-x touch-pan-y
+          relative inline-block w-full bg-white no-select
           ${className}
         `}
-        style={{
-          touchAction: "pan-x pan-y", // Allow panning but prevent zoom
-        }}
       >
         {/* Loading State */}
         {!isImageLoaded && (
@@ -187,14 +163,13 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
           alt="OCR Image"
           className={`
             w-full h-auto max-w-full border rounded-lg shadow-sm
-            transition-opacity duration-200 pointer-events-none
+            transition-opacity duration-200 no-select
             ${isImageLoaded ? "opacity-100" : "opacity-0"}
           `}
           style={{
             opacity: isImageLoaded ? imageTransparency : 0,
           }}
           draggable={false}
-          onContextMenu={(e) => e.preventDefault()} // Prevent right-click menu on mobile
         />
 
         {/* Text Block Overlays */}
@@ -217,25 +192,6 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
               />
             );
           })}
-
-        {/* Selection Hint for Mobile */}
-        {isImageLoaded &&
-          textBlocks.length > 0 &&
-          !selectedTextId?.toString() &&
-          showBoundingBoxes && (
-            <div className="absolute top-4 left-4 right-4 sm:hidden">
-              <div className="bg-blue-600/90 backdrop-blur-sm text-white text-xs px-3 py-2 rounded-lg shadow-lg">
-                <p className="font-medium">
-                  💡 Tap any highlighted text to select it
-                </p>
-                {showDictionary && (
-                  <p className="mt-1 opacity-90">
-                    Dictionary lookup will appear after selection
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
       </div>
     </div>
   );
