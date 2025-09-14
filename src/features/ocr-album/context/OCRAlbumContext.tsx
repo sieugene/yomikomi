@@ -1,7 +1,5 @@
-import { useOCR } from "@/features/ocr-client/context/OCRProvider";
 import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
-import { OCRApi } from "@/features/ocr/api/ocrApi";
-import { OCRResponse } from "@/features/ocr/types";
+import { useOcr } from "@/features/ocr/hooks/useOcr";
 import React, {
   createContext,
   useCallback,
@@ -10,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { adaptGutenyeOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRAlbumIndexedDB } from "../services/indexedDbService";
 import {
   BatchProcessingProgress,
@@ -18,9 +15,6 @@ import {
   OCRAlbumContextType,
   OCRAlbumImage,
 } from "../types";
-import { getImageDimensions } from "@/features/ocr-client/lib/getImageDimensions";
-import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
-import { resizeImageLetterbox } from "@/features/ocr-client/lib/resizeImageLetterbox";
 
 const OCRAlbumContext = createContext<OCRAlbumContextType | undefined>(
   undefined
@@ -30,54 +24,13 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { settings } = useOCRSettings();
-  const { tesseractWorker, gutenyeOCR } = useOCR();
+  const { ocrProcess } = useOcr();
   const db = useRef(new OCRAlbumIndexedDB());
   const [albums, setAlbums] = useState<OCRAlbumAlbum[]>([]);
   const [currentAlbum, setCurrentAlbum] = useState<OCRAlbumAlbum | null>(null);
   const [batchProgress, setBatchProgress] =
     useState<BatchProcessingProgress | null>(null);
   const [isDbReady, setIsDbReady] = useState(false);
-
-  const processWithTesseract = async (imageFile: File) => {
-    try {
-      console.log("Processing with Tesseract...");
-
-      const worker = tesseractWorker;
-      if (!tesseractWorker) {
-        throw new Error("tesseractWorker is not inited!");
-      }
-
-      console.log("Running Tesseract OCR...");
-      const data = await worker?.recognize(imageFile);
-
-      return data;
-    } catch (error) {
-      console.error("Tesseract Error:", error);
-    }
-  };
-
-  const processWithGutenye = async (imageFile: File) => {
-    try {
-      const ocr = gutenyeOCR;
-      if (!ocr) {
-        throw new Error("gutenyeOCR is not inited");
-      }
-
-      const reader = new FileReader();
-      const imageData: string = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(imageFile);
-      });
-
-      const results = await ocr!.detect(imageData);
-      console.log("Gutenye Results:", results);
-
-      return results;
-    } catch (error) {
-      console.error("Gutenye OCR Error:", error);
-    }
-  };
 
   // Initialize IndexedDB
   useEffect(() => {
@@ -232,44 +185,14 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         await db.current.updateImage(updatedImage);
 
         const dbFile = await db.current.getImageFile(image.id);
-        const file = await resizeImageLetterbox(dbFile!, 960);
 
-        if (!file) {
+        if (!dbFile) {
           throw new Error("File not found");
         }
-
-        let ocrResult: OCRResponse | null = null;
-
-        if (settings.isClientSide) {
-          const { width, height } = await getImageDimensions(file);
-
-          if (settings.clientEngine === OCR_ENGINE.TESSERACT) {
-            const response = await processWithTesseract(file);
-            if (!response) throw new Error("Tesseract processing failed");
-
-            ocrResult = adaptTesseractResult(response, {
-              width,
-              height,
-              format: file.type,
-            });
-          }
-          if (settings.clientEngine === OCR_ENGINE.GUTENYE) {
-            const response = await processWithGutenye(file);
-            if (!response) throw new Error("GUTENYE processing failed");
-            ocrResult = adaptGutenyeOCR(response, {
-              width,
-              height,
-              format: file.type,
-            });
-          }
-        } else {
-          // Process with api OCR
-          ocrResult = await OCRApi.performOCRWithPositions(
-            file,
-            settings.apiEndpoint,
-            settings.bearerToken
-          );
-        }
+        const { result: ocrResult, resizedFile } = await ocrProcess(
+          dbFile,
+          settings
+        );
 
         if (!ocrResult) throw new Error("OCR result is missing");
 
@@ -280,7 +203,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
           ocrResult,
           processedAt: new Date(),
         };
-        await db.current.updateImage(completedImage, file);
+        await db.current.updateImage(completedImage, resizedFile);
 
         return { success: true, image: completedImage };
       } catch (error) {
