@@ -17,7 +17,7 @@ const OCRContext = createContext<OCRContextProps>({
   ocrReady: false,
 });
 
-export const useOCR = () => useContext(OCRContext);
+export const useClienOCR = () => useContext(OCRContext);
 
 export function OCRProvider({ children }: { children: ReactNode }) {
   const [tesseractWorker, setTesseractWorker] =

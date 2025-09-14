@@ -1,17 +1,17 @@
-import React from "react";
+import { useClienOCR } from "@/features/ocr-client/context/OCRProvider";
 import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  FolderOpen,
+  Image,
   Play,
   Trash2,
-  FolderOpen,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Image,
-  AlertTriangle,
 } from "lucide-react";
+import React from "react";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { OCRAlbumAlbum } from "../../types";
-import { useOCR } from "@/features/ocr-client/context/OCRProvider";
 
 interface AlbumListProps {
   onAlbumSelect: (album: OCRAlbumAlbum) => void;
@@ -25,7 +25,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     batchProgress,
     isDbReady,
   } = useOCRAlbum();
-  const { ocrReady } = useOCR();
+  const { ocrReady } = useClienOCR();
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
