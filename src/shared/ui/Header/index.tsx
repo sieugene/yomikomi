@@ -15,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/ui/sheet";
-import { BookOpen, Home, Menu, Scan } from "lucide-react";
+import { BookOpen, Camera, Home, Menu, Scan } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -45,6 +45,12 @@ const navItems: NavItem[] = [
     href: ROUTES.dict,
     icon: BookOpen,
     isActive: (pathname) => pathname === ROUTES.dict,
+  },
+    {
+    label: "OCR Capture",
+    href: ROUTES.ocrCapture,
+    icon: Camera,
+    isActive: (pathname) => pathname === ROUTES.ocrCapture,
   },
 ];
 
@@ -80,7 +86,7 @@ export function Header() {
                   item.isActive?.(pathname) || pathname === item.href;
                 return (
                   <NavigationMenuItem key={item.href}>
-                    <Link href={item.href} legacyBehavior passHref>
+                    <Link href={item.href}>
                       <NavigationMenuLink
                         className={cn(
                           "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",

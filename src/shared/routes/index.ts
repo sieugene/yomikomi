@@ -8,4 +8,5 @@ export const ROUTES = {
   simpleReader: (sentence: string) =>
     "/simple-reader?sentence=" + encodeURIComponent(sentence),
   dict: "/dict",
+  ocrCapture: "/ocr-capture"
 };
