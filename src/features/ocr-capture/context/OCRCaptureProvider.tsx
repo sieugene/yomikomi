@@ -1,4 +1,4 @@
-import { useClienOCR } from "@/features/ocr-client/context/OCRProvider";
+import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
 import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
 import { useOcr } from "@/features/ocr/hooks/useOcr";
 import { OCRResponse } from "@/features/ocr/types";
@@ -17,7 +17,7 @@ export const OCRCaptureProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { ocrProcess } = useOcr();
-  const { ocrReady } = useClienOCR();
+  const { ocrReady } = useClientOCR();
   const { settings } = useOCRSettings();
 
   const performOCR = async (file: File): Promise<OCRResponse> => {

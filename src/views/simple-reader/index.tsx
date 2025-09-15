@@ -1,5 +1,7 @@
 import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
-import { useSearchParams } from "next/navigation";
+import { ROUTES } from "@/shared/routes";
+import { useRouter, useSearchParams } from "next/navigation";
+
 import { useEffect, useState } from "react";
 
 // TODO
@@ -8,6 +10,7 @@ export const SimpleReaderPage = () => {
   const initialSentence = searchParams.get("sentence") || "";
   const [sentence, setSentence] = useState(initialSentence);
   const [debouncedSentence, setDebouncedSentence] = useState(sentence);
+  const router = useRouter();
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -21,7 +24,9 @@ export const SimpleReaderPage = () => {
     <CompactDictionaryLookup
       isOpen
       sentence={debouncedSentence}
-      onClose={() => {}}
+      onClose={() => {
+        router.push(ROUTES.home);
+      }}
     >
       <input
         type="text"
