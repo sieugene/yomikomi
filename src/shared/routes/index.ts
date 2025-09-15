@@ -7,6 +7,8 @@ export const ROUTES = {
   album: ({ albumId, page }: ALBUM_PAGE_PARAMS) => `/album/${albumId}/${page}`,
   simpleReader: (sentence: string) =>
     "/simple-reader?sentence=" + encodeURIComponent(sentence),
+  simpleReaderRoot: "/simple-reader",
   dict: "/dict",
-  ocrCapture: "/ocr-capture"
+  ocrCapture: "/ocr-capture",
+  settings: "/settings",
 };

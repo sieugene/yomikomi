@@ -1,5 +1,5 @@
 import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
-import { useClienOCR } from "@/features/ocr-client/context/OCRProvider";
+import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
 import { getImageDimensions } from "@/features/ocr-client/lib/getImageDimensions";
 import { resizeImageLetterbox } from "@/features/ocr-client/lib/resizeImageLetterbox";
 import { OCRSettings } from "@/features/ocr-settings/types";
@@ -8,7 +8,7 @@ import { adaptGutenyeOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRResponse } from "../types";
 
 export const useOcr = () => {
-  const { tesseractWorker, gutenyeOCR } = useClienOCR();
+  const { tesseractWorker, gutenyeOCR } = useClientOCR();
   const processWithTesseract = async (imageFile: File) => {
     try {
       console.log("Processing with Tesseract...");

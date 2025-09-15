@@ -15,7 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/ui/sheet";
-import { BookOpen, Camera, Home, Menu, Scan } from "lucide-react";
+import { BookOpen, Camera, Home, Menu, Scan, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -46,11 +46,23 @@ const navItems: NavItem[] = [
     icon: BookOpen,
     isActive: (pathname) => pathname === ROUTES.dict,
   },
-    {
+  {
     label: "OCR Capture",
     href: ROUTES.ocrCapture,
     icon: Camera,
     isActive: (pathname) => pathname === ROUTES.ocrCapture,
+  },
+  {
+    label: "Reader",
+    href: ROUTES.simpleReaderRoot,
+    icon: Settings,
+    isActive: (pathname) => pathname.includes(ROUTES.simpleReaderRoot),
+  },
+  {
+    label: "Settings",
+    href: ROUTES.settings,
+    icon: Settings,
+    isActive: (pathname) => pathname === ROUTES.settings,
   },
 ];
 
@@ -75,7 +87,6 @@ export function Header() {
             </span>
           </Link>
         </div>
-
 
         <div className="mr-4 hidden md:flex">
           <NavigationMenu>
@@ -103,7 +114,6 @@ export function Header() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
-
 
         <div className="flex md:hidden">
           <Link href={ROUTES.home} className="flex items-center space-x-2">

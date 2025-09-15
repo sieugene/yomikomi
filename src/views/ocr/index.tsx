@@ -1,14 +1,12 @@
 import { AlbumList } from "@/features/ocr-album/ui/AlbumList";
 import { BatchUpload } from "@/features/ocr-album/ui/BatchUpload";
 import { ProgressTracker } from "@/features/ocr-album/ui/ProgressTracker";
-import { OCRSettingsPanel } from "@/features/ocr-settings/ui";
 import { ROUTES } from "@/shared/routes";
 import { redirect } from "next/navigation";
 
-import React, { useState } from "react";
+import React from "react";
 
 export const OCRPage: React.FC = () => {
-  const [settingsIsOpen, setSettingsIsOpen] = useState(false);
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,16 +18,7 @@ export const OCRPage: React.FC = () => {
             Upload an image to extract Japanese text with precise positioning
           </p>
         </div>
-        <button
-          style={{ border: "1px solid blue", cursor: "pointer" }}
-          onClick={() => setSettingsIsOpen(true)}
-        >
-          Open Ocr Settings
-        </button>
-        <OCRSettingsPanel
-          isOpen={settingsIsOpen}
-          onClose={() => setSettingsIsOpen(false)}
-        />
+
         <BatchUpload />
         <ProgressTracker />
         <AlbumList

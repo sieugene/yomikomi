@@ -1,7 +1,5 @@
-import { useClienOCR } from "@/features/ocr-client/context/OCRProvider";
 import {
   AlertCircle,
-  AlertTriangle,
   CheckCircle,
   Clock,
   FolderOpen,
@@ -25,7 +23,6 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     batchProgress,
     isDbReady,
   } = useOCRAlbum();
-  const { ocrReady } = useClienOCR();
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
@@ -123,15 +120,6 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
 
   return (
     <div className="space-y-4">
-      {!ocrReady && (
-        <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-          <div className="flex items-center text-sm text-yellow-800">
-            <AlertTriangle className="w-4 h-4 mr-2 text-yellow-600" />
-            OCR is still initializing or something went wrong. Processing may be
-            unstable.
-          </div>
-        </div>
-      )}
       {albums.map((album) => (
         <div
           key={album.id}

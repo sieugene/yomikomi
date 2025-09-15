@@ -1,9 +1,5 @@
 "use client";
-import { ApplicationContext } from "@/application/client/context/ApplicationContext";
-import { OCRAlbumProvider } from "@/features/ocr-album/context/OCRAlbumContext";
-import { OCRCaptureButton, OCRCaptureProvider } from "@/features/ocr-capture";
-import { OCRProvider } from "@/features/ocr-client/context/OCRProvider";
-import { OCRSettingsProvider } from "@/features/ocr-settings/context/OCRSettingsContext";
+import { OCRCaptureButton } from "@/features/ocr-capture";
 import { OCRResponse } from "@/features/ocr/types";
 
 export default function OcrCapturePage() {
@@ -13,17 +9,7 @@ export default function OcrCapturePage() {
 
   return (
     <div>
-      <OCRProvider>
-        <OCRSettingsProvider>
-          <OCRAlbumProvider>
-            <ApplicationContext>
-              <OCRCaptureProvider>
-                <OCRCaptureButton onResult={handleOCRResult} />
-              </OCRCaptureProvider>
-            </ApplicationContext>
-          </OCRAlbumProvider>
-        </OCRSettingsProvider>
-      </OCRProvider>
+      <OCRCaptureButton onResult={handleOCRResult} />
     </div>
   );
 }
