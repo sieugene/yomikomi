@@ -9,7 +9,7 @@ import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictiona
 interface CompactDictionaryLookupProps {
   sentence: string;
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   className?: string;
   children?: React.ReactNode;
 }
@@ -39,13 +39,13 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
   useClickOutside(containerRef, () => {
     if (isOpen) {
       clear();
-      onClose();
+      onClose?.();
     }
   });
 
   const handleClose = () => {
     clear();
-    onClose();
+    onClose?.();
   };
 
   useBodyScrollLock(isOpen);
@@ -91,13 +91,15 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={handleClose}
-            className="p-2 hover:bg-white/60 rounded-full transition-colors"
-            aria-label="Close dictionary"
-          >
-            <X className="w-4 h-4 text-gray-600" />
-          </button>
+          {!!onClose && (
+            <button
+              onClick={handleClose}
+              className="p-2 hover:bg-white/60 rounded-full transition-colors"
+              aria-label="Close dictionary"
+            >
+              <X className="w-4 h-4 text-gray-600" />
+            </button>
+          )}
         </div>
 
         {/* Content */}

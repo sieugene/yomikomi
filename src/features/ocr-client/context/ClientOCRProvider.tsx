@@ -1,37 +1,20 @@
 "use client";
 
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
-import useSWR from "swr";
 import { AlertTriangle } from "lucide-react";
+import { createContext, ReactNode, useContext, useMemo, useState } from "react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import { Button } from "@/shared/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 
 import { OCR_ENGINE, OCR_ENGINES } from "../constants/ocr.engines";
-
-type ScriptStatus = "pending" | "loading" | "ready" | "failed";
-type Prefers = "skip" | "ask" | "allow";
-
-interface OCRContextProps {
-  tesseractWorker: Tesseract.Worker | null;
-  gutenyeOCR: GutenyeOCR | null;
-  ocrReady: boolean;
-  setConsent: Dispatch<SetStateAction<Prefers>>;
-}
+import { useOCRLoader } from "../hooks/useOCRLoader";
+import { OCRContextProps, Prefers, ScriptStatus } from "../types";
 
 const OCRContext = createContext<OCRContextProps>({
   tesseractWorker: null,
@@ -43,6 +26,7 @@ const OCRContext = createContext<OCRContextProps>({
 export const useClientOCR = () => useContext(OCRContext);
 
 export function ClientOCRProvider({ children }: { children: ReactNode }) {
+  const { loaders, gutenyeOCR, tesseractWorker } = useOCRLoader();
   const [consent, setConsent] = useState<Prefers>("ask");
   const [showDialog, setShowDialog] = useState(false);
 
@@ -50,46 +34,6 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
     TESSERACT: "pending",
     GUTENYE: "pending",
   });
-
-  const { data: tesseractWorker } = useSWR(
-    consent === "allow" && statuses.TESSERACT === "ready"
-      ? "tesseractWorker"
-      : null,
-    async () => await createTesseractWorker()
-  );
-
-  const { data: gutenyeOCR } = useSWR(
-    consent === "allow" && statuses.GUTENYE === "ready" ? "gutenyeOCR" : null,
-    async () => await createGutenyeOCR()
-  );
-
-  const createTesseractWorker = async (lang: string = "jpn") => {
-    try {
-      console.log("Tesseract worker creation started");
-      const worker = await window.Tesseract.createWorker(lang, 1, {
-        logger: (m) => console.log("Tesseract:", m),
-      });
-      console.log("Tesseract worker created successfully");
-      return worker;
-    } catch (error) {
-      console.error("Error creating Tesseract worker:", error);
-      return null;
-    }
-  };
-
-  const createGutenyeOCR = async () => {
-    try {
-      console.log("Gutenye OCR instance creation started");
-      const ocr = await window.GutenyeOCR.default.create(
-        OCR_ENGINES.GUTENYE.options
-      );
-      console.log("Gutenye OCR instance created successfully");
-      return ocr;
-    } catch (error) {
-      console.error("Error creating Gutenye OCR instance:", error);
-      return null;
-    }
-  };
 
   const ocrReady = useMemo(() => {
     return !!tesseractWorker && !!gutenyeOCR;
@@ -101,7 +45,8 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
       const script = document.createElement("script");
       script.src = OCR_ENGINES[name].cdn;
       script.async = true;
-      script.onload = () => {
+      script.onload = async () => {
+        await loaders[name]();
         setStatuses((s) => ({ ...s, [name]: "ready" }));
         resolve();
       };
@@ -141,14 +86,14 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
   return (
     <OCRContext.Provider
       value={{
-        tesseractWorker: tesseractWorker || null,
-        gutenyeOCR: gutenyeOCR || null,
+        tesseractWorker,
+        gutenyeOCR,
         ocrReady,
         setConsent,
       }}
     >
       {consent === "ask" && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-full max-w-md z-50">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Offline AI models</AlertTitle>
