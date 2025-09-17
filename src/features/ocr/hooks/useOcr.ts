@@ -30,6 +30,7 @@ export const useOcr = () => {
   const processWithGutenye = async (imageFile: File) => {
     try {
       const ocr = gutenyeOCR;
+
       if (!ocr) {
         throw new Error("gutenyeOCR is not inited");
       }

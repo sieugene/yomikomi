@@ -20,13 +20,13 @@ export const ApplicationContext: React.FC<Props> = ({ children }) => {
     >
       <CoreParserContext>
         <OCRSettingsProvider>
-          <OCRAlbumProvider>
-            <DictionarySearchSettingsProvider>
-              <ClientOCRProvider>
+          <ClientOCRProvider>
+            <OCRAlbumProvider>
+              <DictionarySearchSettingsProvider>
                 <OCRCaptureProvider>{children}</OCRCaptureProvider>
-              </ClientOCRProvider>
-            </DictionarySearchSettingsProvider>
-          </OCRAlbumProvider>
+              </DictionarySearchSettingsProvider>
+            </OCRAlbumProvider>
+          </ClientOCRProvider>
         </OCRSettingsProvider>
       </CoreParserContext>
     </SWRConfig>
