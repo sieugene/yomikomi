@@ -7,15 +7,13 @@ type Settings = {
   textScale: number;
   imageTransparency: number;
   fontTransparency: number;
-  showDictionary: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
   showBoundingBoxes: true,
   textScale: 14,
   imageTransparency: 1,
-  fontTransparency: 1,
-  showDictionary: true,
+  fontTransparency: 0,
 };
 
 export const useTextBlockSettings = () => {
@@ -48,6 +46,5 @@ export const useTextBlockSettings = () => {
     setImageTransparency: (v: number) =>
       updateSettings({ imageTransparency: v }),
     setFontTransparency: (v: number) => updateSettings({ fontTransparency: v }),
-    setShowDictionary: (v: boolean) => updateSettings({ showDictionary: v }),
   };
 };

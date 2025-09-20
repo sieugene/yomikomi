@@ -5,6 +5,7 @@ import { Book, Search, X } from "lucide-react";
 import { FC, useRef } from "react";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictionaryLookup";
+import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
 
 interface CompactDictionaryLookupProps {
   sentence: string;
@@ -87,7 +88,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
               <h3 className="font-semibold text-gray-900 text-sm">
                 Dictionary
               </h3>
-              <p className="text-xs text-gray-500">Tap words to translate</p>
+              <p className="text-xs text-gray-500">Tap words to search</p>
             </div>
           </div>
 
@@ -104,6 +105,9 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-hidden h-full">
+          <div className="p-2">
+            <DictionaryLookupSettings />
+          </div>
           {/* Sentence Section */}
           <div
             className="p-4 border-b border-gray-50 bg-gray-50/50"
@@ -132,7 +136,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
                   <Search className="w-6 h-6 text-blue-500" />
                 </div>
                 <p className="text-sm text-gray-600 mb-1">
-                  Select a word to see translation
+                  Select a word to see results
                 </p>
                 <p className="text-xs text-gray-400">
                   Tap any word in the text above

@@ -1,6 +1,5 @@
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import {
-  Book,
   ChevronDown,
   ChevronUp,
   Eye,
@@ -8,15 +7,13 @@ import {
   Image as ImageIcon,
   Settings,
   Sliders,
-  Type,
+  Type
 } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
 
 interface SettingsPanelProps {
   showBoundingBoxes: boolean;
   setShowBoundingBoxes: (value: boolean) => void;
-  showDictionary: boolean;
-  setShowDictionary: (value: boolean) => void;
   textScale: number;
   setTextScale: (value: number) => void;
   imageTransparency: number;
@@ -28,8 +25,6 @@ interface SettingsPanelProps {
 export const SettingsPanel: FC<SettingsPanelProps> = ({
   showBoundingBoxes,
   setShowBoundingBoxes,
-  showDictionary,
-  setShowDictionary,
   textScale,
   setTextScale,
   imageTransparency,
@@ -90,21 +85,6 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
                   <EyeOff className="w-4 h-4" />
                 )}
               </button>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowDictionary(!showDictionary);
-                }}
-                className={`p-2 rounded-full transition-colors ${
-                  showDictionary
-                    ? "bg-green-100 text-green-600"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-                title="Toggle dictionary"
-              >
-                <Book className="w-4 h-4" />
-              </button>
             </>
           )}
 
@@ -132,19 +112,6 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
                 <div className="flex items-center space-x-1">
                   <Eye className="w-4 h-4 text-gray-600" />
                   <span className="text-sm text-gray-700">Boxes</span>
-                </div>
-              </label>
-
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={showDictionary}
-                  onChange={(e) => setShowDictionary(e.target.checked)}
-                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                />
-                <div className="flex items-center space-x-1">
-                  <Book className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm text-gray-700">Dictionary</span>
                 </div>
               </label>
             </div>
