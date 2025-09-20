@@ -2,15 +2,9 @@
 import { OCRAlbumImage } from "@/features/ocr-album/types";
 import { AlertTriangle, Image as ImageIcon, Loader2 } from "lucide-react";
 import { FC, useEffect, useState } from "react";
-import { useDownloadText } from "../hooks/useDownloadText";
-import { useFirstVisit } from "../hooks/useFirstVisit";
-import { useOcrCopy } from "../hooks/useOcrCopy";
-import { FloatingActions } from "./FloatingActions";
-import { GestureHints } from "./GestureHints";
+import useSWR from "swr";
 import { InteractiveOcrResult } from "./InteractiveOcrResult";
 import { OcrFailure } from "./OcrFailure";
-import { MobileUsageTips } from "./MobileUsageTips";
-import useSWR from "swr";
 
 type Props = Pick<OCRAlbumImage, "ocrResult" | "error" | "id"> & {
   getImageFile: (imageId: string) => Promise<File | null>;
@@ -27,13 +21,6 @@ export const OcrViewer: FC<Props> = ({
   );
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(!!originalFile);
-
-  // Hooks
-  const { shouldShowHints, markHintsAsShown, showHintsManually } =
-    useFirstVisit();
-
-  const { handleDownloadText } = useDownloadText();
-  const { handleCopyFullText } = useOcrCopy();
 
   // Handle image URL creation and cleanup
   useEffect(() => {
@@ -60,19 +47,6 @@ export const OcrViewer: FC<Props> = ({
       }
     };
   }, [originalFile]);
-
-  // Action handlers
-  const handleCopyAll = () => {
-    if (ocrResult) {
-      handleCopyFullText(ocrResult);
-    }
-  };
-
-  const handleDownload = () => {
-    if (ocrResult) {
-      handleDownloadText(ocrResult);
-    }
-  };
 
   // Show loading state
   if (isImageLoading) {
@@ -185,25 +159,6 @@ export const OcrViewer: FC<Props> = ({
           </div>
         </div>
       ) : null}
-
-      {/* Mobile Floating Actions */}
-      {ocrResult && (
-        <FloatingActions
-          onCopyAll={handleCopyAll}
-          onDownload={handleDownload}
-          onShowDictionary={() => {
-            alert("dict show");
-          }}
-          onShowHelp={showHintsManually}
-          hasSelectedText={false}
-        />
-      )}
-
-      {/* Gesture Hints */}
-      <GestureHints isFirstVisit={shouldShowHints} onClose={markHintsAsShown} />
-
-      {/* Mobile Usage Tips */}
-      <MobileUsageTips />
     </div>
   );
 };

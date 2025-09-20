@@ -69,7 +69,7 @@ export const MobileNavigation: FC<MobileNavigationProps> = ({
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
         <div className="flex items-center">
           {/* Previous Button */}
           <div className="flex-1">

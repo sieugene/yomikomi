@@ -31,8 +31,6 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
     setImageTransparency,
     fontTransparency,
     setFontTransparency,
-    setShowDictionary,
-    showDictionary,
   } = useTextBlockSettings();
 
   const [displayDimensions, setDisplayDimensions] = useState({
@@ -128,8 +126,6 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
       <SettingsPanel
         showBoundingBoxes={showBoundingBoxes}
         setShowBoundingBoxes={setShowBoundingBoxes}
-        showDictionary={showDictionary}
-        setShowDictionary={setShowDictionary}
         textScale={textScale}
         setTextScale={setTextScale}
         imageTransparency={imageTransparency}
@@ -188,7 +184,6 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
                 showBoundingBoxes={showBoundingBoxes}
                 textBlock={textBlock}
                 textScale={textScale}
-                showDictionary={showDictionary}
               />
             );
           })}

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useState } from "react";
 
 export default function SettingsPage() {
-  const { setConsent } = useClientOCR();
+  const { showAlert } = useClientOCR();
   const [settingsIsOpen, setSettingsIsOpen] = useState(false);
 
   return (
@@ -24,7 +24,7 @@ export default function SettingsPage() {
               Manage offline AI models used by the app. Download, cancel, or
               check status.
             </p>
-            <Button onClick={() => setConsent("ask")}>Open Settings</Button>
+            <Button onClick={showAlert}>Open Settings</Button>
           </CardContent>
         </Card>
 

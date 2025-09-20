@@ -9,7 +9,6 @@ import { ContextMenu } from "../ContextMenu";
 type Props = {
   textBlock: TextBlockT;
   showBoundingBoxes: boolean;
-  showDictionary: boolean;
   isSelected: boolean;
   onTextClick: (textBlock: TextBlockT) => void;
   onTextCopy?: (text: string) => void;
@@ -35,7 +34,6 @@ export const TextBlock: FC<Props> = ({
   fontTransparency,
   showBoundingBoxes,
   textScale,
-  showDictionary,
 }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
 
@@ -72,14 +70,10 @@ export const TextBlock: FC<Props> = ({
     return scaledSize;
   }, [coords, textScale]);
 
-  const handleDoubleTap = useCallback(
-    () => {
-      setShowContextMenu(true);
-      onTextClick(textBlock);
-      // dictionary.handleToggle(textBlock.text);
-    },
-    [dictionary, showDictionary, textBlock.text]
-  );
+  const handleDoubleTap = useCallback(() => {
+    setShowContextMenu(true);
+    onTextClick(textBlock);
+  }, [dictionary, textBlock.text]);
 
   const { handleTouchEnd } = useDoubleTap({
     onDoubleTap: handleDoubleTap,
@@ -97,10 +91,8 @@ export const TextBlock: FC<Props> = ({
   }, [textBlock.text, onTextCopy]);
 
   const handleTranslate = useCallback(() => {
-    if (showDictionary) {
-      dictionary.handleOpen(textBlock.text);
-    }
-  }, [dictionary, showDictionary, textBlock.text]);
+    dictionary.handleOpen(textBlock.text);
+  }, [dictionary, textBlock.text]);
 
   const handleSearch = useCallback(() => {
     const query = encodeURIComponent(textBlock.text);
@@ -228,7 +220,7 @@ export const TextBlock: FC<Props> = ({
       />
 
       {/* Compact Dictionary Lookup */}
-      {showDictionary && isSelected && (
+      {isSelected && (
         <CompactDictionaryLookup
           sentence={textBlock.text}
           isOpen={dictionary.isOpen}
