@@ -7,6 +7,7 @@ type Settings = {
   textScale: number;
   imageTransparency: number;
   fontTransparency: number;
+  rotateContent: boolean;
 };
 
 const DEFAULT_SETTINGS: Settings = {
@@ -14,7 +15,10 @@ const DEFAULT_SETTINGS: Settings = {
   textScale: 14,
   imageTransparency: 1,
   fontTransparency: 0,
+  rotateContent: false,
 };
+
+export type TextBlockSettingsControl = ReturnType<typeof useTextBlockSettings>;
 
 export const useTextBlockSettings = () => {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -46,5 +50,6 @@ export const useTextBlockSettings = () => {
     setImageTransparency: (v: number) =>
       updateSettings({ imageTransparency: v }),
     setFontTransparency: (v: number) => updateSettings({ fontTransparency: v }),
+    setRotateContent: (v: boolean) => updateSettings({ rotateContent: v }),
   };
 };

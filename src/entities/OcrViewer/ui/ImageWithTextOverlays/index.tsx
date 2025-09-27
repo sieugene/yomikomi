@@ -1,7 +1,9 @@
 // src/entities/OcrViewer/ui/ImageWithTextOverlays/index.tsx
 "use client";
+import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
 import { ImageInfo, TextBlock as TextBlockT } from "@/features/ocr/types";
 import React, { useEffect, useRef, useState } from "react";
+import { useCompactDictionary } from "../../hooks/useCompactDictionary";
 import { useTextBlockSettings } from "../../hooks/useTextBlockSettings";
 import { SettingsPanel } from "../SettingsPanel";
 import { TextBlock } from "../TextBlock";
@@ -22,16 +24,16 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
   className = "",
   selectedTextId,
 }) => {
+  const dictionary = useCompactDictionary();
+
+  const settingsControl = useTextBlockSettings();
   const {
     showBoundingBoxes,
-    setShowBoundingBoxes,
     textScale,
-    setTextScale,
     imageTransparency,
-    setImageTransparency,
     fontTransparency,
-    setFontTransparency,
-  } = useTextBlockSettings();
+    rotateContent,
+  } = settingsControl;
 
   const [displayDimensions, setDisplayDimensions] = useState({
     width: 0,
@@ -123,22 +125,13 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
 
   return (
     <div className="w-full">
-      <SettingsPanel
-        showBoundingBoxes={showBoundingBoxes}
-        setShowBoundingBoxes={setShowBoundingBoxes}
-        textScale={textScale}
-        setTextScale={setTextScale}
-        imageTransparency={imageTransparency}
-        setImageTransparency={setImageTransparency}
-        fontTransparency={fontTransparency}
-        setFontTransparency={setFontTransparency}
-      />
+      <SettingsPanel settingsControl={settingsControl} />
 
       {/* Main Image Container */}
       <div
         ref={containerRef}
         className={`
-          relative inline-block w-full bg-white no-select
+          relative inline-block w-full bg-white no-select ${rotateContent ? "rotate-90" : "rotate-0"}
           ${className}
         `}
       >
@@ -184,10 +177,18 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
                 showBoundingBoxes={showBoundingBoxes}
                 textBlock={textBlock}
                 textScale={textScale}
+                onOpenDictionary={() => dictionary.handleOpen(textBlock.text)}
+                rotateContent={rotateContent}
               />
             );
           })}
       </div>
+
+      <CompactDictionaryLookup
+        sentence={dictionary.selectedText || ""}
+        isOpen={dictionary.isOpen}
+        onClose={dictionary.handleClose}
+      />
     </div>
   );
 };

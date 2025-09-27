@@ -5,33 +5,31 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
+  Rotate3D,
   Settings,
   Sliders,
   Type
 } from "lucide-react";
 import { FC, useEffect, useRef, useState } from "react";
+import type { TextBlockSettingsControl } from "../../hooks/useTextBlockSettings";
 
 interface SettingsPanelProps {
-  showBoundingBoxes: boolean;
-  setShowBoundingBoxes: (value: boolean) => void;
-  textScale: number;
-  setTextScale: (value: number) => void;
-  imageTransparency: number;
-  setImageTransparency: (value: number) => void;
-  fontTransparency: number;
-  setFontTransparency: (value: number) => void;
+  settingsControl: TextBlockSettingsControl;
 }
 
-export const SettingsPanel: FC<SettingsPanelProps> = ({
-  showBoundingBoxes,
-  setShowBoundingBoxes,
-  textScale,
-  setTextScale,
-  imageTransparency,
-  setImageTransparency,
-  fontTransparency,
-  setFontTransparency,
-}) => {
+export const SettingsPanel: FC<SettingsPanelProps> = ({ settingsControl }) => {
+  const {
+    showBoundingBoxes,
+    setShowBoundingBoxes,
+    textScale,
+    setTextScale,
+    imageTransparency,
+    setImageTransparency,
+    fontTransparency,
+    setFontTransparency,
+    rotateContent,
+    setRotateContent,
+  } = settingsControl;
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => setIsExpanded(!isExpanded);
@@ -85,6 +83,24 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
                   <EyeOff className="w-4 h-4" />
                 )}
               </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRotateContent(!rotateContent);
+                }}
+                className={`p-2 rounded-full transition-colors ${
+                  rotateContent
+                    ? "bg-blue-100 text-blue-600"
+                    : "bg-gray-100 text-gray-400"
+                }`}
+                title="Toggle rotate content"
+              >
+                {rotateContent ? (
+                  <Rotate3D className="w-4 h-4" />
+                ) : (
+                  <Rotate3D className="w-4 h-4" />
+                )}
+              </button>
             </>
           )}
 
@@ -112,6 +128,20 @@ export const SettingsPanel: FC<SettingsPanelProps> = ({
                 <div className="flex items-center space-x-1">
                   <Eye className="w-4 h-4 text-gray-600" />
                   <span className="text-sm text-gray-700">Boxes</span>
+                </div>
+              </label>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={rotateContent}
+                  onChange={(e) => setRotateContent(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <div className="flex items-center space-x-1">
+                  <Rotate3D className="w-4 h-4 text-gray-600" />
+                  <span className="text-sm text-gray-700">Rotate content</span>
                 </div>
               </label>
             </div>
