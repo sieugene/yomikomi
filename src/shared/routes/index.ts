@@ -11,4 +11,5 @@ export const ROUTES = {
   dict: "/dict",
   ocrCapture: "/ocr-capture",
   settings: "/settings",
+  ankiImport: "/anki-import",
 };
