@@ -15,7 +15,15 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/ui/sheet";
-import { BookOpen, Camera, Home, Menu, Scan, Settings } from "lucide-react";
+import {
+  BookOpen,
+  Camera,
+  Home,
+  Import,
+  Menu,
+  Scan,
+  Settings,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -33,6 +41,12 @@ const navItems: NavItem[] = [
     href: ROUTES.home,
     icon: Home,
     isActive: (pathname) => pathname === ROUTES.home,
+  },
+  {
+    label: "Anki Import",
+    href: ROUTES.ankiImport,
+    icon: Import,
+    isActive: (pathname) => pathname === ROUTES.ankiImport,
   },
   {
     label: "Albums",

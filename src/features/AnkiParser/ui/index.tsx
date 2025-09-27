@@ -1,10 +1,8 @@
-import { useHealth } from "@/entities/Health/hooks/useHealth";
-import { Health } from "@/entities/Health/ui";
 import { NotesViewer } from "@/entities/NotesViewer/ui";
+import { useStoreCollection } from "@/features/AnkiParser/context/StoreCollectionContext";
 import { useCloudParse } from "@/features/AnkiParser/hooks/useCloudParse";
 import { useOfflineParse } from "@/features/AnkiParser/hooks/useOfflineParse";
 import { FAST_MEMORY_CLOUD_FILE_NAME } from "@/features/AnkiParser/lib/constants";
-import { useStoreCollection } from "@/features/AnkiParser/context/StoreCollectionContext";
 import { Collections } from "@/features/AnkiParser/ui/collection/Collections";
 import { Import } from "@/features/AnkiParser/ui/import";
 import { useMemo, useState } from "react";
@@ -13,7 +11,6 @@ type SubmitType = "local" | "link";
 
 export const Parser = () => {
   const { state } = useStoreCollection();
-  const { health } = useHealth();
 
   const [file, setFile] = useState<File | null>(null);
   const [url, setUrl] = useState<string>("");
@@ -77,8 +74,6 @@ export const Parser = () => {
 
   return (
     <>
-      <Health health={health} />
-
       <Import setFile={setFile} disabled={urlNotEmpty} selectedFile={file} />
 
       <label
