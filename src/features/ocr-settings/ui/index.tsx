@@ -3,6 +3,7 @@ import { RotateCcw, Save } from "lucide-react";
 import React, { useState } from "react";
 import { useOCRSettings } from "../context/OCRSettingsContext";
 import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
+import { TEXT_ORIENTATION } from "../types";
 
 interface OCRSettingsPanelProps {
   isOpen: boolean;
@@ -46,7 +47,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Client side ocr
+            Client side OCR
           </label>
           <button
             type="button"
@@ -64,6 +65,57 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
             />
           </button>
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Text Orientation
+          </label>
+          <select
+            value={localSettings.textOrientation}
+            onChange={(e) => handleChange("textOrientation", e.target.value)}
+            className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={TEXT_ORIENTATION.AUTO}>Auto Detect</option>
+            <option value={TEXT_ORIENTATION.HORIZONTAL}>Horizontal</option>
+            <option value={TEXT_ORIENTATION.VERTICAL}>Vertical</option>
+          </select>
+          <p className="text-xs text-gray-500 mt-1">
+            Select text orientation for OCR processing
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Japanese Vertical Mode
+          </label>
+          <button
+            type="button"
+            onClick={() =>
+              handleChange(
+                "japaneseVerticalMode",
+                !localSettings.japaneseVerticalMode
+              )
+            }
+            className={`w-14 h-8 flex items-center rounded-full p-1 duration-300 ${
+              localSettings.japaneseVerticalMode
+                ? "bg-green-500"
+                : "bg-gray-300"
+            }`}
+          >
+            <div
+              className={`bg-white w-6 h-6 rounded-full shadow-md transform duration-300 ${
+                localSettings.japaneseVerticalMode
+                  ? "translate-x-6"
+                  : "translate-x-0"
+              }`}
+            />
+          </button>
+          <p className="text-xs text-gray-500 mt-1">
+            Enable special processing for vertical Japanese text (right-to-left
+            columns)
+          </p>
+        </div>
+
         {!localSettings.isClientSide ? (
           <>
             <div>
@@ -83,11 +135,11 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
                 Api token
               </label>
               <input
-                type="url"
+                type="text"
                 value={localSettings.bearerToken}
                 onChange={(e) => handleChange("bearerToken", e.target.value)}
                 className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="asdasdsad&sd"
+                placeholder="Bearer token"
               />
             </div>
 

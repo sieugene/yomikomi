@@ -12,6 +12,7 @@ interface ContextMenuProps {
   onSearch: () => void;
   onBookmark?: () => void;
   onShare?: () => void;
+  className?: string
 }
 
 export const ContextMenu: FC<ContextMenuProps> = ({
@@ -24,6 +25,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
   onSearch,
   onBookmark,
   onShare,
+  className
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +83,7 @@ export const ContextMenu: FC<ContextMenuProps> = ({
       style={{
         top: coordsY,
       }}
-      className="absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-30 min-w-[200px] max-w-[280px]"
+      className={`absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-30 min-w-[200px] max-w-[280px] ${className || ""}`}
     >
       {/* Header */}
       <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-100">

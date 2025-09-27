@@ -2,8 +2,6 @@ import type { TextBlock as TextBlockT } from "@/features/ocr/types";
 import { FC, useCallback, useMemo, useState } from "react";
 
 import { useDoubleTap } from "@/shared/hooks/useDoubleTap";
-import { CompactDictionaryLookup } from "../../../OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
-import { useCompactDictionary } from "../../hooks/useCompactDictionary";
 import { ContextMenu } from "../ContextMenu";
 
 type Props = {
@@ -22,6 +20,8 @@ type Props = {
   };
   fontTransparency: number;
   textScale: number;
+  onOpenDictionary: (text: string) => void;
+  rotateContent: boolean;
 };
 
 export const TextBlock: FC<Props> = ({
@@ -34,10 +34,10 @@ export const TextBlock: FC<Props> = ({
   fontTransparency,
   showBoundingBoxes,
   textScale,
+  onOpenDictionary,
+  rotateContent
 }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
-
-  const dictionary = useCompactDictionary();
 
   // Calculate scaled coordinates
   const coords = useMemo(() => {
@@ -73,7 +73,7 @@ export const TextBlock: FC<Props> = ({
   const handleDoubleTap = useCallback(() => {
     setShowContextMenu(true);
     onTextClick(textBlock);
-  }, [dictionary, textBlock.text]);
+  }, [textBlock.text]);
 
   const { handleTouchEnd } = useDoubleTap({
     onDoubleTap: handleDoubleTap,
@@ -91,8 +91,8 @@ export const TextBlock: FC<Props> = ({
   }, [textBlock.text, onTextCopy]);
 
   const handleTranslate = useCallback(() => {
-    dictionary.handleOpen(textBlock.text);
-  }, [dictionary, textBlock.text]);
+    onOpenDictionary(textBlock.text);
+  }, [onOpenDictionary, textBlock.text]);
 
   const handleSearch = useCallback(() => {
     const query = encodeURIComponent(textBlock.text);
@@ -209,6 +209,7 @@ export const TextBlock: FC<Props> = ({
 
       {/* Context Menu */}
       <ContextMenu
+        className={rotateContent ? "-rotate-90" : "rotate-0"}
         isOpen={showContextMenu}
         coordsY={coords.y}
         selectedText={textBlock.text}
@@ -218,15 +219,6 @@ export const TextBlock: FC<Props> = ({
         onSearch={handleSearch}
         onShare={handleShare}
       />
-
-      {/* Compact Dictionary Lookup */}
-      {isSelected && (
-        <CompactDictionaryLookup
-          sentence={textBlock.text}
-          isOpen={dictionary.isOpen}
-          onClose={dictionary.handleClose}
-        />
-      )}
     </>
   );
 };
