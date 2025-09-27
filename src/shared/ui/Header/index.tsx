@@ -97,7 +97,7 @@ export function Header() {
               <Scan className="h-5 w-5 text-white" />
             </div>
             <span className="hidden font-bold sm:inline-block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Yomikomu
+              Yomikomi
             </span>
           </Link>
         </div>
@@ -111,7 +111,7 @@ export function Header() {
                   item.isActive?.(pathname) || pathname === item.href;
                 return (
                   <NavigationMenuItem key={item.href}>
-                    <Link href={item.href}>
+                    <Link href={item.href} className="flex">
                       <NavigationMenuLink
                         className={cn(
                           "group inline-flex h-9 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50",
@@ -135,7 +135,7 @@ export function Header() {
               <Scan className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Yomikomu
+              Yomikomi
             </span>
           </Link>
         </div>
@@ -179,7 +179,7 @@ export function Header() {
                         href={item.href}
                         onClick={closeMobileMenu}
                         className={cn(
-                          "flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                          "w-fit flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                           isActive && "bg-accent text-accent-foreground"
                         )}
                       >
