@@ -30,6 +30,7 @@ export const AddDictionarySteps: FC<Props> = ({
             const file = e.target.files?.[0];
             if (file) handleFileSelect(file);
           }}
+          onRecommendedFileSelect={handleFileSelect}
         />
       );
 
