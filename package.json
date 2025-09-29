@@ -10,7 +10,7 @@
     "migrate": "npx prisma migrate dev",
     "studio": "npx prisma studio",
     "compile-protobuf": "pbjs -t json -o src/features/AnkiParser/lib/parser/protos/import_export.proto.json src/features/AnkiParser/lib/parser/protos/import_export.proto",
-    "make-dictionary": "ts-node --project tsconfig.scripts.json ./scripts/make_dictionary.ts -file='JMdict_english'"
+    "make-dictionary": "ts-node --project tsconfig.scripts.json ./scripts/make_dictionary.ts -file='JMdict_spanish'"
   },
   "dependencies": {
     "@dweb-browser/zstd-wasm": "^1.2.1",
