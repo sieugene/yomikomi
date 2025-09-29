@@ -98,4 +98,42 @@ Meanings: Japanese language, Japanese
       searchStrategy: { type: "partial", includeSubstrings: true },
     },
   },
+  jmdict_dutch: {
+    id: "jmdict_nl",
+    name: "JMdict Dutch",
+    language: "nl",
+    description: "Standard JMdict Dutch dictionary format",
+    example: `
+Woord: 日本語 (nihongo)
+Type: zelfstandig naamwoord
+Betekenissen: Japanse taal
+  `,
+    config: {
+      name: "JMdict Dutch Parser",
+      version: "1.0.0",
+      sqlQuery: BASE_SQL_QUERY,
+      columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
+      meaningParser: { type: "string" },
+      searchStrategy: { type: "partial", includeSubstrings: true },
+    },
+  },
+  jmdict_spanish: {
+    id: "jmdict_es",
+    name: "JMdict Spanish",
+    language: "es",
+    description: "Standard JMdict Spanish dictionary format",
+    example: `
+Palabra: 日本語 (nihongo)
+Tipo: sustantivo
+Significados: idioma japonés
+  `,
+    config: {
+      name: "JMdict Spanish Parser",
+      version: "1.0.0",
+      sqlQuery: BASE_SQL_QUERY,
+      columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
+      meaningParser: { type: "string" },
+      searchStrategy: { type: "partial", includeSubstrings: true },
+    },
+  },
 };

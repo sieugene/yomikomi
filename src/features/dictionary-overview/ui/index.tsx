@@ -6,6 +6,7 @@ import { DictionaryMetadata } from "@/features/dictionary/types";
 import { FC, useState } from "react";
 import { useUpdateDictionaryStatus } from "../hooks/useUpdateDictionaryStatus";
 import { useDictionaryById } from "@/features/dictionary/hooks/useDictionaries";
+import { formatDictName } from "../lib";
 
 type Props = {
   id: DictionaryMetadata["id"];
@@ -19,11 +20,11 @@ export const DictionaryOverview: FC<Props> = ({ id }) => {
   };
   return (
     <>
-      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+      <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 overflow-hidden">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {dictionary?.name}
+            <h3 className="max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold text-gray-900 mb-1">
+              {formatDictName(dictionary?.name || "")}
             </h3>
             <p className="text-sm text-gray-500">
               Language: {dictionary?.language.toUpperCase()} • Size:{" "}
