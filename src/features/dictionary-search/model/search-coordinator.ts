@@ -4,18 +4,27 @@ import { SearchOptions, SearchResult } from "../types";
 import { EnhancedDictionarySearchEngine } from "./enhanced-search-engine";
 
 export class DictionarySearchCoordinator {
-  private engines = new Map<string, EnhancedDictionarySearchEngine>();
+  private engines = new Map<
+    string,
+    {
+      engine: EnhancedDictionarySearchEngine;
+      type: "standard" | "kanji";
+    }
+  >();
 
-  addEngine(dictId: string, engine: EnhancedDictionarySearchEngine): void {
-    // Закрываем старый движок если есть
-    this.engines.get(dictId)?.close();
-    this.engines.set(dictId, engine);
+  addEngine(
+    dictId: string,
+    engine: EnhancedDictionarySearchEngine,
+    dictionaryType: "standard" | "kanji" = "standard"
+  ): void {
+    this.engines.get(dictId)?.engine.close();
+    this.engines.set(dictId, { engine, type: dictionaryType });
   }
 
   removeEngine(dictId: string): void {
-    const engine = this.engines.get(dictId);
-    if (engine) {
-      engine.close();
+    const entry = this.engines.get(dictId);
+    if (entry) {
+      entry.engine.close();
       this.engines.delete(dictId);
     }
   }
@@ -24,7 +33,7 @@ export class DictionarySearchCoordinator {
     const results: DictionaryEntry[] = [];
 
     for (const dict of this.engines.values()) {
-      const entries = dict.hasTokenBulk(tokens);
+      const entries = dict.engine.hasTokenBulk(tokens);
       if (entries.length > 0) results.push(...entries);
     }
 
@@ -38,19 +47,15 @@ export class DictionarySearchCoordinator {
     const promises: Promise<SearchResult[]>[] = [];
     const searchStartTime = performance.now();
 
-    const enginesToUse = Array.from(this.engines.keys());
-
     console.log(
-      `Searching "${searchTerm}" in ${enginesToUse.length} dictionaries`
+      `Searching "${searchTerm}" in ${this.engines.size} dictionaries`
     );
 
-    for (const dictId of enginesToUse) {
-      const engine = this.engines.get(dictId);
-      if (engine) {
-        promises.push(
-          Promise.resolve().then(() => engine.searchToken(searchTerm, options))
-        );
-      }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [_, { engine }] of this.engines.entries()) {
+      promises.push(
+        Promise.resolve().then(() => engine.searchToken(searchTerm, options))
+      );
     }
 
     try {
@@ -64,7 +69,6 @@ export class DictionarySearchCoordinator {
         } results`
       );
 
-      // Финальная сортировка и ограничение
       const limits = options.deepMode
         ? SEARCH_LIMITS.DEEP_MODE
         : SEARCH_LIMITS.FAST_MODE;
@@ -82,7 +86,7 @@ export class DictionarySearchCoordinator {
   }
 
   clear(): void {
-    this.engines.forEach((engine) => engine.close());
+    this.engines.forEach((engine) => engine.engine.close());
     this.engines.clear();
   }
 }

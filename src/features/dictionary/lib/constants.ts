@@ -20,6 +20,21 @@ LIMIT
   ?
 `;
 
+const KANJI_SQL_QUERY = `
+SELECT DISTINCT *
+FROM terms
+WHERE
+  CAST("0" AS TEXT) = CAST(? AS TEXT)                -- kanji exact match
+  OR CAST("1" AS TEXT) LIKE '%' || ? || '%'         -- onyomi search
+  OR CAST("2" AS TEXT) LIKE '%' || ? || '%'         -- hiragana search
+ORDER BY
+  CASE
+    WHEN CAST("0" AS TEXT) = CAST(? AS TEXT) THEN 1  -- exact kanji match
+    WHEN CAST("1" AS TEXT) LIKE '%' || ? || '%' THEN 2
+  END
+LIMIT ?
+`;
+
 export const DICTIONARY_TEMPLATES: Record<string, DictionaryTemplate> = {
   jmdict_en: {
     id: "jmdict_en",
@@ -77,6 +92,66 @@ Meanings: Japanese language, Japanese
         `,
       },
       searchStrategy: { type: "partial", includeSubstrings: true },
+    },
+  },
+  kanji_dict: {
+    id: "kanji_dict",
+    name: "Kanji Dictionary",
+    language: "en",
+    description: "Kanji dictionary with character-based search and metadata",
+    dictionaryType: "kanji",
+    example: `
+Kanji: 辞
+Reading: ジ (や.める いな.む)
+Grade: Jouyou
+Meanings: resign, word, term, expression
+Metadata: strokes: 13, freq: 633
+  `,
+    config: {
+      name: "Kanji Dictionary Parser",
+      version: "1.0.0",
+      sqlQuery: KANJI_SQL_QUERY,
+      columnMapping: {
+        word: 0, // '辞'
+        reading: 1, // 'ジ'
+        type: 2, // 'や.める いな.む'
+        meanings: 4, // '["resign","word","term","expression"]'
+        metadata: 5, // '{"deroo":"2255","strokes":"13",...}'
+      },
+      meaningParser: {
+        type: "custom",
+        customFunction: `
+        function parseKanjiMeanings(rawContent) {
+          try {
+            if (Array.isArray(rawContent)) {
+              return rawContent;
+            }
+            
+            if (typeof rawContent === 'string') {
+              try {
+                const parsed = JSON.parse(rawContent);
+                if (Array.isArray(parsed)) {
+                  return parsed;
+                }
+              } catch (e) {
+                return [rawContent];
+              }
+            }
+            
+            return [];
+          } catch (error) {
+            console.warn('Kanji meanings parser error:', error);
+            return [];
+          }
+        }
+        return parseKanjiMeanings(rawContent);
+      `,
+      },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        searchByCharacter: true,
+      },
     },
   },
   jmdict_ru: {

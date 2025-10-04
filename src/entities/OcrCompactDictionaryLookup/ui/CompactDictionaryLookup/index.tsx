@@ -156,7 +156,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
                   isOpen={panelOpen}
                   onClose={() => clear()}
                   baseBottom={0}
-                  className="h-full border-0 shadow-none bg-transparent relative max-h-none"
+                  className="h-full border-0 shadow-none bg-transparent relative max-h-none pb-36"
                 />
               </div>
             )}

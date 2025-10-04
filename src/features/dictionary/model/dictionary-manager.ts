@@ -73,7 +73,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
   async testParser(
     file: File,
     config: DictionaryParserConfig,
-    testTokens: string[] = ["test", "テスト", "試験"]
+    testTokens: string[] = ["test", "テスト", "試験", "試", "検"]
   ): Promise<ParserTestResult> {
     const errors = ConfigValidator.validateParserConfig(config);
     if (errors.length > 0) {
@@ -190,8 +190,8 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
           try {
             meanings = Array.isArray(rawMeanings)
               ? rawMeanings
-              // TODO rawMeanings is?
-              : JSON.parse(rawMeanings as unknown as string);
+              : // TODO rawMeanings is?
+                JSON.parse(rawMeanings as unknown as string);
           } catch {
             meanings = [];
           }
@@ -229,12 +229,17 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     templateId?: string,
     customConfig?: DictionaryParserConfig
   ): Promise<string> {
-    const config = customConfig || this.getTemplate(templateId!)?.config;
+    const template = this.getTemplate(templateId!);
+    const config = customConfig || template?.config;
+
     if (!config) {
       throw new Error("No parser configuration provided");
     }
 
+    const dictionaryType = template?.dictionaryType || "standard";
+
     const testResult = await this.testParser(file, config);
+
     if (!testResult.success) {
       throw new Error(`Parser test failed: ${testResult.errors.join(", ")}`);
     }
@@ -242,9 +247,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     const metadata: DictionaryMetadata = {
       id: crypto.randomUUID(),
       name: file.name,
-      language: templateId
-        ? this.getTemplate(templateId)?.language || "unknown"
-        : "custom",
+      language: templateId ? template?.language || "unknown" : "custom",
       size: file.size,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -252,6 +255,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
       customParser: customConfig,
       status: "active",
       lastTestResult: testResult,
+      dictionaryType,
     };
 
     const stored: StoredDictionary = {
