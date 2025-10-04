@@ -60,15 +60,20 @@ export const useSearchCore = (): UseSearchCoreReturn => {
             return;
           }
 
+          const template = getTemplate(dict.parserTemplate);
+          const dictionaryType =
+            template?.dictionaryType || dict.dictionaryType || "standard";
+
           const engine = new EnhancedDictionarySearchEngine(
             sqlClient!,
             arrayBuffer,
             config,
-            dict.name
+            dict.name,
+            dictionaryType
           );
 
-          coordinator.addEngine(dict.id, engine);
-          console.log(`Initialized engine for ${dict.name}`);
+          coordinator.addEngine(dict.id, engine, dictionaryType);
+          console.log(`Initialized ${dictionaryType} engine for ${dict.name}`);
         } catch (err) {
           console.error(`Failed to initialize engine for ${dict.name}:`, err);
         }
