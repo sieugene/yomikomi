@@ -3,6 +3,7 @@ export interface DictionaryEntry {
   reading: string;
   type: string;
   meanings: string[];
+  metadata?: Record<string, string | number>;
 }
 
 export interface DictionaryMetadata {
@@ -16,6 +17,7 @@ export interface DictionaryMetadata {
   customParser?: DictionaryParserConfig;
   status: "active" | "inactive" | "error";
   lastTestResult?: ParserTestResult;
+  dictionaryType?: "standard" | "kanji";
 }
 
 export type MeaningParserT = "json" | "array" | "string" | "custom";
@@ -30,6 +32,7 @@ export interface DictionaryParserConfig {
     reading: string | number;
     type: string | number;
     meanings: string | number;
+    metadata?: string | number;
   };
   meaningParser: {
     type: MeaningParserT;
@@ -39,6 +42,7 @@ export interface DictionaryParserConfig {
     type: SearchStrategyT;
     ngramSize?: number;
     includeSubstrings?: boolean;
+    searchByCharacter?: boolean;
   };
 }
 
@@ -60,4 +64,5 @@ export interface DictionaryTemplate {
   config: DictionaryParserConfig;
   downloadUrl?: string;
   example?: string;
+  dictionaryType?: "standard" | "kanji";
 }
