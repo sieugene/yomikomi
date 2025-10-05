@@ -1,31 +1,41 @@
 import type { Database, SqlJsStatic, SqlValue } from "sql.js";
-import {
+import type {
   DictionaryEntry,
   DictionaryParserConfig,
-} from "../../dictionary/types";
-import { SearchTermGenerator, RelevanceCalculator } from "../lib/search-utils";
-import { SearchOptions, SearchResult } from "../types";
-import { SEARCH_LIMITS } from "../lib/constants";
+} from "@/features/dictionary/types";
+import { SearchTermGenerator } from "./search-term-generator";
+
+import { RelevanceCalculator } from "@/features/dictionary-search/lib/search-utils";
+import type {
+  SearchOptions,
+  SearchResult,
+} from "@/features/dictionary-search/types";
+import { DEFAULT_SEARCH_LIMITS } from "../lib/constants";
+import { buildMultiColumnQuery } from "../lib/query-builder";
+import { dedupeAndSort } from "../lib/result-utils";
+import { normalizeTerm } from "../lib/text-utils";
 
 export class EnhancedDictionarySearchEngine {
   private db: Database;
   private config: DictionaryParserConfig;
   private dictionaryName: string;
+  private sqlClient: SqlJsStatic;
   private isKanjiDict: boolean;
 
   constructor(
-    private readonly sqlClient: SqlJsStatic,
+    sqlClient: SqlJsStatic,
     dbFile: ArrayBuffer,
     config: DictionaryParserConfig,
     dictionaryName: string,
     dictionaryType?: "standard" | "kanji"
   ) {
+    this.sqlClient = sqlClient;
     this.db = new sqlClient.Database(new Uint8Array(dbFile));
     this.config = config;
     this.dictionaryName = dictionaryName;
     this.isKanjiDict =
       dictionaryType === "kanji" ||
-      config.searchStrategy.searchByCharacter === true;
+      config.searchStrategy?.searchByCharacter === true;
   }
 
   searchToken(
@@ -37,298 +47,229 @@ export class EnhancedDictionarySearchEngine {
       includeSubstrings: true,
     }
   ): SearchResult[] {
-    const results: SearchResult[] = [];
     const limits = options.deepMode
-      ? SEARCH_LIMITS.DEEP_MODE
-      : SEARCH_LIMITS.FAST_MODE;
+      ? DEFAULT_SEARCH_LIMITS.DEEP_MODE
+      : DEFAULT_SEARCH_LIMITS.FAST_MODE;
+    const maxVariants = options.deepMode
+      ? limits.MAX_SUBSTRINGS
+      : limits.MAX_SUBSTRINGS;
 
-    const searchTerms = this.isKanjiDict
-      ? this.generateSearchTerms(searchTerm)
-      : options.includeSubstrings
-      ? SearchTermGenerator.generateSearchTerms(searchTerm, {
-          maxSubstrings: limits.MAX_SUBSTRINGS,
-          includeReversed: options.deepMode,
-          minLength: 1,
-        })
-      : [searchTerm];
+    const normalized = normalizeTerm(searchTerm);
+    if (!normalized) return [];
 
-    console.log(
-      `[${
-        this.isKanjiDict ? "Kanji" : "Standard"
-      }] Searching for "${searchTerm}" with terms:`,
-      searchTerms
+    // Determine which columns to search. При отсутствии явно берем колонку word и reading если задано
+    const columnsForSearch: number[] =
+      (this.config?.searchStrategy?.columnsForSearch as number[]) ||
+      [
+        this.config.columnMapping.word as number,
+        this.config.columnMapping.reading as number,
+      ].filter((c) => typeof c === "number");
+
+    // Prepare SQL
+    const { sql, paramCountPerColumn } = buildMultiColumnQuery(
+      columnsForSearch,
+      true
     );
 
-    for (const term of searchTerms) {
-      const termResults = this.executeSingleTermSearch(term, options);
+    const stmt = this.db.prepare(sql);
+    const results: SearchResult[] = [];
 
-      const matchType: SearchResult["matchType"] =
-        term === searchTerm
-          ? "exact"
-          : searchTerm.startsWith(term) || searchTerm.endsWith(term)
-          ? "partial"
-          : "substring";
+    const variants = SearchTermGenerator.generateVariants(normalized, {
+      minLen: 1,
+      maxVariants,
+    });
 
-      for (const result of termResults) {
-        const relevanceScore = RelevanceCalculator.calculateRelevance(
-          result,
-          searchTerm,
-          matchType
+    for (const variant of variants) {
+      try {
+        // Build bind params: for each column add paramCountPerColumn copies (condition section)
+        const binds: (string | number)[] = [];
+        for (let i = 0; i < columnsForSearch.length; i++) {
+          if (paramCountPerColumn === 3) {
+            binds.push(variant, variant, variant);
+          } else {
+            binds.push(variant);
+          }
+        }
+        // for CASE WHEN equal checks we need 1 param per column (equality)
+        for (let i = 0; i < columnsForSearch.length; i++) binds.push(variant);
+        // final LIMIT
+        binds.push(options.maxResults ?? 50);
+
+        stmt.bind(binds);
+
+        let count = 0;
+        while (stmt.step() && count < (options.maxResults ?? 50)) {
+          const row = stmt.getAsObject();
+          const values = Object.values(row) as SqlValue[];
+
+          const parsed = this.parseEntry(values);
+          if (!parsed) continue;
+
+          const matchType: SearchResult["matchType"] =
+            variant === normalized
+              ? "exact"
+              : variant.length >= Math.max(2, Math.floor(normalized.length / 2))
+              ? "partial"
+              : "substring";
+
+          const relevanceScore = RelevanceCalculator.calculateRelevance(
+            parsed,
+            normalized,
+            matchType
+          );
+
+          results.push({
+            ...parsed,
+            source: this.dictionaryName,
+            relevanceScore,
+            matchType,
+          });
+
+          count++;
+        }
+
+        stmt.reset();
+
+        if (results.length >= limits.MAX_TOTAL_RESULTS) break;
+      } catch (err) {
+        console.warn(
+          `Search error for variant "${variant}" in ${this.dictionaryName}:`,
+          err
         );
-
-        results.push({
-          ...result,
-          source: this.dictionaryName,
-          relevanceScore,
-          matchType,
-        });
-      }
-
-      if (results.length >= limits.MAX_TOTAL_RESULTS) break;
-    }
-    if (!this.isKanjiDict && options.includePartialMatches) {
-      const partialTerms = SearchTermGenerator.generateSearchTerms(searchTerm, {
-        maxSubstrings: limits.MAX_SUBSTRINGS,
-        includeReversed: false,
-        minLength: 2,
-      }).filter((term) => term !== searchTerm && term.length >= 2);
-      console.log(`[${this.dictionaryName}] Partial terms:`, partialTerms);
-
-      for (const term of partialTerms) {
-        const termResults = this.executeSingleTermSearch(term, {
-          ...options,
-          maxResults: 5,
-        });
-        for (const result of termResults) {
-          const relevanceScore = RelevanceCalculator.calculateRelevance(
-            result,
-            searchTerm,
-            "partial"
-          );
-          results.push({
-            ...result,
-            source: this.dictionaryName,
-            relevanceScore,
-            matchType: "partial",
-          });
-        }
-        if (results.length >= limits.MAX_TOTAL_RESULTS) break;
-      }
-    }
-
-    if (options.includeSubstrings) {
-      const kanjiTerms = this.generateSearchTerms(searchTerm);
-      console.log(`[${this.dictionaryName}] Kanji terms:`, kanjiTerms);
-
-      for (const kanji of kanjiTerms) {
-        const termResults = this.executeSingleTermSearch(kanji, {
-          ...options,
-          maxResults: 5,
-        });
-        for (const result of termResults) {
-          const relevanceScore = RelevanceCalculator.calculateRelevance(
-            result,
-            searchTerm,
-            "substring"
-          );
-          results.push({
-            ...result,
-            source: this.dictionaryName,
-            relevanceScore,
-            matchType: "substring",
-          });
-        }
-        if (results.length >= limits.MAX_TOTAL_RESULTS) break;
-      }
-    }
-
-    return this.deduplicateAndSort(results).slice(0, options.maxResults);
-  }
-
-  private generateSearchTerms(text: string): string[] {
-    const terms = new Set<string>();
-    const normalized = text.normalize("NFKC").trim();
-
-    if (normalized.length >= 1) {
-      terms.add(normalized);
-    }
-
-    if (this.isKanjiDict) {
-      for (let i = 0; i < text.length; i++) {
-        const char = text[i];
-        const code = char.charCodeAt(0);
-        const isKanji =
-          (code >= 0x4e00 && code <= 0x9fff) ||
-          (code >= 0x3400 && code <= 0x4dbf) ||
-          (code >= 0xf900 && code <= 0xfaff);
-        if (isKanji) {
-          terms.add(char);
+        try {
+          stmt.reset();
+        } catch (e) {
+          console.warn("Statement reset error:", e);
         }
       }
-      const subTerms = SearchTermGenerator.generateSearchTerms(normalized, {
-        maxSubstrings: 10,
-        includeReversed: false,
-        minLength: 2,
-      }).filter((term) => term !== normalized);
-      subTerms.forEach((term) => terms.add(term));
     }
 
-    return Array.from(terms);
+    try {
+      stmt.free();
+    } catch (e) {
+      console.warn("Statement free error:", e);
+    }
+
+    return dedupeAndSort(results).slice(0, options.maxResults ?? 50);
   }
 
   public hasTokenBulk(tokens: string[]): DictionaryEntry[] {
-    if (!tokens.length) return [];
+    if (!tokens || tokens.length === 0) return [];
+
     try {
-      // TODO dynamic way for getting table name, is good ?
-      const match = this.config.sqlQuery.match(/FROM\s+([^\s;]+)/i);
-      const tableName = match ? match[1] : null;
+      // dynamic table name discovery
+      const match = (this.config.sqlQuery || "").match(/FROM\s+([\w"]+)/i);
+      const tableName = match ? match[1] : "terms";
+      // We will search by the primary 'word' column
+      const wordCol = this.config.columnMapping.word as number;
       const placeholders = tokens.map(() => "?").join(",");
-      const query = `SELECT * FROM ${tableName} WHERE "${this.config.columnMapping.word}" IN (${placeholders})`;
+      const query = `SELECT * FROM ${tableName} WHERE CAST("${wordCol}" AS TEXT) IN (${placeholders})`;
+
       const stmt = this.db.prepare(query);
-      stmt.bind(tokens);
+      stmt.bind(tokens.map(normalizeTerm));
 
       const results: DictionaryEntry[] = [];
       while (stmt.step()) {
         const row = stmt.getAsObject();
-        const entry = this.parseEntry(Object.values(row));
-        if (entry) results.push(entry);
+        const parsed = this.parseEntry(Object.values(row));
+        if (parsed) results.push(parsed);
       }
-
       stmt.free();
       return results;
-    } catch (error) {
-      console.warn(`hasTokenBulk error:`, error);
+    } catch (err) {
+      console.warn("hasTokenBulk error:", err);
       return [];
-    }
-  }
-
-  private executeSingleTermSearch(
-    rawTerm: string,
-    options: SearchOptions
-  ): DictionaryEntry[] {
-    const term = rawTerm.normalize("NFKC").trim();
-    const results: DictionaryEntry[] = [];
-
-    try {
-      const query = this.config.sqlQuery || this.buildSearchQuery(options);
-      const stmt = this.db.prepare(query);
-
-      if (options.includePartialMatches) {
-        stmt.bind([term, term, term, term, term, options.maxResults || 50]);
-      } else {
-        stmt.bind([term, options.maxResults || 20]);
-      }
-
-      let processedCount = 0;
-      while (stmt.step() && processedCount < (options.maxResults || 50)) {
-        const row = stmt.getAsObject();
-        const values = Object.values(row);
-
-        console.log(`Raw row data for "${term}":`, values.slice(0, 6));
-
-        const parsed = this.parseEntry(values);
-
-        if (parsed && this.isValidResult(parsed, term)) {
-          results.push(parsed);
-          processedCount++;
-        } else if (parsed) {
-          console.log(`Filtered out result for "${term}":`, parsed);
-        }
-      }
-
-      stmt.free();
-      console.log(`Found ${results.length} valid results for term "${term}"`);
-    } catch (error) {
-      console.warn(
-        `Search error for term "${term}" in ${this.dictionaryName}:`,
-        error
-      );
-    }
-
-    return results;
-  }
-
-  private buildSearchQuery(options: SearchOptions): string {
-    if (options.includePartialMatches) {
-      // TODO
-      return `
-        SELECT DISTINCT * FROM terms 
-        WHERE "0" = ? 
-           OR "0" LIKE ? || '%' 
-           OR "0" LIKE '%' || ? || '%'
-        ORDER BY 
-          CASE 
-            WHEN "0" = ? THEN 1
-            WHEN "0" LIKE ? || '%' THEN 2
-            ELSE 3 
-          END,
-          length("0") DESC 
-        LIMIT ?
-      `;
-    } else {
-      return `
-        SELECT * FROM terms 
-        WHERE "0" = ? 
-        ORDER BY length("0") DESC 
-        LIMIT ?
-      `;
     }
   }
 
   private parseEntry(values: SqlValue[]): DictionaryEntry | null {
     try {
-      const word = values[this.config.columnMapping.word as number] || "";
-      const reading = values[this.config.columnMapping.reading as number] || "";
-      const type = values[this.config.columnMapping.type as number] || "";
-      const rawMeanings = values[this.config.columnMapping.meanings as number];
+      const wordIdx = this.config.columnMapping.word as number;
+      const readingIdx = this.config.columnMapping.reading as number;
+      const typeIdx = this.config.columnMapping.type as number;
+      const meaningsIdx = this.config.columnMapping.meanings as number;
+      const metadataIdx = this.config.columnMapping.metadata as
+        | number
+        | undefined;
 
-      let metadata: Record<string, string | number> | undefined;
-      if (this.config.columnMapping.metadata !== undefined) {
-        const rawMetadata =
-          values[this.config.columnMapping.metadata as number];
-        if (rawMetadata && typeof rawMetadata === "object") {
-          metadata = rawMetadata as unknown as Record<string, string | number>;
+      const word = values[wordIdx] ?? "";
+      const reading = readingIdx !== undefined ? values[readingIdx] ?? "" : "";
+      const type = typeIdx !== undefined ? values[typeIdx] ?? "" : "";
+      const rawMeanings =
+        meaningsIdx !== undefined ? values[meaningsIdx] : undefined;
+
+      let metadata: Record<string, unknown> | undefined;
+      if (metadataIdx !== undefined) {
+        const raw = values[metadataIdx];
+        if (raw && typeof raw === "object") {
+          metadata = raw as unknown as Record<string, unknown>;
+        } else if (typeof raw === "string") {
+          try {
+            metadata = JSON.parse(raw);
+          } catch {
+            metadata = { raw };
+          }
         }
       }
 
       let meanings: string[] = [];
+      const parser = (this.config.meaningParser || { type: "string" });
 
-      switch (this.config.meaningParser.type) {
+      switch (parser.type) {
         case "array":
-          meanings = Array.isArray(rawMeanings) ? rawMeanings : [];
+          meanings = Array.isArray(rawMeanings)
+            ? (rawMeanings as string[])
+            : [];
           break;
+
         case "string":
-          meanings = typeof rawMeanings === "string" ? [rawMeanings] : [];
+          meanings =
+            typeof rawMeanings === "string" ? [rawMeanings as string] : [];
           break;
+
         case "json":
           try {
-            meanings = Array.isArray(rawMeanings)
-              ? rawMeanings
-              : JSON.parse(rawMeanings as unknown as string);
+            const parsed =
+              typeof rawMeanings === "string"
+                ? JSON.parse(rawMeanings)
+                : rawMeanings;
+            meanings = Array.isArray(parsed)
+              ? parsed
+              : typeof parsed === "string"
+              ? [parsed]
+              : [];
           } catch {
             meanings = [];
           }
           break;
+
         case "custom":
-          if (this.config.meaningParser.customFunction) {
+          if (parser.customFunction) {
             try {
-              const fn = new Function(
-                "rawContent",
-                this.config.meaningParser.customFunction
-              );
-              meanings = fn(rawMeanings) || [];
+              // Вызов пользовательской функции, которая возвращает массив значений
+              const fn = new Function("rawContent", parser.customFunction);
+              const parsed = fn(rawMeanings);
+              if (Array.isArray(parsed)) meanings = parsed;
+              else if (typeof parsed === "string") meanings = [parsed];
+              else meanings = [];
             } catch (error) {
               console.warn("Custom parser function error:", error);
               meanings = [];
             }
           }
           break;
+
+        default:
+          // fallback: поддерживаем как массив, так и строку
+          if (Array.isArray(rawMeanings)) meanings = rawMeanings as string[];
+          else if (typeof rawMeanings === "string") meanings = [rawMeanings];
+          else meanings = [];
       }
 
       const result: DictionaryEntry = {
         word: String(word),
-        reading: String(reading),
-        type: String(type),
+        reading: String(reading || ""),
+        type: String(type || ""),
         meanings: Array.isArray(meanings) ? meanings.filter(Boolean) : [],
         metadata,
       };
@@ -342,32 +283,30 @@ export class EnhancedDictionarySearchEngine {
 
   private isValidResult(result: DictionaryEntry, searchTerm: string): boolean {
     if (this.isKanjiDict) {
-      return result.word.length > 0 && result.meanings.length > 0;
+      return (
+        !!result.word &&
+        Array.isArray(result.meanings) &&
+        result.meanings.length > 0
+      );
     }
 
-    return (
-      result.word.length > 0 &&
-      result.meanings.length > 0 &&
-      !(searchTerm.length === 1 && result.word.length > 6)
-    );
+    if (
+      !result.word ||
+      !Array.isArray(result.meanings) ||
+      result.meanings.length === 0
+    )
+      return false;
+
+    // Старая эвристика: если пользователь ввёл 1 символ — отбросить слишком длинные результаты
+    if (normalizeTerm(searchTerm).length === 1 && result.word.length > 6)
+      return false;
+
+    return true;
   }
 
-  private deduplicateAndSort(results: SearchResult[]): SearchResult[] {
-    const uniqueMap = new Map<string, SearchResult>();
-
-    for (const result of results) {
-      const key = `${result.word}|${result.reading}|${result.source}`;
-      const existing = uniqueMap.get(key);
-
-      // Берем результат с лучшим скором релевантности
-      if (!existing || result.relevanceScore > existing.relevanceScore) {
-        uniqueMap.set(key, result);
-      }
-    }
-
-    return Array.from(uniqueMap.values()).sort(
-      (a, b) => b.relevanceScore - a.relevanceScore
-    );
+  // Обёртка для утилиты дедупа и сортировки (сохраняет публичный интерфейс)
+  dedupeAndSort(results: SearchResult[]) {
+    return dedupeAndSort(results);
   }
 
   close(): void {

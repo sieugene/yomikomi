@@ -3,7 +3,7 @@ export interface DictionaryEntry {
   reading: string;
   type: string;
   meanings: string[];
-  metadata?: Record<string, string | number>;
+  metadata?: Record<string, unknown> | undefined
 }
 
 export interface DictionaryMetadata {
@@ -43,6 +43,8 @@ export interface DictionaryParserConfig {
     ngramSize?: number;
     includeSubstrings?: boolean;
     searchByCharacter?: boolean;
+
+    columnsForSearch?: number[];
   };
 }
 
