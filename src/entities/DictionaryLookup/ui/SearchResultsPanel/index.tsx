@@ -3,7 +3,10 @@ import React from "react";
 import { MainResultStats } from "../MainResultStats";
 import { AlertCircle, BookOpen, Search } from "lucide-react";
 import { SearchResultCard } from "../SearchResultCard";
-import { SearchResult } from '@/features/dictionary-search/types';
+import { SearchResult } from "@/features/dictionary-search/types";
+import { useSourceFiltering } from "../../hooks/useSourceFiltering";
+import { SourceTabs } from "../SourceTabs";
+import { VirtualizedResults } from "../VirtualizedResults";
 
 interface SearchResultsPanelProps {
   results: Array<{
@@ -22,7 +25,7 @@ interface SearchResultsPanelProps {
   isOpen: boolean;
   onClose: () => void;
   baseBottom: number;
-  className?: string
+  className?: string;
 }
 
 export const SearchResultsPanel = React.forwardRef<
@@ -39,22 +42,33 @@ export const SearchResultsPanel = React.forwardRef<
       isOpen,
       baseBottom,
       searchStats,
-      className
+      className,
     },
     ref
   ) => {
+    const {
+      sources,
+      resultCounts,
+      filteredResults,
+      activeSource,
+      setActiveSource,
+    } = useSourceFiltering({ results });
+
     if (!isOpen) return null;
 
     return (
       <div
         ref={ref}
-        className={`absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto ${className || ""}`}
+        className={`absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto ${
+          className || ""
+        }`}
         style={{ bottom: baseBottom }}
       >
         <MainResultStats
           deepSearchMode={deepSearchMode}
           searchStats={searchStats}
         />
+
         <div className="p-4">
           {/* Header */}
           <div className="flex items-center justify-between mb-4 pb-2 border-b">
@@ -83,6 +97,16 @@ export const SearchResultsPanel = React.forwardRef<
             </div>
           </div>
 
+          {/* Source Tabs */}
+          {!loading && !error && results.length > 0 && (
+            <SourceTabs
+              sources={sources}
+              activeSource={activeSource}
+              onSourceChange={setActiveSource}
+              resultCounts={resultCounts}
+            />
+          )}
+
           {/* Error State */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
@@ -96,10 +120,14 @@ export const SearchResultsPanel = React.forwardRef<
           {/* Results */}
           {!loading && !error && (
             <>
-              {results.length === 0 ? (
+              {filteredResults.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>No dictionary entries found</p>
+                  <p>
+                    {activeSource === "all"
+                      ? "No dictionary entries found"
+                      : `No results from ${activeSource}`}
+                  </p>
                   {selectedToken && (
                     <div className="mt-4 space-y-2">
                       <p className="text-sm">
@@ -117,9 +145,14 @@ export const SearchResultsPanel = React.forwardRef<
                     </div>
                   )}
                 </div>
+              ) : filteredResults.length > 10 ? (
+                <VirtualizedResults
+                  groups={filteredResults}
+                  deepSearchMode={deepSearchMode}
+                />
               ) : (
                 <div className="space-y-4">
-                  {results.map((group, groupIndex) => (
+                  {filteredResults.map((group, groupIndex) => (
                     <div
                       key={groupIndex}
                       className="border-l-4 border-blue-500 pl-4"
@@ -146,9 +179,9 @@ export const SearchResultsPanel = React.forwardRef<
                   ))}
 
                   {/* Show truncation notice */}
-                  {results.length >= (deepSearchMode ? 25 : 15) && (
+                  {filteredResults.length >= (deepSearchMode ? 25 : 15) && (
                     <div className="text-center py-2 text-sm text-gray-500 border-t">
-                      Showing top {results.length} word groups.
+                      Showing top {filteredResults.length} word groups.
                       {!deepSearchMode && " Try Deep Search for more results."}
                     </div>
                   )}
