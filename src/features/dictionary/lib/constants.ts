@@ -1,10 +1,8 @@
 import { DictionaryTemplate } from "../types";
 
 const BASE_SQL_QUERY = `
-SELECT
-  DISTINCT *
-FROM
-  terms
+SELECT DISTINCT *
+FROM terms
 WHERE
   "0" = ?
   OR "0" LIKE ? || '%'
@@ -16,23 +14,23 @@ ORDER BY
     ELSE 3
   END,
   length("0") DESC
-LIMIT
-  ?
+LIMIT ?;
 `;
 
 const KANJI_SQL_QUERY = `
 SELECT DISTINCT *
 FROM terms
 WHERE
-  CAST("0" AS TEXT) = CAST(? AS TEXT)                -- kanji exact match
-  OR CAST("1" AS TEXT) LIKE '%' || ? || '%'         -- onyomi search
-  OR CAST("2" AS TEXT) LIKE '%' || ? || '%'         -- hiragana search
+  CAST("0" AS TEXT) = CAST(? AS TEXT)                -- exact kanji match
+  OR CAST("1" AS TEXT) LIKE '%' || ? || '%'          -- onyomi search
+  OR CAST("2" AS TEXT) LIKE '%' || ? || '%'          -- kunyomi search
 ORDER BY
   CASE
-    WHEN CAST("0" AS TEXT) = CAST(? AS TEXT) THEN 1  -- exact kanji match
+    WHEN CAST("0" AS TEXT) = CAST(? AS TEXT) THEN 1
     WHEN CAST("1" AS TEXT) LIKE '%' || ? || '%' THEN 2
+    ELSE 3
   END
-LIMIT ?
+LIMIT ?;
 `;
 
 export const DICTIONARY_TEMPLATES: Record<string, DictionaryTemplate> = {
@@ -91,9 +89,14 @@ Meanings: Japanese language, Japanese
           return parseMeanings(rawContent);
         `,
       },
-      searchStrategy: { type: "partial", includeSubstrings: true },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        columnsForSearch: [0, 1], // ✅ word + reading
+      },
     },
   },
+
   kanji_dict: {
     id: "kanji_dict",
     name: "Kanji Dictionary",
@@ -112,48 +115,44 @@ Metadata: strokes: 13, freq: 633
       version: "1.0.0",
       sqlQuery: KANJI_SQL_QUERY,
       columnMapping: {
-        word: 0, // '辞'
-        reading: 1, // 'ジ'
-        type: 2, // 'や.める いな.む'
-        meanings: 4, // '["resign","word","term","expression"]'
-        metadata: 5, // '{"deroo":"2255","strokes":"13",...}'
+        word: 0,
+        reading: 1,
+        type: 2,
+        meanings: 4,
+        metadata: 5,
       },
       meaningParser: {
         type: "custom",
         customFunction: `
-        function parseKanjiMeanings(rawContent) {
-          try {
-            if (Array.isArray(rawContent)) {
-              return rawContent;
-            }
-            
-            if (typeof rawContent === 'string') {
-              try {
-                const parsed = JSON.parse(rawContent);
-                if (Array.isArray(parsed)) {
-                  return parsed;
+          function parseKanjiMeanings(rawContent) {
+            try {
+              if (Array.isArray(rawContent)) return rawContent;
+              if (typeof rawContent === 'string') {
+                try {
+                  const parsed = JSON.parse(rawContent);
+                  if (Array.isArray(parsed)) return parsed;
+                } catch {
+                  return [rawContent];
                 }
-              } catch (e) {
-                return [rawContent];
               }
+              return [];
+            } catch (error) {
+              console.warn('Kanji meanings parser error:', error);
+              return [];
             }
-            
-            return [];
-          } catch (error) {
-            console.warn('Kanji meanings parser error:', error);
-            return [];
           }
-        }
-        return parseKanjiMeanings(rawContent);
-      `,
+          return parseKanjiMeanings(rawContent);
+        `,
       },
       searchStrategy: {
         type: "partial",
         includeSubstrings: true,
         searchByCharacter: true,
+        columnsForSearch: [0, 1, 2], // ✅ kanji, onyomi, kunyomi
       },
     },
   },
+
   jmdict_ru: {
     id: "jmdict_ru",
     name: "JMdict Russian",
@@ -170,10 +169,15 @@ Metadata: strokes: 13, freq: 633
       sqlQuery: BASE_SQL_QUERY,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: { type: "string" },
-      searchStrategy: { type: "partial", includeSubstrings: true },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        columnsForSearch: [0, 1],
+      },
     },
   },
-  jmdict_dutch: {
+
+  jmdict_nl: {
     id: "jmdict_nl",
     name: "JMdict Dutch",
     language: "nl",
@@ -189,10 +193,15 @@ Betekenissen: Japanse taal
       sqlQuery: BASE_SQL_QUERY,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: { type: "string" },
-      searchStrategy: { type: "partial", includeSubstrings: true },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        columnsForSearch: [0, 1],
+      },
     },
   },
-  jmdict_spanish: {
+
+  jmdict_es: {
     id: "jmdict_es",
     name: "JMdict Spanish",
     language: "es",
@@ -208,7 +217,11 @@ Significados: idioma japonés
       sqlQuery: BASE_SQL_QUERY,
       columnMapping: { word: 0, reading: 1, type: 2, meanings: 5 },
       meaningParser: { type: "string" },
-      searchStrategy: { type: "partial", includeSubstrings: true },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        columnsForSearch: [0, 1],
+      },
     },
   },
 };
