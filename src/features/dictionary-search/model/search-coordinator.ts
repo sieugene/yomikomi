@@ -51,10 +51,20 @@ export class DictionarySearchCoordinator {
       `Searching "${searchTerm}" in ${this.engines.size} dictionaries`
     );
 
+    const limits = options.deepMode
+      ? SEARCH_LIMITS.DEEP_MODE
+      : SEARCH_LIMITS.FAST_MODE;
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [_, { engine }] of this.engines.entries()) {
       promises.push(
-        Promise.resolve().then(() => engine.searchToken(searchTerm, options))
+        Promise.resolve()
+          .then(() => engine.searchToken(searchTerm, options))
+          .then((results) =>
+            results
+              .sort((a, b) => b.relevanceScore - a.relevanceScore)
+              .slice(0, limits.MAX_TOTAL_RESULTS)
+          )
       );
     }
 
@@ -69,12 +79,9 @@ export class DictionarySearchCoordinator {
         } results`
       );
 
-      const limits = options.deepMode
-        ? SEARCH_LIMITS.DEEP_MODE
-        : SEARCH_LIMITS.FAST_MODE;
-      return combinedResults
-        .sort((a, b) => b.relevanceScore - a.relevanceScore)
-        .slice(0, limits.MAX_TOTAL_RESULTS);
+      return combinedResults.sort(
+        (a, b) => b.relevanceScore - a.relevanceScore
+      );
     } catch (error) {
       console.error("Search coordination error:", error);
       return [];
