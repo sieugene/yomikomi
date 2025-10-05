@@ -86,28 +86,91 @@ export class EnhancedDictionarySearchEngine {
 
       if (results.length >= limits.MAX_TOTAL_RESULTS) break;
     }
+    if (!this.isKanjiDict && options.includePartialMatches) {
+      const partialTerms = SearchTermGenerator.generateSearchTerms(searchTerm, {
+        maxSubstrings: limits.MAX_SUBSTRINGS,
+        includeReversed: false,
+        minLength: 2,
+      }).filter((term) => term !== searchTerm && term.length >= 2);
+      console.log(`[${this.dictionaryName}] Partial terms:`, partialTerms);
+
+      for (const term of partialTerms) {
+        const termResults = this.executeSingleTermSearch(term, {
+          ...options,
+          maxResults: 5,
+        });
+        for (const result of termResults) {
+          const relevanceScore = RelevanceCalculator.calculateRelevance(
+            result,
+            searchTerm,
+            "partial"
+          );
+          results.push({
+            ...result,
+            source: this.dictionaryName,
+            relevanceScore,
+            matchType: "partial",
+          });
+        }
+        if (results.length >= limits.MAX_TOTAL_RESULTS) break;
+      }
+    }
+
+    if (options.includeSubstrings) {
+      const kanjiTerms = this.generateSearchTerms(searchTerm);
+      console.log(`[${this.dictionaryName}] Kanji terms:`, kanjiTerms);
+
+      for (const kanji of kanjiTerms) {
+        const termResults = this.executeSingleTermSearch(kanji, {
+          ...options,
+          maxResults: 5,
+        });
+        for (const result of termResults) {
+          const relevanceScore = RelevanceCalculator.calculateRelevance(
+            result,
+            searchTerm,
+            "substring"
+          );
+          results.push({
+            ...result,
+            source: this.dictionaryName,
+            relevanceScore,
+            matchType: "substring",
+          });
+        }
+        if (results.length >= limits.MAX_TOTAL_RESULTS) break;
+      }
+    }
 
     return this.deduplicateAndSort(results).slice(0, options.maxResults);
   }
 
   private generateSearchTerms(text: string): string[] {
     const terms = new Set<string>();
+    const normalized = text.normalize("NFKC").trim();
 
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      const code = char.charCodeAt(0);
-      const isKanji =
-        (code >= 0x4e00 && code <= 0x9fff) ||
-        (code >= 0x3400 && code <= 0x4dbf) ||
-        (code >= 0xf900 && code <= 0xfaff);
+    if (normalized.length >= 1) {
+      terms.add(normalized);
+    }
 
-      if (isKanji) {
-        terms.add(char);
-      } else {
-        // for hiragana and katakana, add the whole word
-        terms.add(text);
-        break;
+    if (this.isKanjiDict) {
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const code = char.charCodeAt(0);
+        const isKanji =
+          (code >= 0x4e00 && code <= 0x9fff) ||
+          (code >= 0x3400 && code <= 0x4dbf) ||
+          (code >= 0xf900 && code <= 0xfaff);
+        if (isKanji) {
+          terms.add(char);
+        }
       }
+      const subTerms = SearchTermGenerator.generateSearchTerms(normalized, {
+        maxSubstrings: 10,
+        includeReversed: false,
+        minLength: 2,
+      }).filter((term) => term !== normalized);
+      subTerms.forEach((term) => terms.add(term));
     }
 
     return Array.from(terms);
