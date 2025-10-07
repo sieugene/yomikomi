@@ -1,13 +1,12 @@
 import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
 import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
 import { getImageDimensions } from "@/features/ocr-client/lib/getImageDimensions";
-import { resizeImageLetterbox } from "@/features/ocr-client/lib/resizeImageLetterbox";
 import { OCRSettings, TEXT_ORIENTATION } from "@/features/ocr-settings/types";
 import { PSM } from "tesseract.js";
 import { OCRApi } from "../api/ocrApi";
 import { adaptGutenyeOCR, adaptTesseractResult } from "../lib/adapter";
-import { rotateImage } from "../lib/rotateImage";
 import { OCRResponse } from "../types";
+import { processImage } from "@/features/ocr-client/lib/ImageProcessOptions";
 
 export const useOcr = () => {
   const { tesseractWorker, gutenyeOCR } = useClientOCR();
@@ -81,6 +80,7 @@ export const useOcr = () => {
 
     if (settings.isClientSide) {
       if (settings.clientEngine === OCR_ENGINE.TESSERACT) {
+        // Tesseract: no preprocessing needed, use original
         const { width, height } = await getImageDimensions(file);
         const response = await processWithTesseract(file, settings);
         if (!response) throw new Error("Tesseract processing failed");
@@ -91,38 +91,48 @@ export const useOcr = () => {
           format: file.type,
         });
       } else if (settings.clientEngine === OCR_ENGINE.GUTENYE) {
-        let fileForOCR = file;
-
-        if (
+        // Gutenye: apply all processing in one pass
+        const isVertical =
           settings.textOrientation === TEXT_ORIENTATION.VERTICAL ||
-          settings.japaneseVerticalMode
-        ) {
-          const rotateResult = await rotateImage(file, -90);
-          fileForOCR = rotateResult.rotatedFile;
-        }
+          settings.japaneseVerticalMode;
 
-        const resizedFile = await resizeImageLetterbox(fileForOCR, 960);
-        processedFile = resizedFile;
+        const { processedFile: optimizedFile, metadata } = await processImage(
+          file,
+          {
+            targetSize: 960,
+            rotationAngle: isVertical ? -90 : 0,
+            upscaleFactor: 2, // Can increase to 1.5 or 2 for better quality
+            enhanceForOCR: true,
+            quality: 0.95,
+          }
+        );
 
-        const { width, height } = await getImageDimensions(resizedFile);
-        const response = await processWithGutenye(resizedFile);
+        processedFile = optimizedFile;
+
+        console.log("Image processed:", metadata);
+
+        const { width, height } = await getImageDimensions(optimizedFile);
+        const response = await processWithGutenye(optimizedFile);
         if (!response) throw new Error("GUTENYE processing failed");
 
         rawResult = adaptGutenyeOCR(response, {
           width,
           height,
-          format: resizedFile.type,
+          format: optimizedFile.type,
         });
       } else {
         throw new Error("Unknown client engine");
       }
     } else {
+      // Server-side OCR: optionally preprocess for better quality
+      // You can add preprocessing here too if needed
       rawResult = await OCRApi.performOCRWithPositions(
         file,
         settings.apiEndpoint,
         settings.bearerToken
       );
     }
+
     return {
       result: rawResult,
       resizedFile: processedFile,
