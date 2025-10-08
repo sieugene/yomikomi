@@ -19,7 +19,6 @@ export class EnhancedDictionarySearchEngine {
   private db: Database;
   private config: DictionaryParserConfig;
   private dictionaryName: string;
-  private sqlClient: SqlJsStatic;
   private isKanjiDict: boolean;
 
   constructor(
@@ -29,7 +28,6 @@ export class EnhancedDictionarySearchEngine {
     dictionaryName: string,
     dictionaryType?: "standard" | "kanji"
   ) {
-    this.sqlClient = sqlClient;
     this.db = new sqlClient.Database(new Uint8Array(dbFile));
     this.config = config;
     this.dictionaryName = dictionaryName;
@@ -74,10 +72,14 @@ export class EnhancedDictionarySearchEngine {
     const stmt = this.db.prepare(sql);
     const results: SearchResult[] = [];
 
-    const variants = SearchTermGenerator.generateVariants(normalized, {
-      minLen: 1,
-      maxVariants,
-    });
+    const variants = SearchTermGenerator.generateVariants(
+      normalized,
+      {
+        minLen: 1,
+        maxVariants,
+      },
+      this.isKanjiDict
+    );
 
     for (const variant of variants) {
       try {
@@ -213,7 +215,7 @@ export class EnhancedDictionarySearchEngine {
       }
 
       let meanings: string[] = [];
-      const parser = (this.config.meaningParser || { type: "string" });
+      const parser = this.config.meaningParser || { type: "string" };
 
       switch (parser.type) {
         case "array":
@@ -279,29 +281,6 @@ export class EnhancedDictionarySearchEngine {
       console.warn("Parse entry error:", error, "Values:", values);
       return null;
     }
-  }
-
-  private isValidResult(result: DictionaryEntry, searchTerm: string): boolean {
-    if (this.isKanjiDict) {
-      return (
-        !!result.word &&
-        Array.isArray(result.meanings) &&
-        result.meanings.length > 0
-      );
-    }
-
-    if (
-      !result.word ||
-      !Array.isArray(result.meanings) ||
-      result.meanings.length === 0
-    )
-      return false;
-
-    // Старая эвристика: если пользователь ввёл 1 символ — отбросить слишком длинные результаты
-    if (normalizeTerm(searchTerm).length === 1 && result.word.length > 6)
-      return false;
-
-    return true;
   }
 
   // Обёртка для утилиты дедупа и сортировки (сохраняет публичный интерфейс)
