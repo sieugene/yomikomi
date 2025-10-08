@@ -3,10 +3,14 @@ export class SearchTermGenerator {
    * Generate many useful tokens/variants from input like:
    * 最終盤 -> ["最終盤","最終","終盤","最","終","盤"]
    * For hiragana/katakana it also returns progressive substrings.
+   * If isKanjiDict = true, then:
+   * - only kanji tokens are generated (e.g. 引き込む -> ["引","込"])
+   * - if no kanji found, fallback to normal variant generation.
    */
   static generateVariants(
     word: string,
-    opts: { minLen?: number; maxVariants?: number } = {}
+    opts: { minLen?: number; maxVariants?: number } = {},
+    isKanjiDict: boolean
   ) {
     const minLen = opts.minLen ?? 1;
     const maxVariants = opts.maxVariants ?? 100;
@@ -17,6 +21,21 @@ export class SearchTermGenerator {
     const set = new Set<string>();
 
     if (!normalized) return [];
+
+    if (isKanjiDict) {
+      const kanjiChars = Array.from(normalized).filter((ch) => {
+        const code = ch.charCodeAt(0);
+        return (
+          (code >= 0x4e00 && code <= 0x9fff) ||
+          (code >= 0x3400 && code <= 0x4dbf) ||
+          (code >= 0xf900 && code <= 0xfaff)
+        );
+      });
+
+      if (kanjiChars.length > 0) {
+        return Array.from(new Set(kanjiChars));
+      }
+    }
 
     set.add(normalized);
 
