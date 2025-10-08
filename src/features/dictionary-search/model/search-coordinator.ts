@@ -40,12 +40,8 @@ export class DictionarySearchCoordinator {
     return results;
   }
 
-  async searchSingleToken(
-    searchTerm: string,
-    options: SearchOptions
-  ): Promise<SearchResult[]> {
-    const promises: Promise<SearchResult[]>[] = [];
-    const searchStartTime = performance.now();
+  searchSingleToken(searchTerm: string, options: SearchOptions) {
+    const tasks: (() => Promise<SearchResult[]>)[] = [];
 
     console.log(
       `Searching "${searchTerm}" in ${this.engines.size} dictionaries`
@@ -57,35 +53,15 @@ export class DictionarySearchCoordinator {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const [_, { engine }] of this.engines.entries()) {
-      promises.push(
-        Promise.resolve()
-          .then(() => engine.searchToken(searchTerm, options))
-          .then((results) =>
-            results
-              .sort((a, b) => b.relevanceScore - a.relevanceScore)
-              .slice(0, limits.MAX_TOTAL_RESULTS)
-          )
-      );
+      tasks.push(async () => {
+        const results = await engine.searchToken(searchTerm, options);
+        return results
+          .sort((a, b) => b.relevanceScore - a.relevanceScore)
+          .slice(0, limits.MAX_TOTAL_RESULTS);
+      });
     }
 
-    try {
-      const allResults = await Promise.all(promises);
-      const combinedResults = allResults.flat();
-
-      const searchTime = performance.now() - searchStartTime;
-      console.log(
-        `Search completed in ${searchTime.toFixed(1)}ms, found ${
-          combinedResults.length
-        } results`
-      );
-
-      return combinedResults.sort(
-        (a, b) => b.relevanceScore - a.relevanceScore
-      );
-    } catch (error) {
-      console.error("Search coordination error:", error);
-      return [];
-    }
+    return tasks;
   }
 
   getActiveEngineCount(): number {
