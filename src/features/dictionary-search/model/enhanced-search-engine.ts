@@ -38,12 +38,7 @@ export class EnhancedDictionarySearchEngine {
 
   searchToken(
     searchTerm: string,
-    options: SearchOptions = {
-      deepMode: false,
-      maxResults: 50,
-      includePartialMatches: true,
-      includeSubstrings: true,
-    }
+    options: SearchOptions
   ): SearchResult[] {
     const limits = options.deepMode
       ? DEFAULT_SEARCH_LIMITS.DEEP_MODE
@@ -55,7 +50,6 @@ export class EnhancedDictionarySearchEngine {
     const normalized = normalizeTerm(searchTerm);
     if (!normalized) return [];
 
-    // Determine which columns to search. При отсутствии явно берем колонку word и reading если задано
     const columnsForSearch: number[] =
       (this.config?.searchStrategy?.columnsForSearch as number[]) ||
       [

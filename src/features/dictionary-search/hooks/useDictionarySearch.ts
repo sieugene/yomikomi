@@ -3,6 +3,7 @@ import { useStoreDictionarySearchSettings } from "../context/DictionarySearchSet
 import { SEARCH_LIMITS } from "../lib/constants";
 import { SearchOptions, SearchResult } from "../types";
 import { useSearchCore } from "./useSearchCore";
+import { useSWRCache } from "@/shared/hooks/useSWRCache";
 
 export type PerfrormSearchResult = {
   results: SearchResult[];
@@ -48,7 +49,12 @@ const DEFAULT_PERFORMED_RESULT: PerfrormSearchResult = {
   searchStats: null,
 };
 
+const GET_KEY = (token: string, deepMode: boolean) =>
+  `dictionary-search:${token}:${deepMode ? "deep" : "fast"}`;
+
 export const useDictionarySearch = () => {
+  const { getCache, setCache } = useSWRCache<PerfrormSearchResult>();
+
   const { deepSearchMode } = useStoreDictionarySearchSettings();
   const { inited, coordinator } = useSearchCore();
   const [lazyPerfomedResults, setLazyPerfomedResults] =
@@ -75,13 +81,20 @@ export const useDictionarySearch = () => {
       includePartialMatches: true,
       includeSubstrings: deepSearchMode,
     };
+    const cached = getCache(GET_KEY(token, deepSearchMode));
+    if (cached) {
+      setLazyPerfomedResults(cached);
+      return;
+    }
 
     const searchStartTime = performance.now();
     const tasks = searchSingleToken(token, searchOptions);
 
     let collectedResults: SearchResult[] = [];
 
-    for (const task of tasks) {
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      const isLast = i === tasks.length - 1;
       const result = await task();
 
       collectedResults = [...collectedResults, ...result];
@@ -93,8 +106,7 @@ export const useDictionarySearch = () => {
           searchStartTime +
           (prev.searchStats?.searchTime || 0);
         const uniqueWords = new Set(collectedResults.map((r) => r.word)).size;
-
-        return {
+        const next = {
           results: collectedResults,
           searchStats: {
             searchTime,
@@ -103,6 +115,11 @@ export const useDictionarySearch = () => {
           },
           groupedResults,
         };
+        if (isLast) {
+          setCache(GET_KEY(token, deepSearchMode), next);
+        }
+
+        return next;
       });
 
       await new Promise((r) => setTimeout(r, 0));
