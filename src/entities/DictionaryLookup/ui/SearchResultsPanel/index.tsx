@@ -98,7 +98,7 @@ export const SearchResultsPanel = React.forwardRef<
           </div>
 
           {/* Source Tabs */}
-          {!loading && !error && results.length > 0 && (
+          {results.length > 0 && (
             <SourceTabs
               sources={sources}
               activeSource={activeSource}
@@ -118,77 +118,75 @@ export const SearchResultsPanel = React.forwardRef<
           )}
 
           {/* Results */}
-          {!loading && !error && (
-            <>
-              {filteredResults.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                  <p>
-                    {activeSource === "all"
-                      ? "No dictionary entries found"
-                      : `No results from ${activeSource}`}
-                  </p>
-                  {selectedToken && (
-                    <div className="mt-4 space-y-2">
-                      <p className="text-sm">
-                        Searched for:{" "}
-                        <code className="bg-gray-100 px-1 rounded">
-                          {selectedToken.surface_form}
-                        </code>
+
+          <>
+            {filteredResults.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <BookOpen className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <p>
+                  {activeSource === "all"
+                    ? "No dictionary entries found"
+                    : `No results from ${activeSource}`}
+                </p>
+                {selectedToken && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm">
+                      Searched for:{" "}
+                      <code className="bg-gray-100 px-1 rounded">
+                        {selectedToken.surface_form}
+                      </code>
+                    </p>
+                    {!deepSearchMode && (
+                      <p className="text-sm text-blue-600">
+                        Try enabling Deep Search for more comprehensive results
                       </p>
-                      {!deepSearchMode && (
-                        <p className="text-sm text-blue-600">
-                          Try enabling Deep Search for more comprehensive
-                          results
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : filteredResults.length > 10 ? (
-                <VirtualizedResults
-                  groups={filteredResults}
-                  deepSearchMode={deepSearchMode}
-                />
-              ) : (
-                <div className="space-y-4">
-                  {filteredResults.map((group, groupIndex) => (
-                    <div
-                      key={groupIndex}
-                      className="border-l-4 border-blue-500 pl-4"
-                    >
-                      <h4 className="font-semibold text-lg mb-3 text-gray-900">
-                        {group.word}
-                        <span className="ml-2 text-sm text-gray-500 font-normal">
-                          ({group.results.length} result
-                          {group.results.length !== 1 ? "s" : ""})
-                        </span>
-                      </h4>
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : filteredResults.length > 10 ? (
+              <VirtualizedResults
+                groups={filteredResults}
+                deepSearchMode={deepSearchMode}
+              />
+            ) : (
+              <div className="space-y-4">
+                {filteredResults.map((group, groupIndex) => (
+                  <div
+                    key={groupIndex}
+                    className="border-l-4 border-blue-500 pl-4"
+                  >
+                    <h4 className="font-semibold text-lg mb-3 text-gray-900">
+                      {group.word}
+                      <span className="ml-2 text-sm text-gray-500 font-normal">
+                        ({group.results.length} result
+                        {group.results.length !== 1 ? "s" : ""})
+                      </span>
+                    </h4>
 
-                      <div className="space-y-3">
-                        {group.results.map((result, resultIndex) => (
-                          <SearchResultCard
-                            key={`${result.source}-${resultIndex}`}
-                            result={result}
-                            maxMeanings={deepSearchMode ? 8 : 5}
-                            showSource={true}
-                          />
-                        ))}
-                      </div>
+                    <div className="space-y-3">
+                      {group.results.map((result, resultIndex) => (
+                        <SearchResultCard
+                          key={`${result.source}-${resultIndex}`}
+                          result={result}
+                          maxMeanings={deepSearchMode ? 8 : 5}
+                          showSource={true}
+                        />
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                ))}
 
-                  {/* Show truncation notice */}
-                  {filteredResults.length >= (deepSearchMode ? 25 : 15) && (
-                    <div className="text-center py-2 text-sm text-gray-500 border-t">
-                      Showing top {filteredResults.length} word groups.
-                      {!deepSearchMode && " Try Deep Search for more results."}
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+                {/* Show truncation notice */}
+                {filteredResults.length >= (deepSearchMode ? 25 : 15) && (
+                  <div className="text-center py-2 text-sm text-gray-500 border-t">
+                    Showing top {filteredResults.length} word groups.
+                    {!deepSearchMode && " Try Deep Search for more results."}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         </div>
       </div>
     );

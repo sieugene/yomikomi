@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useStoreDictionarySearchSettings } from "../context/DictionarySearchSettingsContext";
 import { SEARCH_LIMITS } from "../lib/constants";
 import { SearchOptions, SearchResult } from "../types";
 import { useSearchCore } from "./useSearchCore";
+import { useSWRCache } from "@/shared/hooks/useSWRCache";
 
 export type PerfrormSearchResult = {
   results: SearchResult[];
@@ -41,62 +43,91 @@ function groupResults(
     });
 }
 
+const DEFAULT_PERFORMED_RESULT: PerfrormSearchResult = {
+  groupedResults: [],
+  results: [],
+  searchStats: null,
+};
+
+const GET_KEY = (token: string, deepMode: boolean) =>
+  `dictionary-search:${token}:${deepMode ? "deep" : "fast"}`;
+
 export const useDictionarySearch = () => {
+  const { getCache, setCache } = useSWRCache<PerfrormSearchResult>();
+
   const { deepSearchMode } = useStoreDictionarySearchSettings();
   const { inited, coordinator } = useSearchCore();
+  const [lazyPerfomedResults, setLazyPerfomedResults] =
+    useState<PerfrormSearchResult>(DEFAULT_PERFORMED_RESULT);
 
-  const searchSingleToken = async (
-    token: string,
-    options: SearchOptions
-  ): Promise<SearchResult[]> => {
+  const searchSingleToken = (token: string, options: SearchOptions) => {
     if (!inited) {
       console.warn("Search coordinator not initialized");
       return [];
     }
-
-    const results = await coordinator?.searchSingleToken(token, options);
-    return results || [];
+    return coordinator!.searchSingleToken(token, options);
   };
 
-  const performSearch = async (
-    token: string
-  ): Promise<PerfrormSearchResult> => {
-    if (!inited) {
-      throw new Error("Dictionary system not ready");
+  const performSearch = async (token: string) => {
+    if (!inited) throw new Error("Dictionary system not ready");
+
+    setLazyPerfomedResults(DEFAULT_PERFORMED_RESULT);
+
+    const searchOptions: SearchOptions = {
+      deepMode: deepSearchMode,
+      maxResults: deepSearchMode
+        ? SEARCH_LIMITS.DEEP_MODE.MAX_TOTAL_RESULTS
+        : SEARCH_LIMITS.FAST_MODE.MAX_TOTAL_RESULTS,
+      includePartialMatches: true,
+      includeSubstrings: deepSearchMode,
+    };
+    const cached = getCache(GET_KEY(token, deepSearchMode));
+    if (cached) {
+      setLazyPerfomedResults(cached);
+      return;
     }
 
-    try {
-      const searchOptions: SearchOptions = {
-        deepMode: deepSearchMode,
-        maxResults: deepSearchMode
-          ? SEARCH_LIMITS.DEEP_MODE.MAX_TOTAL_RESULTS
-          : SEARCH_LIMITS.FAST_MODE.MAX_TOTAL_RESULTS,
-        includePartialMatches: true,
-        includeSubstrings: deepSearchMode,
-      };
-      const searchStartTime = performance.now();
-      const results = await searchSingleToken(token, searchOptions);
-      const searchTime = performance.now() - searchStartTime;
+    const searchStartTime = performance.now();
+    const tasks = searchSingleToken(token, searchOptions);
 
-      const uniqueWords = new Set(results.map((r) => r.word)).size;
+    let collectedResults: SearchResult[] = [];
 
-      return {
-        results,
-        searchStats: {
-          searchTime,
-          resultCount: results.length,
-          uniqueWords,
-        },
-        groupedResults: groupResults(results),
-      };
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Search failed";
-      throw new Error(errorMessage);
+    for (let i = 0; i < tasks.length; i++) {
+      const task = tasks[i];
+      const isLast = i === tasks.length - 1;
+      const result = await task();
+
+      collectedResults = [...collectedResults, ...result];
+
+      setLazyPerfomedResults((prev) => {
+        const groupedResults = groupResults(collectedResults);
+        const searchTime =
+          performance.now() -
+          searchStartTime +
+          (prev.searchStats?.searchTime || 0);
+        const uniqueWords = new Set(collectedResults.map((r) => r.word)).size;
+        const next = {
+          results: collectedResults,
+          searchStats: {
+            searchTime,
+            resultCount: collectedResults.length,
+            uniqueWords,
+          },
+          groupedResults,
+        };
+        if (isLast) {
+          setCache(GET_KEY(token, deepSearchMode), next);
+        }
+
+        return next;
+      });
+
+      await new Promise((r) => setTimeout(r, 0));
     }
   };
 
   return {
     performSearch,
+    lazyPerfomedResults,
   };
 };
