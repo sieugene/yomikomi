@@ -177,6 +177,131 @@ Metadata: strokes: 13, freq: 633
     },
   },
 
+  nyars: {
+    id: "nyars",
+    name: "Nyars Dictionary (Russian)",
+    language: "ru",
+    description:
+      "Nyars Japanese-Russian dictionary with structured content format",
+    example: `
+Word: 金環日食 (きんかんにっしょく)
+Type: сущ.
+Meanings: кольцеобразное солнечное затмение
+  `,
+    config: {
+      name: "Nyars Dictionary Parser",
+      version: "1.0.0",
+      sqlQuery: BASE_SQL_QUERY,
+      columnMapping: {
+        word: 0, // 金環日食
+        reading: 1, // きんかんにっしょく
+        type: 2, // сущ.
+        meanings: 5, // JSON структура с meanings
+      },
+      meaningParser: {
+        type: "custom",
+        customFunction: `
+        function parseNyarsMeanings(rawContent) {
+          try {
+            // Парсим JSON если это строка
+            const structured = typeof rawContent === 'string' 
+              ? JSON.parse(rawContent) 
+              : rawContent;
+            
+            const meanings = [];
+            
+            // Обрабатываем массив элементов
+            if (Array.isArray(structured)) {
+              for (const item of structured) {
+                // Structured content формат
+                if (item && item.type === 'structured-content' && item.content) {
+                  meanings.push(...extractFromStructuredContent(item.content));
+                }
+              }
+            }
+            
+            // Убираем дубликаты и пустые строки
+            return [...new Set(meanings.filter(m => m && m.trim()))];
+          } catch (error) {
+            console.warn('Nyars parser error:', error);
+            return [];
+          }
+        }
+        
+        function extractFromStructuredContent(content) {
+          const results = [];
+          if (!content) return results;
+          
+          const items = Array.isArray(content) ? content : [content];
+          
+          for (const item of items) {
+            // Обработка ul с data.content === "glossary"
+            if (item && item.tag === 'ul' && item.data?.content === 'glossary') {
+              const liItems = Array.isArray(item.content) ? item.content : [item.content];
+              
+              // Обрабатываем каждый li элемент
+              for (const li of liItems) {
+                if (li && li.tag === 'li') {
+                  const text = extractTextFromNode(li.content);
+                  if (text) results.push(text);
+                }
+              }
+            }
+          }
+          
+          return results;
+        }
+        
+        function extractTextFromNode(node) {
+          if (!node) return '';
+          
+          // Простая строка
+          if (typeof node === 'string') {
+            return node.trim();
+          }
+          
+          // Массив нод
+          if (Array.isArray(node)) {
+            return node.map(n => extractTextFromNode(n)).filter(Boolean).join(' ');
+          }
+          
+          // Объект с content
+          if (typeof node === 'object' && node.content) {
+            // Span с несколькими content элементами
+            if (node.tag === 'span') {
+              if (Array.isArray(node.content)) {
+                const texts = [];
+                for (const child of node.content) {
+                  // Пропускаем серые метки (разговорное, ономатопея и т.д.)
+                  if (child && child.style?.color === '#71717b') continue;
+                  // Пропускаем зеленые метки (муз., выч. и т.д.)
+                  if (child && child.style?.color === '#5ea500') continue;
+                  
+                  const text = extractTextFromNode(child);
+                  if (text) texts.push(text);
+                }
+                return texts.join(' ').trim();
+              }
+              return extractTextFromNode(node.content);
+            }
+            
+            return extractTextFromNode(node.content);
+          }
+          
+          return '';
+        }
+        
+        return parseNyarsMeanings(rawContent);
+      `,
+      },
+      searchStrategy: {
+        type: "partial",
+        includeSubstrings: true,
+        columnsForSearch: [0, 1], // word + reading
+      },
+    },
+  },
+
   jmdict_nl: {
     id: "jmdict_nl",
     name: "JMdict Dutch",
