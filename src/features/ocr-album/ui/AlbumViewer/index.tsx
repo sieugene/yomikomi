@@ -1,7 +1,11 @@
 "use client";
 
+import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
+import { useCompactDictionary } from "@/entities/OcrViewer/hooks/useCompactDictionary";
 import { OcrViewer } from "@/entities/OcrViewer/ui";
 import { MobileNavigation } from "@/entities/OcrViewer/ui/MobileNavigation";
+import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
+import { useOcr } from "@/features/ocr/hooks/useOcr";
 import { ROUTES } from "@/shared/routes";
 import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
 import {
@@ -12,14 +16,35 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { FC, useMemo } from "react";
-import useSWR from "swr";
+import { useRouter } from "next/navigation";
+import { FC, useMemo, useState } from "react";
+import { toast } from "sonner";
+import useSWR, { mutate } from "swr";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
+import { EmptyAlbum } from "../EmptyAlbum";
+import { ImageActionPanel } from "../ImageActionPanel";
+import { OCRCaptureModal } from "../OCRCaptureModal";
 
 type Props = ALBUM_PAGE_PARAMS;
 
 export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
-  const { getAlbumImages, getAlbum, isDbReady, getImageFile } = useOCRAlbum();
+  const dictionary = useCompactDictionary();
+  const router = useRouter();
+  const { ocrProcess } = useOcr();
+  const { settings } = useOCRSettings();
+  const {
+    getAlbumImages,
+    getAlbum,
+    isDbReady,
+    getImageFile,
+    addImageToAlbum,
+    deleteImage,
+    deleteAlbum,
+    reanalyzeImage,
+  } = useOCRAlbum();
+
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [showCaptureModal, setShowCaptureModal] = useState(false);
 
   const { data: images, isLoading: imagesLoading } = useSWR(
     albumId && isDbReady ? `album-images-${albumId}` : null,
@@ -31,11 +56,101 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
     () => getAlbum(albumId!)
   );
 
+  const { data: currentImageFile } = useSWR(
+    images?.[page - 1]?.id ? `image-file-${images[page - 1].id}` : null,
+    () => getImageFile(images![page - 1].id)
+  );
+
   const isLoading = imagesLoading || albumLoading || !isDbReady;
   const totalPages = useMemo(() => images?.length || 0, [images]);
   const pageData = useMemo(() => images?.[page - 1], [images, page]);
   const prevPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
+
+  const refreshData = () => {
+    mutate(`album-images-${albumId}`);
+    mutate(`album-${albumId}`);
+    if (pageData) {
+      mutate(`image-file-${pageData.id}`);
+    }
+  };
+
+  const handleReanalyze = async () => {
+    if (!pageData || !albumId) return;
+
+    setIsReanalyzing(true);
+    try {
+      await reanalyzeImage(pageData.id, albumId);
+      refreshData();
+      toast.success("Image reanalyzed successfully");
+    } catch (error) {
+      console.error("Reanalyze failed:", error);
+      toast.error("Failed to reanalyze image");
+    } finally {
+      setIsReanalyzing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!pageData || !albumId) return;
+
+    try {
+      await deleteImage(pageData.id, albumId);
+
+      // Refresh data first to get updated totals
+      await mutate(`album-images-${albumId}`);
+      await mutate(`album-${albumId}`);
+
+      // Check if this was the last image
+      const updatedImages = await getAlbumImages(albumId);
+
+      if (updatedImages.length === 0) {
+        // Last image deleted - stay on album page but show empty state
+        // The component will re-render and show EmptyAlbumState
+        toast.success("Last image deleted");
+      } else if (totalPages > 1) {
+        // Navigate to another page if exists
+        const newPage = page > 1 ? page - 1 : 1;
+        router.push(ROUTES.album({ albumId, page: newPage }));
+        toast.success("Image deleted");
+      } else {
+        // Single page, but not last image (edge case)
+        toast.success("Image deleted");
+      }
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error("Failed to delete image");
+    }
+  };
+
+  const handleAddImage = async (file: File) => {
+    if (!albumId || !images) return;
+
+    try {
+      const maxOrder = Math.max(...images.map((img) => img.order), -1);
+      await addImageToAlbum(albumId, file, maxOrder + 1);
+      refreshData();
+      toast.success("Image added to album");
+    } catch (error) {
+      console.error("Add image failed:", error);
+      toast.error("Failed to add image");
+    }
+  };
+
+  const handleAnalyzeCroppedArea = async (croppedFile: File) => {
+    try {
+      setShowCaptureModal(false);
+
+      // Use OCR to get text from cropped area
+      const response = await ocrProcess(croppedFile, settings);
+
+      toast.success("Area analyzed. Check dictionary for words.");
+      dictionary.handleOpen(response.result.full_text);
+    } catch (error) {
+      console.error("Analysis failed:", error);
+      toast.error("Failed to analyze selected area");
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -78,6 +193,26 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
     );
   }
 
+  if (totalPages === 0) {
+    return (
+      <EmptyAlbum
+        albumId={albumId}
+        albumName={album?.name || "Album"}
+        onAddImage={handleAddImage}
+        onDeleteAlbum={async () => {
+          try {
+            await deleteAlbum(albumId);
+            router.push(ROUTES.albums);
+            toast.success("Album deleted");
+          } catch (error) {
+            console.error("Delete album failed:", error);
+            toast.error("Failed to delete album");
+          }
+        }}
+      />
+    );
+  }
+
   if (!pageData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -87,8 +222,8 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
             Page Not Found
           </h2>
           <p className="text-gray-600 mb-4">
-            Page {page} doesnt exist in this album. There are {totalPages} pages
-            available.
+            Page {page} {`doesn't`} exist in this album. There are {totalPages}{" "}
+            pages available.
           </p>
           <div className="space-y-2">
             <Link
@@ -149,6 +284,17 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
         </div>
       </div>
 
+      {/* Action Panel */}
+      <ImageActionPanel
+        imageId={pageData.id}
+        imageFile={currentImageFile || null}
+        onReanalyze={handleReanalyze}
+        onDelete={handleDelete}
+        onAddImage={handleAddImage}
+        onSelectArea={() => setShowCaptureModal(true)}
+        isProcessing={isReanalyzing}
+      />
+
       {/* Main Content */}
       <div className="pb-4 sm:pb-8">
         <div className="max-w-6xl mx-auto px-2 sm:px-4 py-2 sm:py-8 mb-6">
@@ -183,7 +329,9 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
             id={pageData.id}
             ocrResult={pageData.ocrResult}
             error={pageData.error}
+            status={pageData.status}
             getImageFile={getImageFile}
+            onStartProcessing={handleReanalyze}
           />
         </div>
       </div>
@@ -228,6 +376,21 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
           </div>
         </div>
       </div>
+
+      {/* OCR Capture Modal */}
+      {showCaptureModal && currentImageFile && (
+        <OCRCaptureModal
+          imageFile={currentImageFile}
+          onClose={() => setShowCaptureModal(false)}
+          onAnalyze={handleAnalyzeCroppedArea}
+        />
+      )}
+
+      <CompactDictionaryLookup
+        sentence={dictionary.selectedText || ""}
+        isOpen={dictionary.isOpen}
+        onClose={dictionary.handleClose}
+      />
     </div>
   );
 };
