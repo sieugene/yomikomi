@@ -1,5 +1,5 @@
 import { Camera, Upload, X } from "lucide-react";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { ImageEditor } from "../ImageEditor";
 import { OCRResponse } from "@/features/ocr/types";
 import { SelectionArea } from "../../types";
@@ -7,13 +7,15 @@ import { SelectionArea } from "../../types";
 interface OCRCaptureProps {
   onOCRResult?: (result: OCRResponse) => void;
   performOCR?: (file: File) => Promise<OCRResponse>;
+  initialImage?: File;
+  onClose?: () => void;
 }
-
-
 
 export const OCRCapture: React.FC<OCRCaptureProps> = ({
   onOCRResult,
   performOCR,
+  initialImage,
+  onClose,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [image, setImage] = useState<string | null>(null);
@@ -26,6 +28,21 @@ export const OCRCapture: React.FC<OCRCaptureProps> = ({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (initialImage) {
+      setOriginalFile(initialImage);
+      setImage(null);
+      setSelection(null);
+      setOcrResult(null);
+      setError(null);
+
+      const reader = new FileReader();
+      reader.onload = (e) => setImage(e.target?.result as string);
+      reader.readAsDataURL(initialImage);
+      setIsOpen(true);
+    }
+  }, [initialImage]);
 
   // -----------------------------
   // File Upload
@@ -225,6 +242,12 @@ export const OCRCapture: React.FC<OCRCaptureProps> = ({
     );
   };
 
+  const handleClose = () => {
+    setIsOpen(false);
+    reset();
+    onClose?.();
+  };
+
   // -----------------------------
   // Reset
   // -----------------------------
@@ -240,7 +263,7 @@ export const OCRCapture: React.FC<OCRCaptureProps> = ({
   // -----------------------------
   // Render
   // -----------------------------
-  if (!isOpen) {
+  if (!isOpen && !initialImage) {
     return (
       <button
         onClick={() => setIsOpen(true)}
@@ -252,16 +275,15 @@ export const OCRCapture: React.FC<OCRCaptureProps> = ({
     );
   }
 
+  if (initialImage && !isOpen) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
         {/* Header */}
-        <Header
-          onClose={() => {
-            setIsOpen(false);
-            reset();
-          }}
-        />
+        <Header onClose={handleClose} />
 
         {/* Content */}
         <div className="flex-1 overflow-auto p-4">
