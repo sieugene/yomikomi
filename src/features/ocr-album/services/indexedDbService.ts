@@ -90,8 +90,7 @@ export class OCRAlbumIndexedDB {
         this.files.cleanupOldFiles().catch(console.error);
         return;
       } catch {
-        if (i < retries - 1)
-          await new Promise((r) => setTimeout(r, 1000));
+        if (i < retries - 1) await new Promise((r) => setTimeout(r, 1000));
       }
     }
     await this.reset();
@@ -185,6 +184,12 @@ export class OCRAlbumIndexedDB {
     await Promise.all(imgs.map((img) => this.files.delete(img.id)));
     await Promise.all(imgs.map((img) => this.images.delete(img.id)));
     await this.albums.delete(id);
+  }
+
+  async deleteImage(imageId: string): Promise<void> {
+    await this.ensureReady();
+    await this.files.delete(imageId);
+    await this.images.delete(imageId);
   }
 
   // --- Images ---

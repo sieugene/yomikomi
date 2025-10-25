@@ -47,4 +47,7 @@ export interface OCRAlbumContextType {
   deleteAlbum: (albumId: string) => Promise<void>;
   startBatchProcessing: (albumId: string) => Promise<void>;
   cancelBatchProcessing: () => void;
+  addImageToAlbum: (albumId: string, file: File, order: number) => Promise<string>;
+  deleteImage: (imageId: string, albumId: string) => Promise<void>;
+  reanalyzeImage: (imageId: string, albumId: string) => Promise<void>;
 }

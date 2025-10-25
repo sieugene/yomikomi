@@ -287,6 +287,168 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     setBatchProgress(null);
   };
 
+  const handleAddImageToAlbum = async (
+    albumId: string,
+    file: File,
+    order: number
+  ): Promise<string> => {
+    if (!isDbReady) throw new Error("Database not ready");
+
+    const album = await db?.getAlbum(albumId);
+    if (!album) throw new Error("Album not found");
+
+    const imageId = createAlbumImageId(albumId, Date.now());
+    const now = new Date();
+
+    const newImage: OCRAlbumImage = {
+      id: imageId,
+      filename: generateFilename(file.name, order),
+      processedAt: now,
+      status: "pending",
+      order,
+      fileSize: file.size,
+      mimeType: file.type,
+      albumId,
+    };
+
+    try {
+      await db?.createImage(newImage, file);
+
+      // Update album totals
+      const updatedAlbum: OCRAlbumAlbum = {
+        ...album,
+        totalImages: album.totalImages + 1,
+        updatedAt: now,
+      };
+      await db?.updateAlbum(updatedAlbum);
+      await refetchAlbums();
+
+      if (currentAlbum?.id === albumId) {
+        setCurrentAlbum(updatedAlbum);
+      }
+
+      toast.success("Image added to album");
+      return imageId;
+    } catch (error) {
+      console.error("Failed to add image:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteImage = async (
+    imageId: string,
+    albumId: string
+  ): Promise<void> => {
+    if (!isDbReady) throw new Error("Database not ready");
+
+    const album = await db?.getAlbum(albumId);
+    if (!album) throw new Error("Album not found");
+
+    try {
+      // await db?.updateImage({ id: imageId } as OCRAlbumImage);
+
+      const images = await db?.getAlbumImages(albumId);
+      const imageToDelete = images?.find((img) => img.id === imageId);
+
+      if (imageToDelete) {
+        const wasProcessed = imageToDelete.status === "completed";
+        const wasFailed = imageToDelete.status === "failed";
+
+        await db?.deleteImage(imageId);
+
+        // Update album counts
+        const updatedAlbum: OCRAlbumAlbum = {
+          ...album,
+          totalImages: album.totalImages - 1,
+          processedImages: wasProcessed
+            ? album.processedImages - 1
+            : album.processedImages,
+          failedImages: wasFailed ? album.failedImages - 1 : album.failedImages,
+          updatedAt: new Date(),
+        };
+        await db?.updateAlbum(updatedAlbum);
+        await refetchAlbums();
+
+        if (currentAlbum?.id === albumId) {
+          setCurrentAlbum(updatedAlbum);
+        }
+      }
+
+      toast.success("Image deleted");
+    } catch (error) {
+      console.error("Failed to delete image:", error);
+      toast.error("Failed to delete image");
+      throw error;
+    }
+  };
+
+  const handleReanalyzeImage = async (
+    imageId: string,
+    albumId: string
+  ): Promise<void> => {
+    if (!isDbReady) throw new Error("Database not ready");
+
+    const images = await db?.getAlbumImages(albumId);
+    const image = images?.find((img) => img.id === imageId);
+
+    if (!image) throw new Error("Image not found");
+
+    try {
+      // Reset image status
+      const resetImage: OCRAlbumImage = {
+        ...image,
+        status: "processing",
+        error: undefined,
+        processedAt: new Date(),
+      };
+      await db?.updateImage(resetImage);
+
+      const dbFile = await db?.getImageFile(image.id);
+      if (!dbFile) throw new Error("File not found");
+
+      const { result: ocrResult, resizedFile } = await ocrProcess(
+        dbFile,
+        settings
+      );
+
+      if (!ocrResult) throw new Error("OCR result is missing");
+
+      const completedImage: OCRAlbumImage = {
+        ...resetImage,
+        status: "completed",
+        ocrResult,
+        processedAt: new Date(),
+      };
+      await db?.updateImage(completedImage, resizedFile);
+
+      // Update album status
+      const album = await db?.getAlbum(albumId);
+      if (album) {
+        const allImages = await db?.getAlbumImages(albumId);
+        const completedCount =
+          allImages?.filter((img) => img.status === "completed").length || 0;
+        const failedCount =
+          allImages?.filter((img) => img.status === "failed").length || 0;
+        await updateAlbumStatus(albumId, completedCount, failedCount);
+      }
+
+      toast.success("Image reanalyzed successfully");
+    } catch (error) {
+      console.error("Reanalyze failed:", error);
+
+      const failedImage: OCRAlbumImage = {
+        ...image,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Unknown error",
+        processedAt: new Date(),
+      };
+      await db?.updateImage(failedImage);
+
+      toast.error("Failed to reanalyze image");
+      throw error;
+    }
+  };
+
   const value: OCRAlbumContextType = {
     getImageFile,
     isDbReady,
@@ -299,6 +461,9 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     deleteAlbum: handleDeleteAlbum,
     startBatchProcessing,
     cancelBatchProcessing,
+    addImageToAlbum: handleAddImageToAlbum,
+    deleteImage: handleDeleteImage,
+    reanalyzeImage: handleReanalyzeImage,
   };
 
   return (
