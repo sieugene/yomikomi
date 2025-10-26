@@ -1,11 +1,8 @@
 "use client";
 
-import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
-import { useCompactDictionary } from "@/entities/OcrViewer/hooks/useCompactDictionary";
 import { OcrViewer } from "@/entities/OcrViewer/ui";
 import { MobileNavigation } from "@/entities/OcrViewer/ui/MobileNavigation";
-import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
-import { useOcr } from "@/features/ocr/hooks/useOcr";
+import { OCRCapture } from "@/features/ocr-capture/ui/OCRCapture";
 import { ROUTES } from "@/shared/routes";
 import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
 import {
@@ -23,15 +20,11 @@ import useSWR, { mutate } from "swr";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { EmptyAlbum } from "../EmptyAlbum";
 import { ImageActionPanel } from "../ImageActionPanel";
-import { OCRCaptureModal } from "../OCRCaptureModal";
 
 type Props = ALBUM_PAGE_PARAMS;
 
 export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
-  const dictionary = useCompactDictionary();
   const router = useRouter();
-  const { ocrProcess } = useOcr();
-  const { settings } = useOCRSettings();
   const {
     getAlbumImages,
     getAlbum,
@@ -134,21 +127,6 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
     } catch (error) {
       console.error("Add image failed:", error);
       toast.error("Failed to add image");
-    }
-  };
-
-  const handleAnalyzeCroppedArea = async (croppedFile: File) => {
-    try {
-      setShowCaptureModal(false);
-
-      // Use OCR to get text from cropped area
-      const response = await ocrProcess(croppedFile, settings);
-
-      toast.success("Area analyzed. Check dictionary for words.");
-      dictionary.handleOpen(response.result.full_text);
-    } catch (error) {
-      console.error("Analysis failed:", error);
-      toast.error("Failed to analyze selected area");
     }
   };
 
@@ -379,18 +357,11 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
 
       {/* OCR Capture Modal */}
       {showCaptureModal && currentImageFile && (
-        <OCRCaptureModal
+        <OCRCapture
           imageFile={currentImageFile}
           onClose={() => setShowCaptureModal(false)}
-          onAnalyze={handleAnalyzeCroppedArea}
         />
       )}
-
-      <CompactDictionaryLookup
-        sentence={dictionary.selectedText || ""}
-        isOpen={dictionary.isOpen}
-        onClose={dictionary.handleClose}
-      />
     </div>
   );
 };
