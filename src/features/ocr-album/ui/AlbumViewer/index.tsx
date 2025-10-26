@@ -232,37 +232,6 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
         albumName={album?.name}
       />
 
-      {/* Desktop Header */}
-      <div className="hidden sm:block bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Link
-                href={ROUTES.albums}
-                className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-2"
-              >
-                <Home className="w-4 h-4 mr-1" />
-                Back to Albums
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {album?.name || "OCR Album"}
-              </h1>
-              <p className="text-gray-600">
-                Image {pageData.order + 1} of {totalPages} • {pageData.filename}
-              </p>
-            </div>
-
-            <div className="text-right">
-              <div className="text-sm text-gray-500 mb-1">Page Navigation</div>
-              <div className="text-lg font-semibold text-gray-900">
-                {page} / {totalPages}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Panel */}
       <ImageActionPanel
         imageId={pageData.id}
         imageFile={currentImageFile || null}
@@ -276,32 +245,6 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       {/* Main Content */}
       <div className="pb-4 sm:pb-8">
         <div className="max-w-6xl mx-auto px-2 sm:px-4 py-2 sm:py-8 mb-6">
-          {/* Mobile Page Info */}
-          <div className="sm:hidden mb-4 px-2">
-            <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
-              <div className="text-sm text-gray-600">
-                Image {pageData.order + 1} • {pageData.filename}
-              </div>
-              {pageData.status && (
-                <div
-                  className={`text-xs mt-1 font-medium ${
-                    pageData.status === "completed"
-                      ? "text-green-600"
-                      : pageData.status === "failed"
-                      ? "text-red-600"
-                      : pageData.status === "processing"
-                      ? "text-blue-600"
-                      : "text-gray-600"
-                  }`}
-                >
-                  Status:{" "}
-                  {pageData.status.charAt(0).toUpperCase() +
-                    pageData.status.slice(1)}
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* OCR Viewer */}
           <OcrViewer
             id={pageData.id}
