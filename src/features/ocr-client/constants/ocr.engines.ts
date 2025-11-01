@@ -1,6 +1,6 @@
 const GUTENYE_OPTIONS: GutenyeOCRCreateOptions = {
   models: {
-    detectionPath: "/ocr/multilingual_det_infer.onnx",
+    detectionPath: "/ocr/multilingual_det_infer_dynamic.onnx",
     recognitionPath: "/ocr/japan_rec_infer.onnx",
     dictionaryPath: "/ocr/japan_keys.txt",
   },
