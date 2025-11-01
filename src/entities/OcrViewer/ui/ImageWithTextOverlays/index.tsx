@@ -1,4 +1,3 @@
-// src/entities/OcrViewer/ui/ImageWithTextOverlays/index.tsx
 "use client";
 import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
 import { ImageInfo, TextBlock as TextBlockT } from "@/features/ocr/types";
@@ -49,51 +48,57 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Handle image loading and dimension calculations
-  useEffect(() => {
-    const image = imageRef.current;
-    if (!image) return;
+useEffect(() => {
+  const image = imageRef.current;
+  if (!image) return;
 
-    const updateDimensions = () => {
-      const rect = image.getBoundingClientRect();
-      setDisplayDimensions({
-        width: rect.width,
-        height: rect.height,
-      });
-      setOriginalDimensions({
-        width: image.naturalWidth,
-        height: image.naturalHeight,
-      });
-    };
+  const hasLoadedRef = { current: false };
 
-    const handleLoad = () => {
-      setIsImageLoaded(true);
-      setImageError(false);
-      updateDimensions();
-    };
+  const updateDimensions = () => {
+    const rect = image.getBoundingClientRect();
+    setDisplayDimensions({
+      width: rect.width,
+      height: rect.height,
+    });
+    setOriginalDimensions({
+      width: image.naturalWidth,
+      height: image.naturalHeight,
+    });
+  };
 
-    const handleError = () => {
-      setImageError(true);
-      setIsImageLoaded(false);
-    };
+  const handleLoad = () => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
 
-    image.addEventListener("load", handleLoad);
-    image.addEventListener("error", handleError);
+    setIsImageLoaded(true);
+    setImageError(false);
+    updateDimensions();
+  };
 
-    if (image.complete && image.naturalWidth > 0) {
-      handleLoad();
-    }
+  const handleError = () => {
+    setImageError(true);
+    setIsImageLoaded(false);
+  };
 
-    // Use ResizeObserver for better performance than window resize
-    const resizeObserver = new ResizeObserver(updateDimensions);
-    resizeObserver.observe(image);
+  image.addEventListener("load", handleLoad);
+  image.addEventListener("error", handleError);
 
-    return () => {
-      image.removeEventListener("load", handleLoad);
-      image.removeEventListener("error", handleError);
-      resizeObserver.disconnect();
-    };
-  }, [imageUrl]);
+  if (image.complete && image.naturalWidth > 0) {
+    handleLoad();
+  }
+
+  const resizeObserver = new ResizeObserver(() => {
+    if (isImageLoaded) updateDimensions();
+  });
+  resizeObserver.observe(image);
+
+  return () => {
+    image.removeEventListener("load", handleLoad);
+    image.removeEventListener("error", handleError);
+    resizeObserver.disconnect();
+  };
+}, [imageUrl]);
+
 
   if (imageError) {
     return (
@@ -127,61 +132,81 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
     <div className="w-full">
       <SettingsPanel settingsControl={settingsControl} />
 
-      {/* Main Image Container */}
       <div
-        ref={containerRef}
-        className={`
-          relative inline-block w-full bg-white no-select ${rotateContent ? "rotate-90" : "rotate-0"}
-          ${className}
-        `}
+        className="w-full flex justify-center items-center overflow-visible"
+        style={{
+          ...(rotateContent && displayDimensions.width > 0
+            ? {
+                height: `${displayDimensions.width}px`,
+              }
+            : {}),
+        }}
       >
-        {/* Loading State */}
-        {!isImageLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-              <p className="text-gray-500 text-sm">Loading image...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Main Image */}
-        <img
-          ref={imageRef}
-          src={imageUrl}
-          alt="OCR Image"
+        {/* Main Image Container */}
+        <div
+          ref={containerRef}
           className={`
-            w-full h-auto max-w-full border rounded-lg shadow-sm
-            transition-opacity duration-200 no-select
-            ${isImageLoaded ? "opacity-100" : "opacity-0"}
+            relative bg-white no-select
+            ${rotateContent ? "rotate-90" : "rotate-0"}
+            ${className}
           `}
           style={{
-            opacity: isImageLoaded ? imageTransparency : 0,
+            ...(rotateContent && displayDimensions.width > 0
+              ? {
+                  width: `${displayDimensions.width}px`,
+                  height: `${displayDimensions.height}px`,
+                }
+              : {}),
           }}
-          draggable={false}
-        />
+        >
+          {/* Loading State */}
+          {!isImageLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-lg">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+                <p className="text-gray-500 text-sm">Loading image...</p>
+              </div>
+            </div>
+          )}
 
-        {/* Text Block Overlays */}
-        {isImageLoaded &&
-          textBlocks.map((textBlock) => {
-            const isSelected = selectedTextId === textBlock.id;
+          {/* Main Image */}
+          <img
+            ref={imageRef}
+            src={imageUrl}
+            alt="OCR Image"
+            className={`
+              w-full h-auto max-w-full border rounded-lg shadow-sm
+              transition-opacity duration-200 no-select
+              ${isImageLoaded ? "opacity-100" : "opacity-0"}
+            `}
+            style={{
+              opacity: isImageLoaded ? imageTransparency : 0,
+            }}
+            draggable={false}
+          />
 
-            return (
-              <TextBlock
-                key={textBlock.id}
-                displayDimensions={displayDimensions}
-                fontTransparency={fontTransparency}
-                isSelected={isSelected}
-                onTextClick={onTextClick}
-                originalDimensions={originalDimensions}
-                showBoundingBoxes={showBoundingBoxes}
-                textBlock={textBlock}
-                textScale={textScale}
-                onOpenDictionary={() => dictionary.handleOpen(textBlock.text)}
-                rotateContent={rotateContent}
-              />
-            );
-          })}
+          {/* Text Block Overlays */}
+          {isImageLoaded &&
+            textBlocks.map((textBlock) => {
+              const isSelected = selectedTextId === textBlock.id;
+
+              return (
+                <TextBlock
+                  key={textBlock.id}
+                  displayDimensions={displayDimensions}
+                  fontTransparency={fontTransparency}
+                  isSelected={isSelected}
+                  onTextClick={onTextClick}
+                  originalDimensions={originalDimensions}
+                  showBoundingBoxes={showBoundingBoxes}
+                  textBlock={textBlock}
+                  textScale={textScale}
+                  onOpenDictionary={() => dictionary.handleOpen(textBlock.text)}
+                  rotateContent={rotateContent}
+                />
+              );
+            })}
+        </div>
       </div>
 
       <CompactDictionaryLookup
