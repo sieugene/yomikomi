@@ -6,7 +6,7 @@ import { PSM } from "tesseract.js";
 import { OCRApi } from "../api/ocrApi";
 import { adaptGutenyeOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRResponse } from "../types";
-import { processImage } from "@/features/ocr-client/lib/ImageProcessOptions";
+import { rotateImage } from "@/features/ocr-client/lib/ImageProcessOptions";
 
 export const useOcr = () => {
   const { tesseractWorker, gutenyeOCR } = useClientOCR();
@@ -96,20 +96,14 @@ export const useOcr = () => {
           settings.textOrientation === TEXT_ORIENTATION.VERTICAL ||
           settings.japaneseVerticalMode;
 
-        const { processedFile: optimizedFile, metadata } = await processImage(
+        const { rotatedFile: optimizedFile } = await rotateImage(
           file,
-          {
-            targetSize: 960,
-            rotationAngle: isVertical ? -90 : 0,
-            upscaleFactor: 2, // Can increase to 1.5 or 2 for better quality
-            enhanceForOCR: true,
-            quality: 0.95,
-          }
+          isVertical ? -90 : 0
         );
 
         processedFile = optimizedFile;
 
-        console.log("Image processed:", metadata);
+        console.log("Image processed:");
 
         const { width, height } = await getImageDimensions(optimizedFile);
         const response = await processWithGutenye(optimizedFile);
