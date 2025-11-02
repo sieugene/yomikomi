@@ -5,6 +5,7 @@ import { OCRCaptureProvider } from "@/features/ocr-capture";
 import { ClientOCRProvider } from "@/features/ocr-client/context/ClientOCRProvider";
 import { OCRSettingsProvider } from "@/features/ocr-settings/context/OCRSettingsContext";
 import { SWRConfig } from "swr";
+import { ApplicationSettingsProvider } from "../settings/providers/ApplicationSettingsContext";
 
 type Props = {
   children: React.ReactNode;
@@ -23,7 +24,11 @@ export const ApplicationContext: React.FC<Props> = ({ children }) => {
           <ClientOCRProvider>
             <OCRAlbumProvider>
               <DictionarySearchSettingsProvider>
-                <OCRCaptureProvider>{children}</OCRCaptureProvider>
+                <OCRCaptureProvider>
+                  <ApplicationSettingsProvider>
+                    {children}
+                  </ApplicationSettingsProvider>
+                </OCRCaptureProvider>
               </DictionarySearchSettingsProvider>
             </OCRAlbumProvider>
           </ClientOCRProvider>

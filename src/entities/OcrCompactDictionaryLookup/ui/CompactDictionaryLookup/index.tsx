@@ -6,6 +6,7 @@ import { FC, useRef } from "react";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictionaryLookup";
 import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
+import { MODALS_LAYERS } from "@/shared/modals";
 
 interface CompactDictionaryLookupProps {
   sentence: string;
@@ -76,6 +77,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
           height: "-webkit-fill-available",
           overflow: "hidden",
           overflowY: "scroll",
+          zIndex: MODALS_LAYERS.top,
         }}
       >
         {/* Header */}
