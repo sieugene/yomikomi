@@ -1,5 +1,7 @@
+import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
 import { Camera, Plus, RefreshCw, Trash2 } from "lucide-react";
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
+import { MobileActionButton } from "../MobileActionButton";
 
 interface ImageActionPanelProps {
   imageId: string;
@@ -87,6 +89,25 @@ export const ImageActionPanel: FC<ImageActionPanelProps> = ({
                   }}
                   disabled={isProcessing}
                 />
+                <MobileActionButton
+                  onClick={() => {
+                    const icon = document.querySelector<HTMLElement>(
+                      ".mobile-action-ocr-settings-button"
+                    );
+                    if (icon) {
+                      icon.click();
+                    }
+                  }}
+                  icon={
+                    <OcrSettingsButton
+                      type="icon"
+                      className="w-5 h-5 text-gray-700"
+                      rootClassName="mobile-action-ocr-settings-button"
+                    />
+                  }
+                  label="OCR Settings"
+                  disabled={isProcessing}
+                />
                 <label className="block">
                   <input
                     type="file"
@@ -156,6 +177,7 @@ export const ImageActionPanel: FC<ImageActionPanelProps> = ({
             <span className="hidden md:inline">Add Image</span>
           </div>
         </label>
+        <OcrSettingsButton type="button" text="Open ocr settings" />
 
         <div className="flex-1" />
 
@@ -168,52 +190,5 @@ export const ImageActionPanel: FC<ImageActionPanelProps> = ({
         </button>
       </div>
     </>
-  );
-};
-
-// Mobile Action Button Component
-interface MobileActionButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick?: () => void;
-  disabled?: boolean;
-  variant?: "default" | "danger";
-  as?: "button" | "div";
-}
-
-const MobileActionButton: FC<MobileActionButtonProps> = ({
-  icon,
-  label,
-  onClick,
-  disabled = false,
-  variant = "default",
-  as = "button",
-}) => {
-  const baseClasses =
-    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm font-medium w-full text-left";
-  const variantClasses = {
-    default: "text-gray-700 hover:bg-gray-50 active:bg-gray-100",
-    danger: "text-red-600 hover:bg-red-50 active:bg-red-100",
-  };
-  const disabledClasses = disabled
-    ? "opacity-50 cursor-not-allowed"
-    : "cursor-pointer";
-
-  const className = `${baseClasses} ${variantClasses[variant]} ${disabledClasses}`;
-
-  if (as === "div") {
-    return (
-      <div className={className} onClick={!disabled ? onClick : undefined}>
-        {icon}
-        <span>{label}</span>
-      </div>
-    );
-  }
-
-  return (
-    <button className={className} onClick={onClick} disabled={disabled}>
-      {icon}
-      <span>{label}</span>
-    </button>
   );
 };

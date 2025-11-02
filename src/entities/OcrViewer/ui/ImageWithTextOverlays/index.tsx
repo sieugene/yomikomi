@@ -1,8 +1,7 @@
 "use client";
-import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
+import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
 import { ImageInfo, TextBlock as TextBlockT } from "@/features/ocr/types";
 import React, { useEffect, useRef, useState } from "react";
-import { useCompactDictionary } from "../../hooks/useCompactDictionary";
 import { useTextBlockSettings } from "../../hooks/useTextBlockSettings";
 import { SettingsPanel } from "../SettingsPanel";
 import { TextBlock } from "../TextBlock";
@@ -23,7 +22,7 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
   className = "",
   selectedTextId,
 }) => {
-  const dictionary = useCompactDictionary();
+  const { compactDictionary: dictionary } = useAppSettings();
 
   const settingsControl = useTextBlockSettings();
   const {
@@ -48,57 +47,56 @@ export const ImageWithTextOverlays: React.FC<ImageWithTextOverlaysProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-useEffect(() => {
-  const image = imageRef.current;
-  if (!image) return;
+  useEffect(() => {
+    const image = imageRef.current;
+    if (!image) return;
 
-  const hasLoadedRef = { current: false };
+    const hasLoadedRef = { current: false };
 
-  const updateDimensions = () => {
-    const rect = image.getBoundingClientRect();
-    setDisplayDimensions({
-      width: rect.width,
-      height: rect.height,
+    const updateDimensions = () => {
+      const rect = image.getBoundingClientRect();
+      setDisplayDimensions({
+        width: rect.width,
+        height: rect.height,
+      });
+      setOriginalDimensions({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+
+    const handleLoad = () => {
+      if (hasLoadedRef.current) return;
+      hasLoadedRef.current = true;
+
+      setIsImageLoaded(true);
+      setImageError(false);
+      updateDimensions();
+    };
+
+    const handleError = () => {
+      setImageError(true);
+      setIsImageLoaded(false);
+    };
+
+    image.addEventListener("load", handleLoad);
+    image.addEventListener("error", handleError);
+
+    if (image.complete && image.naturalWidth > 0) {
+      handleLoad();
+    }
+
+    const resizeObserver = new ResizeObserver(() => {
+      if (isImageLoaded) updateDimensions();
     });
-    setOriginalDimensions({
-      width: image.naturalWidth,
-      height: image.naturalHeight,
-    });
-  };
+    resizeObserver.observe(image);
 
-  const handleLoad = () => {
-    if (hasLoadedRef.current) return;
-    hasLoadedRef.current = true;
-
-    setIsImageLoaded(true);
-    setImageError(false);
-    updateDimensions();
-  };
-
-  const handleError = () => {
-    setImageError(true);
-    setIsImageLoaded(false);
-  };
-
-  image.addEventListener("load", handleLoad);
-  image.addEventListener("error", handleError);
-
-  if (image.complete && image.naturalWidth > 0) {
-    handleLoad();
-  }
-
-  const resizeObserver = new ResizeObserver(() => {
-    if (isImageLoaded) updateDimensions();
-  });
-  resizeObserver.observe(image);
-
-  return () => {
-    image.removeEventListener("load", handleLoad);
-    image.removeEventListener("error", handleError);
-    resizeObserver.disconnect();
-  };
-}, [imageUrl]);
-
+    return () => {
+      image.removeEventListener("load", handleLoad);
+      image.removeEventListener("error", handleError);
+      resizeObserver.disconnect();
+    };
+  }, [imageUrl]);
 
   if (imageError) {
     return (
@@ -208,12 +206,6 @@ useEffect(() => {
             })}
         </div>
       </div>
-
-      <CompactDictionaryLookup
-        sentence={dictionary.selectedText || ""}
-        isOpen={dictionary.isOpen}
-        onClose={dictionary.handleClose}
-      />
     </div>
   );
 };

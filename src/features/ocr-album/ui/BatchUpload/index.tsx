@@ -1,7 +1,7 @@
-import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
+import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
 import { ImageUploader } from "@/shared/ui/ImageUploader";
 import { Modal } from "@/shared/ui/Modal";
-import { AlertCircle, FolderPlus, Settings } from "lucide-react";
+import { AlertCircle, FolderPlus } from "lucide-react";
 import React, { useCallback, useState } from "react";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 
@@ -16,8 +16,6 @@ export const BatchUpload: React.FC<BatchUploadProps> = ({ onComplete }) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const { setOcrSettingsIsOpen } = useAppSettings();
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
@@ -121,12 +119,7 @@ export const BatchUpload: React.FC<BatchUploadProps> = ({ onComplete }) => {
         actionMenuBtn={
           <>
             <div>
-              <Settings
-                className="cursor-pointer text-gray-400 hover:text-gray-600"
-                onClick={() => {
-                  setOcrSettingsIsOpen(true);
-                }}
-              />
+              <OcrSettingsButton type="icon" />
             </div>
           </>
         }
