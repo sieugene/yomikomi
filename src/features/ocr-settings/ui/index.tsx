@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useOCRSettings } from "../context/OCRSettingsContext";
 import { OCR_ENGINE } from "@/features/ocr-client/constants/ocr.engines";
 import { TEXT_ORIENTATION } from "../types";
+import { MODALS_LAYERS } from "@/shared/modals";
 
 interface OCRSettingsPanelProps {
   isOpen: boolean;
@@ -43,7 +44,12 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={"OCR Settings"}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={"OCR Settings"}
+      style={{ zIndex: MODALS_LAYERS.top }}
+    >
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

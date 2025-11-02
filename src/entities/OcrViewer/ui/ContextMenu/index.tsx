@@ -1,5 +1,5 @@
 import useClickOutside from "@/shared/hooks/useClickOutside";
-import { Book, Bookmark, Copy, Search, Share2, X } from "lucide-react";
+import { Book, Bookmark, Copy, Search, X } from "lucide-react";
 import { FC, useRef } from "react";
 
 interface ContextMenuProps {
@@ -11,7 +11,6 @@ interface ContextMenuProps {
   onTranslate: () => void;
   onSearch: () => void;
   onBookmark?: () => void;
-  onShare?: () => void;
   className?: string
 }
 
@@ -24,7 +23,6 @@ export const ContextMenu: FC<ContextMenuProps> = ({
   onTranslate,
   onSearch,
   onBookmark,
-  onShare,
   className
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -65,15 +63,6 @@ export const ContextMenu: FC<ContextMenuProps> = ({
       label: "Bookmark",
       action: onBookmark,
       color: "text-purple-600",
-    });
-  }
-
-  if (onShare && !!navigator.share) {
-    menuItems.push({
-      icon: <Share2 className="w-4 h-4" />,
-      label: "Share",
-      action: onShare,
-      color: "text-indigo-600",
     });
   }
 
