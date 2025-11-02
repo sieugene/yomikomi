@@ -1,17 +1,15 @@
+import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
 import { FC, useRef, useState } from "react";
-import { CompactDictionaryLookup } from "@/entities/OcrCompactDictionaryLookup/ui/CompactDictionaryLookup";
-import { useCompactDictionary } from "@/entities/OcrViewer/hooks/useCompactDictionary";
+import { useImageLoader } from "../../hooks/useImageLoader";
+import { useImageSelection } from "../../hooks/useImageSelection";
+import { useOCRAnalyzer } from "../../hooks/useOCRAnalyzer";
 import { ZOOM } from "../../lib/constants";
+import { AnalyzingOverlay } from "../AnalyzingOverlay";
+import { CaptureControls } from "../CaptureControls";
 import { CaptureHeader } from "../CaptureHeader";
 import { CaptureInstructions } from "../CaptureInstructions";
 import { LoadingScreen } from "../LoadingScreen";
-import { AnalyzingOverlay } from "../AnalyzingOverlay";
 import { SelectionOverlay } from "../SelectionOverlay";
-import { CaptureControls } from "../CaptureControls";
-import { useImageSelection } from "../../hooks/useImageSelection";
-import { useImageLoader } from "../../hooks/useImageLoader";
-import { useOCRAnalyzer } from "../../hooks/useOCRAnalyzer";
-
 
 interface OCRCaptureProps {
   imageFile: File;
@@ -19,7 +17,7 @@ interface OCRCaptureProps {
 }
 
 export const OCRCapture: FC<OCRCaptureProps> = ({ imageFile, onClose }) => {
-  const dictionary = useCompactDictionary();
+  const { compactDictionary: dictionary } = useAppSettings();
   const [zoom, setZoom] = useState(1);
 
   // Refs
@@ -117,13 +115,6 @@ export const OCRCapture: FC<OCRCaptureProps> = ({ imageFile, onClose }) => {
           />
         )}
       </div>
-
-      {/* Dictionary Panel */}
-      <CompactDictionaryLookup
-        sentence={dictionary.selectedText || ""}
-        isOpen={dictionary.isOpen}
-        onClose={dictionary.handleClose}
-      />
     </>
   );
 };

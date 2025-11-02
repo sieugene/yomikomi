@@ -1,3 +1,4 @@
+import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
 import { ImageUploader } from "@/shared/ui/ImageUploader";
 import { Modal } from "@/shared/ui/Modal";
 import { AlertCircle, FolderPlus } from "lucide-react";
@@ -105,13 +106,25 @@ export const BatchUpload: React.FC<BatchUploadProps> = ({ onComplete }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mb-3.5"
       >
         <FolderPlus className="w-4 h-4 mr-2" />
         New Album
       </button>
 
-      <Modal isOpen={isOpen} onClose={handleClose} title="Create New Album">
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        withCloseBtn={false}
+        actionMenuBtn={
+          <>
+            <div>
+              <OcrSettingsButton type="icon" />
+            </div>
+          </>
+        }
+        title="Create New Album"
+      >
         <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Album Name */}
           <div>
