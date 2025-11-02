@@ -99,19 +99,6 @@ export const TextBlock: FC<Props> = ({
     window.open(`https://www.google.com/search?q=${query}`, "_blank");
   }, [textBlock.text]);
 
-  const handleShare = useCallback(async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          text: textBlock.text,
-          title: "OCR Text",
-        });
-      } catch (error) {
-        console.log("Share failed:", error);
-      }
-    }
-  }, [textBlock.text]);
-
   if (!coords) return null;
 
   // Dynamic styling based on state and settings
@@ -217,7 +204,6 @@ export const TextBlock: FC<Props> = ({
         onCopy={handleCopy}
         onTranslate={handleTranslate}
         onSearch={handleSearch}
-        onShare={handleShare}
       />
     </>
   );
