@@ -1,13 +1,12 @@
 "use client";
 
-import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
 import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
+import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 export default function SettingsPage() {
   const { showAlert } = useClientOCR();
-  const { setOcrSettingsIsOpen } = useAppSettings();
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -35,9 +34,7 @@ export default function SettingsPage() {
             <p className="text-sm text-muted-foreground mb-4">
               Advanced ocr settings
             </p>
-            <Button onClick={() => setOcrSettingsIsOpen(true)}>
-              Open Settings
-            </Button>
+            <OcrSettingsButton text="Open Settings" type="button" />
           </CardContent>
         </Card>
       </div>

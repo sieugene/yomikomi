@@ -1,3 +1,4 @@
+import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
 import { Crop, X } from "lucide-react";
 import { FC } from "react";
 
@@ -19,12 +20,15 @@ export const CaptureHeader: FC<CaptureHeaderProps> = ({
         Select Text
       </h2>
     </div>
-    <button
-      onClick={onClose}
-      disabled={isDisabled}
-      className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-    >
-      <X className="w-5 h-5" />
-    </button>
+    <div className="flex items-center gap-5">
+      <OcrSettingsButton type="icon" />
+      <button
+        onClick={onClose}
+        disabled={isDisabled}
+        className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
   </div>
 );

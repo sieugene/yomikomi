@@ -6,6 +6,8 @@ export interface CompactDictionaryState {
   position: { x: number; y: number } | null;
 }
 
+export type CompactDictionaryHook = ReturnType<typeof useCompactDictionary>;
+
 export const useCompactDictionary = () => {
   const [state, setState] = useState<CompactDictionaryState>({
     isOpen: false,
