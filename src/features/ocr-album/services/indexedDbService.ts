@@ -175,6 +175,7 @@ export class OCRAlbumIndexedDB {
     if (album) {
       return {
         ...album,
+        images,
         processedImages: images?.filter((i) => !!i.ocrResult)?.length || 0,
         totalImages: images?.length || 0,
       };

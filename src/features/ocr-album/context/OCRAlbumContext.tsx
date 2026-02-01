@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 
 const OCRAlbumContext = createContext<OCRAlbumContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -39,7 +39,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleCreateAlbum = async (
     name: string,
-    files: File[]
+    files: File[],
   ): Promise<string> => {
     if (!isDbReady) throw new Error("Database not ready");
 
@@ -51,23 +51,24 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       name,
       createdAt: now,
       updatedAt: now,
-      status: "pending",
     };
 
     // Sort files by name to maintain consistent order
     const sortedFiles = [...files].sort((a, b) => a.name.localeCompare(b.name));
 
     // Create images with order based on filename
-    const images: OCRAlbumImage[] = sortedFiles.map((file, index) => ({
-      id: createAlbumImageId(albumId, index),
-      filename: generateFilename(file.name, index),
-      processedAt: now,
-      status: "pending",
-      order: index,
-      fileSize: file.size,
-      mimeType: file.type,
-      albumId: album.id,
-    }));
+    const images: OCRAlbumImage[] = sortedFiles.map((file, index) => {
+      const item: OCRAlbumImage = {
+        id: createAlbumImageId(albumId, index),
+        filename: generateFilename(file.name, index),
+        processedAt: now,
+        order: index,
+        fileSize: file.size,
+        mimeType: file.type,
+        albumId: album.id,
+      };
+      return item;
+    });
 
     try {
       // Store album
@@ -86,32 +87,12 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const updateAlbumStatus = async (
-    albumId: string,
-    processedCount: number,
-    failedCount: number
-  ) => {
+  const updateAlbumStatus = async (albumId: string) => {
     const album = await db?.getAlbum(albumId);
     if (!album) return;
 
-    const totalImages = album.totalImages;
-    let status: OCRAlbumAlbum["status"];
-
-    if (processedCount + failedCount >= totalImages) {
-      status =
-        failedCount === 0
-          ? "completed"
-          : failedCount === totalImages
-          ? "partial"
-          : "partial";
-    } else {
-      status =
-        processedCount === 0 && failedCount === 0 ? "pending" : "processing";
-    }
-
     const updatedAlbum: Album = {
       ...album,
-      status,
       updatedAt: new Date(),
     };
 
@@ -138,7 +119,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
           ...image,
           // Clear prev error
           error: undefined,
-          status: "processing" as const,
         };
         await db?.updateImage(updatedImage);
 
@@ -149,7 +129,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         }
         const { result: ocrResult, resizedFile } = await ocrProcess(
           dbFile,
-          settings
+          settings,
         );
 
         if (!ocrResult) throw new Error("OCR result is missing");
@@ -157,7 +137,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         //  Update with result
         const completedImage: OCRAlbumImage = {
           ...updatedImage,
-          status: "completed",
           ocrResult,
           processedAt: new Date(),
         };
@@ -166,12 +145,11 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         return { success: true, image: completedImage };
       } catch (error) {
         toast(
-          "Failed to process image. Please check the uploaded image or OCR settings"
+          "Failed to process image. Please check the uploaded image or OCR settings",
         );
         // Update with error
         const failedImage: OCRAlbumImage = {
           ...image,
-          status: "failed",
           error: error instanceof Error ? error.message : "Unknown error",
           processedAt: new Date(),
         };
@@ -194,7 +172,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     const pendingImages = images.filter(
-      (img) => img.status === "pending" || img.status === "failed"
+      (img) => !img.ocrResult,
     );
 
     if (pendingImages.length === 0) {
@@ -223,7 +201,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
                 ...prev,
                 currentFile: batch[0]?.filename,
               }
-            : null
+            : null,
         );
 
         await processImageBatch(batch);
@@ -231,7 +209,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         // Update progress
         const processed = Math.min(
           i + settings.batchSize,
-          pendingImages.length
+          pendingImages.length,
         );
         setBatchProgress((prev) =>
           prev
@@ -240,17 +218,10 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
                 processedFiles:
                   images.length - pendingImages.length + processed,
               }
-            : null
+            : null,
         );
 
-        // Update album status
-        const currentImages = await db?.getAlbumImages(albumId);
-        const completedCount =
-          currentImages?.filter((img) => img.status === "completed").length ||
-          0;
-        const failedCount =
-          currentImages?.filter((img) => img.status === "failed").length || 0;
-        await updateAlbumStatus(albumId, completedCount, failedCount);
+        await updateAlbumStatus(albumId);
       }
 
       // Final progress update
@@ -262,7 +233,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
               completedAt: new Date(),
               currentFile: undefined,
             }
-          : null
+          : null,
       );
     } catch (error) {
       console.error("Batch processing failed:", error);
@@ -273,7 +244,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
               isProcessing: false,
               currentFile: undefined,
             }
-          : null
+          : null,
       );
       throw error;
     }
@@ -286,7 +257,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
   const handleAddImageToAlbum = async (
     albumId: string,
     file: File,
-    order: number
+    order: number,
   ): Promise<string> => {
     if (!isDbReady) throw new Error("Database not ready");
 
@@ -300,7 +271,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       id: imageId,
       filename: generateFilename(file.name, order),
       processedAt: now,
-      status: "pending",
       order,
       fileSize: file.size,
       mimeType: file.type,
@@ -322,7 +292,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         setCurrentAlbum(updatedAlbum);
       }
 
-      toast.success("Image added to album");
       return imageId;
     } catch (error) {
       console.error("Failed to add image:", error);
@@ -332,7 +301,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleDeleteImage = async (
     imageId: string,
-    albumId: string
+    albumId: string,
   ): Promise<void> => {
     if (!isDbReady) throw new Error("Database not ready");
 
@@ -340,15 +309,10 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!album) throw new Error("Album not found");
 
     try {
-      // await db?.updateImage({ id: imageId } as OCRAlbumImage);
-
       const images = await db?.getAlbumImages(albumId);
       const imageToDelete = images?.find((img) => img.id === imageId);
 
       if (imageToDelete) {
-        const wasProcessed = imageToDelete.status === "completed";
-        const wasFailed = imageToDelete.status === "failed";
-
         await db?.deleteImage(imageId);
 
         // Update album counts
@@ -364,7 +328,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
 
-      toast.success("Image deleted");
     } catch (error) {
       console.error("Failed to delete image:", error);
       toast.error("Failed to delete image");
@@ -374,7 +337,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const handleReanalyzeImage = async (
     imageId: string,
-    albumId: string
+    albumId: string,
   ): Promise<void> => {
     if (!isDbReady) throw new Error("Database not ready");
 
@@ -387,7 +350,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       // Reset image status
       const resetImage: OCRAlbumImage = {
         ...image,
-        status: "processing",
         error: undefined,
         processedAt: new Date(),
       };
@@ -398,14 +360,13 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const { result: ocrResult, resizedFile } = await ocrProcess(
         dbFile,
-        settings
+        settings,
       );
 
       if (!ocrResult) throw new Error("OCR result is missing");
 
       const completedImage: OCRAlbumImage = {
         ...resetImage,
-        status: "completed",
         ocrResult,
         processedAt: new Date(),
       };
@@ -414,12 +375,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       // Update album status
       const album = await db?.getAlbum(albumId);
       if (album) {
-        const allImages = await db?.getAlbumImages(albumId);
-        const completedCount =
-          allImages?.filter((img) => img.status === "completed").length || 0;
-        const failedCount =
-          allImages?.filter((img) => img.status === "failed").length || 0;
-        await updateAlbumStatus(albumId, completedCount, failedCount);
+        await updateAlbumStatus(albumId);
       }
 
       toast.success("Image reanalyzed successfully");
@@ -428,7 +384,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const failedImage: OCRAlbumImage = {
         ...image,
-        status: "failed",
         error: error instanceof Error ? error.message : "Unknown error",
         processedAt: new Date(),
       };
