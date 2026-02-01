@@ -18,10 +18,12 @@ export interface OCRAlbumAlbum {
   name: string;
   createdAt: Date;
   updatedAt: Date;
+  status: "pending" | "processing" | "completed" | "partial";
+}
+
+export type Album = OCRAlbumAlbum & {
   totalImages: number;
   processedImages: number;
-  failedImages: number;
-  status: "pending" | "processing" | "completed" | "partial";
 }
 
 export interface BatchProcessingProgress {
@@ -38,8 +40,8 @@ export interface BatchProcessingProgress {
 export interface OCRAlbumContextType {
   getImageFile: (imageId: string) => Promise<File | null>;
   isDbReady: boolean;
-  albums: OCRAlbumAlbum[];
-  currentAlbum: OCRAlbumAlbum | null;
+  albums: Album[];
+  currentAlbum: Album | null;
   batchProgress: BatchProcessingProgress | null;
   createAlbum: (name: string, files: File[]) => Promise<string>;
   getAlbum: (albumId: string) => Promise<OCRAlbumAlbum | null>;
@@ -47,7 +49,11 @@ export interface OCRAlbumContextType {
   deleteAlbum: (albumId: string) => Promise<void>;
   startBatchProcessing: (albumId: string) => Promise<void>;
   cancelBatchProcessing: () => void;
-  addImageToAlbum: (albumId: string, file: File, order: number) => Promise<string>;
+  addImageToAlbum: (
+    albumId: string,
+    file: File,
+    order: number,
+  ) => Promise<string>;
   deleteImage: (imageId: string, albumId: string) => Promise<void>;
   reanalyzeImage: (imageId: string, albumId: string) => Promise<void>;
 }
