@@ -1,10 +1,14 @@
 import { OCRResponse } from "@/features/ocr/types";
 
+export enum Status {
+  PENDING,
+  FAILED,
+  COMPLETED,
+}
 export interface OCRAlbumImage {
   id: string;
   filename: string;
   processedAt: Date;
-  status: "pending" | "processing" | "completed" | "failed";
   ocrResult?: OCRResponse;
   error?: string;
   order: number;
@@ -18,13 +22,13 @@ export interface OCRAlbumAlbum {
   name: string;
   createdAt: Date;
   updatedAt: Date;
-  status: "pending" | "processing" | "completed" | "partial";
 }
 
 export type Album = OCRAlbumAlbum & {
   totalImages: number;
   processedImages: number;
-}
+  images: OCRAlbumImage[]
+};
 
 export interface BatchProcessingProgress {
   albumId: string;
@@ -44,7 +48,7 @@ export interface OCRAlbumContextType {
   currentAlbum: Album | null;
   batchProgress: BatchProcessingProgress | null;
   createAlbum: (name: string, files: File[]) => Promise<string>;
-  getAlbum: (albumId: string) => Promise<OCRAlbumAlbum | null>;
+  getAlbum: (albumId: string) => Promise<Album | null>;
   getAlbumImages: (albumId: string) => Promise<OCRAlbumImage[]>;
   deleteAlbum: (albumId: string) => Promise<void>;
   startBatchProcessing: (albumId: string) => Promise<void>;

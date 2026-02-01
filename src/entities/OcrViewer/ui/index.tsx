@@ -1,4 +1,4 @@
-import { OCRAlbumImage } from "@/features/ocr-album/types";
+import { OCRAlbumImage, Status } from "@/features/ocr-album/types";
 import {
   AlertTriangle,
   Clock,
@@ -12,9 +12,11 @@ import { InteractiveOcrResult } from "./InteractiveOcrResult";
 import { OcrFailure } from "./OcrFailure";
 import { ImageConflictState } from "./ImageConflictState";
 
-type Props = Pick<OCRAlbumImage, "ocrResult" | "error" | "id" | "status"> & {
+type Props = Pick<OCRAlbumImage, "ocrResult" | "error" | "id"> & {
   getImageFile: (imageId: string) => Promise<File | null>;
   onStartProcessing?: () => void;
+  status: Status;
+  isReanalyzing: boolean;
 };
 
 export const OcrViewer: FC<Props> = ({
@@ -24,6 +26,7 @@ export const OcrViewer: FC<Props> = ({
   id,
   status,
   onStartProcessing,
+  isReanalyzing,
 }) => {
   const { imageUrl, isLoading } = useReadImageFile({ getImageFile, id });
 
@@ -102,7 +105,7 @@ export const OcrViewer: FC<Props> = ({
   }
 
   // Pending state - waiting for processing
-  if (status === "pending" && imageUrl && !ocrResult) {
+  if (status === Status.PENDING && imageUrl && !ocrResult && !isReanalyzing) {
     return (
       <div className="w-full space-y-4">
         {/* Pending Banner */}
@@ -160,7 +163,7 @@ export const OcrViewer: FC<Props> = ({
   }
 
   // Processing state
-  if (status === "processing" && imageUrl) {
+  if (isReanalyzing && imageUrl) {
     return (
       <div className="w-full space-y-4">
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
