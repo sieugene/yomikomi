@@ -1,5 +1,5 @@
 import { BaseStoreManager } from "@/features/storage/model/BaseStoreManager";
-import { OCRAlbumAlbum, OCRAlbumImage } from "../types";
+import { Album, OCRAlbumAlbum, OCRAlbumImage } from "../types";
 
 const DB_NAME = "OCRAlbumDB";
 const DB_VERSION = 1;
@@ -60,7 +60,7 @@ class FileStore extends BaseStoreManager<StoredFile> {
     await Promise.all(
       all
         .filter((f) => now - f.lastAccessed > maxAgeMs)
-        .map((f) => this.delete(f.id))
+        .map((f) => this.delete(f.id)),
     );
   }
 }
@@ -116,7 +116,7 @@ export class OCRAlbumIndexedDB {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       const timeout = setTimeout(
         () => reject(new Error("open timeout")),
-        10000
+        10000,
       );
 
       req.onupgradeneeded = (e) => {
@@ -168,14 +168,26 @@ export class OCRAlbumIndexedDB {
     await this.ensureReady();
     return this.albums.save(a);
   }
-  async getAlbum(id: string) {
+  async getAlbum(id: string): Promise<Album | null> {
     await this.ensureReady();
-    return this.albums.get(id);
+    const album = await this.albums.get(id);
+    const images = await this.getAlbumImages(id);
+    if (album) {
+      return {
+        ...album,
+        images,
+        processedImages: images?.filter((i) => !!i.ocrResult)?.length || 0,
+        totalImages: images?.length || 0,
+      };
+    }
+    return null;
   }
   async getAllAlbums() {
     await this.ensureReady();
-    return (await this.albums.list()).sort(
-      (a, b) => Number(b.createdAt) - Number(a.createdAt)
+    const list = await this.albums.list()
+    const albums = await Promise.all(list.map((a) => this.getAlbum(a.id)))
+    return albums?.filter((a) => !!a)?.sort(
+      (a, b) => Number(b.createdAt) - Number(a.createdAt),
     );
   }
   async deleteAlbum(id: string) {
@@ -195,8 +207,8 @@ export class OCRAlbumIndexedDB {
   // --- Images ---
   async createImage(img: OCRAlbumImage, file: File): Promise<string> {
     await this.ensureReady();
-    await this.files.saveFile(img.id, file); // файл уходит в base64
-    return this.images.save(img); // метаданные
+    await this.files.saveFile(img.id, file); // file in base64
+    return this.images.save(img); // metadata
   }
 
   async updateImage(img: OCRAlbumImage, file?: File): Promise<string> {

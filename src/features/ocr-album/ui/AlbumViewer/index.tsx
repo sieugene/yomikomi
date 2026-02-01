@@ -20,6 +20,7 @@ import useSWR, { mutate } from "swr";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { EmptyAlbum } from "../EmptyAlbum";
 import { ImageActionPanel } from "../ImageActionPanel";
+import { getAlbumImageStatus } from "../../lib/getStatus";
 
 type Props = ALBUM_PAGE_PARAMS;
 
@@ -39,29 +40,31 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
   const [isReanalyzing, setIsReanalyzing] = useState(false);
   const [showCaptureModal, setShowCaptureModal] = useState(false);
 
-  const { data: images, isLoading: imagesLoading } = useSWR(
-    albumId && isDbReady ? `album-images-${albumId}` : null,
-    () => getAlbumImages(albumId!)
-  );
-
   const { data: album, isLoading: albumLoading } = useSWR(
     albumId && isDbReady ? `album-${albumId}` : null,
-    () => getAlbum(albumId!)
+    () => getAlbum(albumId!),
+    {
+      revalidateOnMount: true,
+    },
   );
+  const images = useMemo(() => album?.images, [album]);
 
   const { data: currentImageFile } = useSWR(
     images?.[page - 1]?.id ? `image-file-${images[page - 1].id}` : null,
-    () => getImageFile(images![page - 1].id)
+    () => getImageFile(images![page - 1].id),
+    {
+      revalidateOnMount: true,
+    },
   );
 
-  const isLoading = imagesLoading || albumLoading || !isDbReady;
+  const isLoading =  albumLoading || !isDbReady;
   const totalPages = useMemo(() => images?.length || 0, [images]);
   const pageData = useMemo(() => images?.[page - 1], [images, page]);
   const prevPage = page > 1 ? page - 1 : null;
   const nextPage = page < totalPages ? page + 1 : null;
+  const status = useMemo(() => getAlbumImageStatus(pageData), [pageData]);
 
   const refreshData = () => {
-    mutate(`album-images-${albumId}`);
     mutate(`album-${albumId}`);
     if (pageData) {
       mutate(`image-file-${pageData.id}`);
@@ -124,6 +127,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       await addImageToAlbum(albumId, file, maxOrder + 1);
       refreshData();
       toast.success("Image added to album");
+      router.push(ROUTES.album({ albumId, page: totalPages + 1 }));
     } catch (error) {
       console.error("Add image failed:", error);
       toast.error("Failed to add image");
@@ -250,9 +254,10 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
             id={pageData.id}
             ocrResult={pageData.ocrResult}
             error={pageData.error}
-            status={pageData.status}
+            status={status}
             getImageFile={getImageFile}
             onStartProcessing={handleReanalyze}
+            isReanalyzing={isReanalyzing}
           />
         </div>
       </div>
