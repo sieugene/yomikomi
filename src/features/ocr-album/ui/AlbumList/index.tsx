@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
-import { OCRAlbumAlbum } from "../../types";
+import { Album, OCRAlbumAlbum } from "../../types";
+import { getProcessedProgress, getProgressLineWidth } from "../../lib";
 
 interface AlbumListProps {
   onAlbumSelect: (album: OCRAlbumAlbum) => void;
@@ -50,7 +51,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  const getStatusText = (album: OCRAlbumAlbum) => {
+  const getStatusText = (album: Album) => {
     switch (album.status) {
       case "completed":
         return `Completed (${album.processedImages}/${album.totalImages})`;
@@ -64,7 +65,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
     }
   };
 
-  const canStartProcessing = (album: OCRAlbumAlbum) => {
+  const canStartProcessing = (album: Album) => {
     return (
       album.status !== "processing" &&
       album.processedImages < album.totalImages &&
@@ -83,7 +84,7 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
   const handleDelete = async (album: OCRAlbumAlbum) => {
     if (
       !window.confirm(
-        `Are you sure you want to delete "${album.name}" and all its images?`
+        `Are you sure you want to delete "${album.name}" and all its images?`,
       )
     ) {
       return;
@@ -185,8 +186,9 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>Progress</span>
                   <span>
-                    {Math.round(
-                      (album.processedImages / album.totalImages) * 100
+                    {getProcessedProgress(
+                      album.processedImages,
+                      album.totalImages,
                     )}
                     %
                   </span>
@@ -197,14 +199,11 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
                       album.status === "completed"
                         ? "bg-green-600"
                         : album.status === "partial"
-                        ? "bg-orange-600"
-                        : "bg-blue-600"
+                          ? "bg-orange-600"
+                          : "bg-blue-600"
                     }`}
                     style={{
-                      width: `${Math.max(
-                        (album.processedImages / album.totalImages) * 100,
-                        2
-                      )}%`,
+                      width: `${getProgressLineWidth(album.processedImages, album.totalImages)}%`,
                     }}
                   ></div>
                 </div>

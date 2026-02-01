@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState } from "react";
 import { useAlbumRepository } from "../hooks/useAlbumRepository";
 import { createAlbumId, createAlbumImageId, generateFilename } from "../lib";
 import {
+  Album,
   BatchProcessingProgress,
   OCRAlbumAlbum,
   OCRAlbumContextType,
@@ -20,7 +21,7 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const { settings } = useOCRSettings();
   const { ocrProcess } = useOcr();
-  const [currentAlbum, setCurrentAlbum] = useState<OCRAlbumAlbum | null>(null);
+  const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
   const [batchProgress, setBatchProgress] =
     useState<BatchProcessingProgress | null>(null);
 
@@ -50,9 +51,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       name,
       createdAt: now,
       updatedAt: now,
-      totalImages: files.length,
-      processedImages: 0,
-      failedImages: 0,
       status: "pending",
     };
 
@@ -111,10 +109,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         processedCount === 0 && failedCount === 0 ? "pending" : "processing";
     }
 
-    const updatedAlbum: OCRAlbumAlbum = {
+    const updatedAlbum: Album = {
       ...album,
-      processedImages: processedCount,
-      failedImages: failedCount,
       status,
       updatedAt: new Date(),
     };
@@ -315,9 +311,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       await db?.createImage(newImage, file);
 
       // Update album totals
-      const updatedAlbum: OCRAlbumAlbum = {
+      const updatedAlbum: Album = {
         ...album,
-        totalImages: album.totalImages + 1,
         updatedAt: now,
       };
       await db?.updateAlbum(updatedAlbum);
@@ -357,13 +352,8 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
         await db?.deleteImage(imageId);
 
         // Update album counts
-        const updatedAlbum: OCRAlbumAlbum = {
+        const updatedAlbum: Album = {
           ...album,
-          totalImages: album.totalImages - 1,
-          processedImages: wasProcessed
-            ? album.processedImages - 1
-            : album.processedImages,
-          failedImages: wasFailed ? album.failedImages - 1 : album.failedImages,
           updatedAt: new Date(),
         };
         await db?.updateAlbum(updatedAlbum);
