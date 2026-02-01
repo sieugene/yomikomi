@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { OCRAlbumIndexedDB } from "../services/indexedDbService";
 import useSWR from "swr";
 import { useMemo } from "react";
-import { OCRAlbumAlbum, OCRAlbumImage } from "../types";
+import { Album, OCRAlbumAlbum, OCRAlbumImage } from "../types";
 
 export const useAlbumRepository = () => {
   const { data: db, isLoading: dbIsLoading } = useSWR("album-db", async () => {
@@ -30,7 +30,7 @@ export const useAlbumRepository = () => {
     return await db?.createAlbum(album);
   };
 
-  const getAlbum = async (albumId: string): Promise<OCRAlbumAlbum | null> => {
+  const getAlbum = async (albumId: string): Promise<Album | null> => {
     if (!isDbReady) return null;
     const album = await db?.getAlbum(albumId);
     return album || null;
