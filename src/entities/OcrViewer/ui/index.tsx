@@ -1,16 +1,16 @@
-// src/entities/OcrViewer/ui/index.tsx
 import { OCRAlbumImage } from "@/features/ocr-album/types";
 import {
   AlertTriangle,
+  Clock,
   Image as ImageIcon,
   Loader2,
   Play,
-  Clock,
 } from "lucide-react";
-import { FC, useEffect, useState } from "react";
-import useSWR from "swr";
+import { FC } from "react";
+import { useReadImageFile } from "../hooks/useReadImageFile";
 import { InteractiveOcrResult } from "./InteractiveOcrResult";
 import { OcrFailure } from "./OcrFailure";
+import { ImageConflictState } from "./ImageConflictState";
 
 type Props = Pick<OCRAlbumImage, "ocrResult" | "error" | "id" | "status"> & {
   getImageFile: (imageId: string) => Promise<File | null>;
@@ -25,40 +25,10 @@ export const OcrViewer: FC<Props> = ({
   status,
   onStartProcessing,
 }) => {
-  const { data: originalFile } = useSWR(`image-file-${id}`, () =>
-    getImageFile(id)
-  );
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isImageLoading, setIsImageLoading] = useState(!!originalFile);
-
-  // Handle image URL creation and cleanup
-  useEffect(() => {
-    if (!originalFile) {
-      setImageUrl(null);
-      setIsImageLoading(false);
-      return;
-    }
-
-    setIsImageLoading(true);
-
-    // Small delay to show loading state
-    const timer = setTimeout(() => {
-      const url = URL.createObjectURL(originalFile);
-      setImageUrl(url);
-      setIsImageLoading(false);
-    }, 300);
-
-    // Cleanup: revoke the object URL when the component unmounts or the file changes
-    return () => {
-      clearTimeout(timer);
-      if (imageUrl) {
-        URL.revokeObjectURL(imageUrl);
-      }
-    };
-  }, [originalFile]);
+  const { imageUrl, isLoading } = useReadImageFile({ getImageFile, id });
 
   // Show loading state
-  if (isImageLoading) {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-64 p-8">
         <div className="flex flex-col items-center space-y-4">
@@ -113,19 +83,21 @@ export const OcrViewer: FC<Props> = ({
   }
 
   // Show no data state
-  if (!originalFile && !ocrResult) {
+  if (!imageUrl && !ocrResult) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-64 p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-        <ImageIcon className="w-16 h-16 text-gray-300 mb-4" />
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No Image Selected
-          </h3>
-          <p className="text-gray-600">
-            Upload an image to start OCR text extraction
-          </p>
-        </div>
-      </div>
+      <ImageConflictState
+        label=" No Image Selected"
+        text="Upload an image to start OCR text extraction"
+      />
+    );
+  }
+
+  if (!imageUrl && !!ocrResult) {
+    return (
+      <ImageConflictState
+        label="No Image Selected"
+        text="The image cache probably expired. Please try re-uploading the image."
+      />
     );
   }
 
@@ -146,9 +118,9 @@ export const OcrViewer: FC<Props> = ({
                 Ready for OCR Processing
               </h3>
               <p className="text-sm text-amber-700 mb-3">
-                This image {`hasn't `}been processed yet. Click the button below to
-                start OCR text extraction, or use the batch processing button to
-                analyze all pending images at once.
+                This image {`hasn't `}been processed yet. Click the button below
+                to start OCR text extraction, or use the batch processing button
+                to analyze all pending images at once.
               </p>
               {onStartProcessing && (
                 <button

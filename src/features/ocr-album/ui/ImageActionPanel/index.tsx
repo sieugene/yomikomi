@@ -87,7 +87,7 @@ export const ImageActionPanel: FC<ImageActionPanelProps> = ({
                     onReanalyze();
                     setShowActions(false);
                   }}
-                  disabled={isProcessing}
+                  disabled={isProcessing || !imageFile}
                 />
                 <MobileActionButton
                   onClick={() => {
@@ -151,7 +151,7 @@ export const ImageActionPanel: FC<ImageActionPanelProps> = ({
 
         <button
           onClick={onReanalyze}
-          disabled={isProcessing}
+          disabled={isProcessing || !imageFile}
           className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all text-sm font-medium shadow-sm"
         >
           {isProcessing ? (
