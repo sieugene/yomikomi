@@ -1,5 +1,6 @@
-import React, { useState } from "react";
 import { SearchResult } from "@/features/dictionary-search/types";
+import { useFavoriteWords } from "@/features/favorite-words/hooks/useFavoriteWords";
+import React, { useState } from "react";
 import { SearchResultCard } from "../SearchResultCard";
 
 interface VirtualizedResultsProps {
@@ -22,12 +23,14 @@ export const VirtualizedResults: React.FC<VirtualizedResultsProps> = ({
   const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - overscan);
   const endIndex = Math.min(
     groups.length,
-    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan
+    Math.ceil((scrollTop + containerHeight) / itemHeight) + overscan,
   );
 
   const visibleGroups = groups.slice(startIndex, endIndex);
   const totalHeight = groups.length * itemHeight;
   const offsetY = startIndex * itemHeight;
+
+  const { isFavorite, handleToggleFavorite } = useFavoriteWords();
 
   return (
     <div
@@ -57,6 +60,8 @@ export const VirtualizedResults: React.FC<VirtualizedResultsProps> = ({
                     result={result}
                     maxMeanings={deepSearchMode ? 8 : 5}
                     showSource={true}
+                    isFavorite={isFavorite(result.word, result.reading)}
+                    onToggleFavorite={() => handleToggleFavorite(result)}
                   />
                 ))}
               </div>

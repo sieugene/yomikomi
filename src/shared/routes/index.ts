@@ -12,4 +12,5 @@ export const ROUTES = {
   ocrCapture: "/ocr-capture",
   settings: "/settings",
   ankiImport: "/anki-import",
+  favorites: "/favorites",
 };

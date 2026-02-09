@@ -1,10 +1,11 @@
-import { IpadicFeatures } from "kuromoji";
-import React from "react";
-import { MainResultStats } from "../MainResultStats";
-import { AlertCircle, BookOpen, Search } from "lucide-react";
-import { SearchResultCard } from "../SearchResultCard";
 import { SearchResult } from "@/features/dictionary-search/types";
+import { useFavoriteWords } from "@/features/favorite-words/hooks/useFavoriteWords";
+import { IpadicFeatures } from "kuromoji";
+import { AlertCircle, BookOpen, Search } from "lucide-react";
+import React from "react";
 import { useSourceFiltering } from "../../hooks/useSourceFiltering";
+import { MainResultStats } from "../MainResultStats";
+import { SearchResultCard } from "../SearchResultCard";
 import { SourceTabs } from "../SourceTabs";
 import { VirtualizedResults } from "../VirtualizedResults";
 
@@ -44,8 +45,10 @@ export const SearchResultsPanel = React.forwardRef<
       searchStats,
       className,
     },
-    ref
+    ref,
   ) => {
+    const { isFavorite, handleToggleFavorite } = useFavoriteWords();
+
     const {
       sources,
       resultCounts,
@@ -171,6 +174,8 @@ export const SearchResultsPanel = React.forwardRef<
                           result={result}
                           maxMeanings={deepSearchMode ? 8 : 5}
                           showSource={true}
+                          isFavorite={isFavorite(result.word, result.reading)}
+                          onToggleFavorite={() => handleToggleFavorite(result)}
                         />
                       ))}
                     </div>
@@ -190,7 +195,7 @@ export const SearchResultsPanel = React.forwardRef<
         </div>
       </div>
     );
-  }
+  },
 );
 
 SearchResultsPanel.displayName = "SearchResultsPanel";
