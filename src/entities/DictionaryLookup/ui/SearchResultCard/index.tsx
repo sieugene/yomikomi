@@ -1,12 +1,15 @@
 import React from "react";
 import { Database, Clock, TrendingUp } from "lucide-react";
 import { SearchResult } from '@/features/dictionary-search/types';
+import { FavoriteButton } from '@/features/favorite-words/ui/FavoriteButton';
 
 interface SearchResultCardProps {
   result: SearchResult;
   showSource?: boolean;
   maxMeanings?: number;
   className?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export const SearchResultCard: React.FC<SearchResultCardProps> = ({
@@ -14,6 +17,8 @@ export const SearchResultCard: React.FC<SearchResultCardProps> = ({
   showSource = true,
   maxMeanings = 5,
   className = "",
+  isFavorite = false,
+  onToggleFavorite,
 }) => {
   const displayedMeanings = result.meanings.slice(0, maxMeanings);
   const hasMoreMeanings = result.meanings.length > maxMeanings;
@@ -35,7 +40,15 @@ export const SearchResultCard: React.FC<SearchResultCardProps> = ({
     <div className={`bg-gray-50 rounded-md p-3 ${className}`}>
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1">
-          <span className="font-medium text-lg">{result.word}</span>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-lg">{result.word}</span>
+            {onToggleFavorite && (
+              <FavoriteButton
+                isFavorite={isFavorite}
+                onToggle={onToggleFavorite}
+              />
+            )}
+          </div>
           {result.reading && result.reading !== result.word && (
             <span className="ml-2 text-gray-600">({result.reading})</span>
           )}
