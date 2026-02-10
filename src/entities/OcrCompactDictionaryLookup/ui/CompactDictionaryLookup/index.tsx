@@ -7,6 +7,7 @@ import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictionaryLookup";
 import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
 import { MODALS_LAYERS } from "@/shared/modals";
+import { Translation } from "@/features/translation/ui/Translation";
 
 interface CompactDictionaryLookupProps {
   sentence: string;
@@ -126,6 +127,8 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
               className="text-sm leading-relaxed"
             />
           </div>
+
+          <Translation selectedText={sentence} />
 
           {/* Results Section */}
           <div
