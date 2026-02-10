@@ -2,6 +2,7 @@
 
 import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
 import { OcrSettingsButton } from "@/features/ocr-settings/ui/OcrSettingsButton";
+import { TranslationSettingsButton } from '@/features/translation/ui/TranslationSettingsButton';
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -35,6 +36,15 @@ export default function SettingsPage() {
               Advanced ocr settings
             </p>
             <OcrSettingsButton text="Open Settings" type="button" />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Translation Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TranslationSettingsButton text="Open Settings" type="button" />
           </CardContent>
         </Card>
       </div>

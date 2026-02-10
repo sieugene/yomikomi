@@ -14,6 +14,7 @@ export const SUPPORTED_TRANSLATIONS: Record<
   },
   en: {
     necessary_models: ["Xenova/opus-mt-ja-en"],
+    pattern: "Xenova/opus-mt-ja-en",
   },
 };
 
