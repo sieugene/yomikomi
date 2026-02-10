@@ -1,6 +1,6 @@
 "use client";
 
-import { DictionaryLookup } from "@/entities/DictionaryLookup/ui";
+import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
 import { useFavoriteWords } from "@/features/favorite-words/hooks/useFavoriteWords";
 import { ROUTES } from "@/shared/routes";
 import {
@@ -18,10 +18,10 @@ import { toast } from "sonner";
 
 export const FavoritesPage = () => {
   const { wordsList, removeWord, updateNotes, clearAll } = useFavoriteWords();
-  const [selectedWord, setSelectedWord] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
+  const { compactDictionary: dictionary } = useAppSettings();
 
   const filteredWords = searchQuery
     ? wordsList.filter(
@@ -38,9 +38,6 @@ export const FavoritesPage = () => {
     if (window.confirm(`Remove "${word}" from favorites?`)) {
       removeWord(id);
       toast.success("Removed from favorites");
-      if (selectedWord === word) {
-        setSelectedWord(null);
-      }
     }
   };
 
@@ -51,7 +48,6 @@ export const FavoritesPage = () => {
       )
     ) {
       clearAll();
-      setSelectedWord(null);
       toast.success("All favorites cleared");
     }
   };
@@ -146,15 +142,11 @@ export const FavoritesPage = () => {
                 filteredWords.map((word) => (
                   <div
                     key={word.id}
-                    className={`bg-white border rounded-lg p-4 transition-all hover:shadow-md cursor-pointer ${
-                      selectedWord === word.word
-                        ? "border-blue-500 shadow-md"
-                        : "border-gray-200"
-                    } overflow-hidden`}
-                    onClick={() => setSelectedWord(word.word)}
+                    className={`bg-white border rounded-lg p-4 transition-all hover:shadow-md cursor-pointer border-gray-200 overflow-hidden`}
+                    onClick={() => dictionary.handleOpen(word.word)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className='w-[70%]'>
+                      <div className="w-[70%]">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold text-gray-900 truncate max-w-32">
                             {word.word}
@@ -255,20 +247,6 @@ export const FavoritesPage = () => {
                     )}
                   </div>
                 ))
-              )}
-            </div>
-
-            {/* Dictionary Lookup */}
-            <div className="lg:sticky lg:top-4 lg:self-start">
-              {selectedWord ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <DictionaryLookup sentence={selectedWord} />
-                </div>
-              ) : (
-                <div className="bg-white border border-gray-200 rounded-lg p-8 text-center text-gray-500">
-                  <BookOpen className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                  <p>Select a word to view dictionary details</p>
-                </div>
               )}
             </div>
           </div>
