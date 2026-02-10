@@ -1,14 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import {
-  OCRSettings,
-  OCRSettingsContextType,
-  DEFAULT_OCR_SETTINGS,
-} from "../types";
+import { OCRSettings, OCRSettingsContextType } from "../types";
+import { DEFAULT_OCR_SETTINGS } from "../lib/constants";
 
 const OCR_SETTINGS_STORAGE_KEY = "ocr-settings";
 
 const OCRSettingsContext = createContext<OCRSettingsContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const OCRSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -37,7 +34,7 @@ export const OCRSettingsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       localStorage.setItem(
         OCR_SETTINGS_STORAGE_KEY,
-        JSON.stringify(updatedSettings)
+        JSON.stringify(updatedSettings),
       );
     } catch (error) {
       console.warn("Failed to save OCR settings:", error);
@@ -70,7 +67,7 @@ export const useOCRSettings = () => {
   const context = useContext(OCRSettingsContext);
   if (!context) {
     throw new Error(
-      "useOCRSettings must be used within an OCRSettingsProvider"
+      "useOCRSettings must be used within an OCRSettingsProvider",
     );
   }
   return context;
