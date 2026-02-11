@@ -28,6 +28,7 @@ export const TranslationSettingsProvider: React.FC<{
         toast.success("Translation models loaded");
         return config;
       } catch (error) {
+        console.error("Failed to load translation models:", error);
         toast.error("Failed to load translation models");
       }
     },
