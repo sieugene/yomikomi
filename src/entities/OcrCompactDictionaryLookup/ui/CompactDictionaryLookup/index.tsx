@@ -1,12 +1,13 @@
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
 import { SearchResultsPanel } from "@/entities/DictionaryLookup/ui/SearchResultsPanel";
+import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
+import { TranslateText } from '@/features/translation/ui/TranslateText';
 import useClickOutside from "@/shared/hooks/useClickOutside";
+import { MODALS_LAYERS } from "@/shared/modals";
 import { Book, Search, X } from "lucide-react";
 import { FC, useRef } from "react";
 import { useBodyScrollLock } from "../../hooks/useBodyScrollLock";
 import { useOcrCompactDictionaryLookup } from "../../hooks/useOcrCompactDictionaryLookup";
-import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
-import { MODALS_LAYERS } from "@/shared/modals";
 
 interface CompactDictionaryLookupProps {
   sentence: string;
@@ -109,6 +110,7 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
         <div className="flex-1 overflow-hidden h-full">
           <div className="p-2">
             <DictionaryLookupSettings />
+             <TranslateText selectedText={sentence} />
           </div>
           {/* Sentence Section */}
           <div
@@ -126,6 +128,8 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
               className="text-sm leading-relaxed"
             />
           </div>
+
+         
 
           {/* Results Section */}
           <div
