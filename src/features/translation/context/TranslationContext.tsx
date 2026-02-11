@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
+import useSWR from "swr";
 import { DEFAULT_TRANSLATION_SETTINGS } from "../lib/constants";
+import { loadTranslationConfig } from "../lib/loadTranslationConfig";
 import {
   TranslationSettings,
   TranslationSettingsContextType,
@@ -17,8 +20,19 @@ export const TranslationSettingsProvider: React.FC<{
   const [settings, setSettings] = useState<TranslationSettings>(
     DEFAULT_TRANSLATION_SETTINGS.settings,
   );
+  const { data: translateConfigData, isLoading } = useSWR(
+    settings.language && `translation-config-${settings.language}`,
+    async () => {
+      try {
+        const config = await loadTranslationConfig(settings.language);
+        toast.success("Translation models loaded");
+        return config;
+      } catch (error) {
+        toast.error("Failed to load translation models");
+      }
+    },
+  );
 
-  // Load settings from localStorage on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(TRANSLATION_SETTINGS_STORAGE_KEY);
@@ -61,6 +75,8 @@ export const TranslationSettingsProvider: React.FC<{
   return (
     <TranslationSettingsContext.Provider
       value={{
+        translateConfig: translateConfigData || null,
+        loading: isLoading,
         settings,
         updateSettings,
         resetToDefaults,

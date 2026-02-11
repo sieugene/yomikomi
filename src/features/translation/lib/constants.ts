@@ -24,4 +24,6 @@ export const DEFAULT_TRANSLATION_SETTINGS: TranslationSettingsContextType = {
   },
   resetToDefaults: () => {},
   updateSettings: () => {},
+  loading: false,
+  translateConfig: null,
 };

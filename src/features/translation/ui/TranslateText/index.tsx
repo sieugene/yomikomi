@@ -1,23 +1,19 @@
 import { Languages, Loader2 } from "lucide-react";
 import { FC, useState } from "react";
-import { useTranslation } from "../hooks/useTranslation";
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface Props {
   selectedText: string;
 }
 
-export const Translation: FC<Props> = ({
-  selectedText,
-}) => {
-  const { translate } = useTranslation();
+export const TranslateText: FC<Props> = ({ selectedText }) => {
+  const { translate, loading: isTranslating } = useTranslation();
   const [translatedText, setTranslatedText] = useState<string | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleTranslate = async () => {
     if (!selectedText.trim()) return;
 
-    setIsTranslating(true);
     setError(null);
 
     try {
@@ -26,8 +22,6 @@ export const Translation: FC<Props> = ({
     } catch (err) {
       console.error("Translation error:", err);
       setError(err instanceof Error ? err.message : "Translation failed");
-    } finally {
-      setIsTranslating(false);
     }
   };
 
