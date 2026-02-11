@@ -1,58 +1,36 @@
-import { pipeline, TranslationPipeline } from "@huggingface/transformers";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import { useTranslationSettings } from "../context/TranslationContext";
-import { SUPPORTED_TRANSLATIONS } from "../lib/constants";
 import { readTranslationResult } from "../lib/readTranslationResult";
-import { SupportedTranslation } from "../types";
-import { toast } from "sonner";
-
-type TranslateConfig = {
-  models: {
-    model: TranslationPipeline;
-    modelName: string;
-  }[];
-  config: SupportedTranslation;
-};
 
 export const useTranslation = () => {
-  const { settings } = useTranslationSettings();
-  const translateConfig = useRef<TranslateConfig | null>(null);
-
-  const initTranslationModels = async () => {
-    if (translateConfig.current) return;
-    const config = SUPPORTED_TRANSLATIONS[settings.language];
-    const modelsPromises = config.necessary_models.map(
-      (modelName) => async () => {
-        const model = await pipeline("translation", modelName);
-        return { model, modelName };
-      },
-    );
-    const models = await Promise.all(modelsPromises.map((fn) => fn()));
-    translateConfig.current = {
-      models,
-      config,
-    };
-    toast.success("Translation models loaded");
-  };
-
-  useEffect(() => {
-    initTranslationModels();
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const { loading, translateConfig } = useTranslationSettings();
 
   const translate = async (text: string) => {
-    if (!translateConfig.current) {
-      throw new Error("Translation models not initialized");
+    try {
+      setIsLoading(true);
+      if (!translateConfig) {
+        throw new Error("Translation models not initialized");
+      }
+      const { models, config } = translateConfig;
+      const pattern = config.pattern?.split(" -> ");
+      const result = await pattern?.reduce(
+        async (prevTextPromise, _, index) => {
+          const prevText = await prevTextPromise;
+          const { model } = models[index];
+          const result = await model(prevText);
+          return readTranslationResult(result);
+        },
+        Promise.resolve(text),
+      );
+      return result || "";
+    } catch (error) {
+      console.error("Translation error:", error);
+      return text;
+    } finally {
+      setIsLoading(false);
     }
-    const { models, config } = translateConfig.current;
-    const pattern = config.pattern?.split(" -> ");
-    const result = await pattern?.reduce(async (prevTextPromise, _, index) => {
-      const prevText = await prevTextPromise;
-      const { model } = models[index];
-      const result = await model(prevText);
-      return readTranslationResult(result);
-    }, Promise.resolve(text));
-    return result;
   };
 
-  return { translate };
+  return { translate, loading: isLoading || loading };
 };
