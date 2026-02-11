@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslationSettings } from "../context/TranslationContext";
 import { readTranslationResult } from "../lib/readTranslationResult";
+import { TextGenerationConfig } from "@huggingface/transformers";
 
 export const useTranslation = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,10 @@ export const useTranslation = () => {
         async (prevTextPromise, _, index) => {
           const prevText = await prevTextPromise;
           const { model } = models[index];
-          const result = await model(prevText);
+          const result = await model(
+            prevText,
+            (config.models_options || {}) as unknown as TextGenerationConfig,
+          );
           return readTranslationResult(result);
         },
         Promise.resolve(text),

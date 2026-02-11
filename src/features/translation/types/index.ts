@@ -5,6 +5,7 @@ export type TranslateSupportedLang = "ru" | "en";
 export type SupportedTranslation = {
   necessary_models: string[];
   pattern?: string;
+  models_options?: Record<string, unknown>;
 };
 
 export type TranslateConfig = {

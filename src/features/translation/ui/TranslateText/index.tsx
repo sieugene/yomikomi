@@ -31,12 +31,8 @@ export const TranslateText: FC<Props> = ({ selectedText }) => {
   };
 
   return (
-    <div className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-3 sm:p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Languages className="w-4 h-4 text-blue-600" />
-          <h3 className="text-sm font-semibold text-gray-900">Translation</h3>
-        </div>
+    <div className='pt-2'>
+      <div className="flex items-center mb-2">
 
         {!translatedText && !isTranslating && (
           <button
@@ -78,12 +74,6 @@ export const TranslateText: FC<Props> = ({ selectedText }) => {
             {translatedText}
           </p>
         </div>
-      )}
-
-      {!translatedText && !isTranslating && !error && (
-        <p className="text-xs text-gray-500 mt-1">
-          Click {`"Translate"`} to see the translation of the selected text
-        </p>
       )}
     </div>
   );

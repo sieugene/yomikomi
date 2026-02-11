@@ -9,6 +9,7 @@ interface InteractiveSentenceProps {
   onWordClick: (token: IpadicFeatures, wordId: number) => void;
   selectedWordId?: number | null;
   className?: string;
+  tokensFooterContent?: React.ReactNode;
 }
 
 export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
@@ -16,6 +17,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
   onWordClick,
   selectedWordId,
   className = "",
+  tokensFooterContent
 }) => {
   const { tokenizeText, isReady, tokenizer } = useTokenizer();
 
@@ -50,6 +52,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
           sentence={sentence}
           className={className}
           selectedWordId={selectedWordId}
+          tokensFooterContent={tokensFooterContent}
         />
       ) : (
         "Tokens not found or sentence is empty."
@@ -67,6 +70,7 @@ const Tokens: FC<TokensProps> = ({
   onWordClick,
   selectedWordId,
   sentence,
+  tokensFooterContent
 }) => {
   const dictCount = tokens.filter((t) => t.source === "dict").length;
   const kuromojiCount = tokens.length - dictCount;
@@ -102,6 +106,7 @@ const Tokens: FC<TokensProps> = ({
           {tokens.length}
         </div>
       )}
+      {tokensFooterContent && tokensFooterContent}
     </div>
   );
 };

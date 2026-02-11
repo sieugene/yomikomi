@@ -1,7 +1,7 @@
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
 import { SearchResultsPanel } from "@/entities/DictionaryLookup/ui/SearchResultsPanel";
 import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
-import { TranslateText } from '@/features/translation/ui/TranslateText';
+import { TranslateText } from "@/features/translation/ui/TranslateText";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { MODALS_LAYERS } from "@/shared/modals";
 import { Book, Search, X } from "lucide-react";
@@ -53,15 +53,15 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
 
   useBodyScrollLock(isOpen);
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Mobile Overlay */}
-      <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 sm:hidden"
-        onClick={handleClose}
-      />
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 sm:hidden"
+          onClick={handleClose}
+        />
+      )}
 
       {/* Dictionary Panel */}
       <div
@@ -110,7 +110,6 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
         <div className="flex-1 overflow-hidden h-full">
           <div className="p-2">
             <DictionaryLookupSettings />
-             <TranslateText selectedText={sentence} />
           </div>
           {/* Sentence Section */}
           <div
@@ -126,10 +125,9 @@ export const CompactDictionaryLookup: FC<CompactDictionaryLookupProps> = ({
               onWordClick={handleWordClick}
               selectedWordId={selectedWordId}
               className="text-sm leading-relaxed"
+              tokensFooterContent={<TranslateText selectedText={sentence} />}
             />
           </div>
-
-         
 
           {/* Results Section */}
           <div
