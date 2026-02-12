@@ -1,17 +1,12 @@
-import { pipeline } from "@huggingface/transformers";
-import { TranslateConfig, TranslateSupportedLang } from "../types";
+import {
+  PipelineTransformers,
+  TranslateConfig,
+  TranslateSupportedLang,
+} from "../types";
 import { SUPPORTED_TRANSLATIONS } from "./constants";
-import { env } from "@huggingface/transformers";
-
-
-if (env.backends.onnx.wasm) {
-  env.backends.onnx.wasm.numThreads = 1;
-  env.backends.onnx.wasm.simd = false;
-  env.backends.onnx.wasm.proxy = true;
-}
-
 
 export const loadTranslationConfig = async (
+  pipeline: PipelineTransformers,
   language: TranslateSupportedLang,
 ): Promise<TranslateConfig> => {
   const config = SUPPORTED_TRANSLATIONS[language];

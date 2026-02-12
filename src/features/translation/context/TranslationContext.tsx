@@ -4,6 +4,7 @@ import useSWR from "swr";
 import { DEFAULT_TRANSLATION_SETTINGS } from "../lib/constants";
 import { loadTranslationConfig } from "../lib/loadTranslationConfig";
 import {
+  PipelineTransformers,
   TranslationSettings,
   TranslationSettingsContextType,
 } from "../types/index";
@@ -17,14 +18,52 @@ const TranslationSettingsContext = createContext<
 export const TranslationSettingsProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
+  const [cdnLoading, setCdnLoaded] = useState(false);
   const [settings, setSettings] = useState<TranslationSettings>(
     DEFAULT_TRANSLATION_SETTINGS.settings,
   );
+  useSWR(settings.on && `translate-lib`, async () => {
+    if (!settings.on) return;
+    let transformersPromise: Promise<void> | null = null;
+
+    if (transformersPromise) return transformersPromise;
+    transformersPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.type = "module";
+
+      script.textContent = `
+      import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js";
+      window.__transformers = { pipeline, env };
+      window.dispatchEvent(new Event("transformers-ready"));
+    `;
+
+      script.onerror = reject;
+
+      document.body.appendChild(script);
+      window.addEventListener("transformers-ready", () => resolve(), {
+        once: true,
+      });
+    });
+
+    await transformersPromise;
+    setCdnLoaded(true);
+  });
+
   const { data: translateConfigData, isLoading } = useSWR(
-    settings.language && `translation-config-${settings.language}`,
+    settings.on &&
+      cdnLoading &&
+      settings.language &&
+      `translation-config-${settings.language}`,
     async () => {
       try {
-        const config = await loadTranslationConfig(settings.language);
+        const config = await loadTranslationConfig(
+          (
+            window as unknown as {
+              __transformers: { pipeline: PipelineTransformers };
+            }
+          ).__transformers.pipeline,
+          settings.language,
+        );
         toast.success("Translation models loaded");
         return config;
       } catch (error) {
@@ -74,17 +113,19 @@ export const TranslationSettingsProvider: React.FC<{
   };
 
   return (
-    <TranslationSettingsContext.Provider
-      value={{
-        translateConfig: translateConfigData || null,
-        loading: isLoading,
-        settings,
-        updateSettings,
-        resetToDefaults,
-      }}
-    >
-      {children}
-    </TranslationSettingsContext.Provider>
+    <>
+      <TranslationSettingsContext.Provider
+        value={{
+          translateConfig: translateConfigData || null,
+          loading: isLoading,
+          settings,
+          updateSettings,
+          resetToDefaults,
+        }}
+      >
+        {children}
+      </TranslationSettingsContext.Provider>
+    </>
   );
 };
 

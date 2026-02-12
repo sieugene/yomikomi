@@ -60,6 +60,23 @@ export const TranslationSettingsPanel: React.FC<
       <div className="p-4 space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
+            Load models (app can be crash)
+          </label>
+          <button
+            type="button"
+            onClick={() => handleChange("on", !localSettings.on)}
+            className={`w-14 h-8 flex items-center rounded-full p-1 duration-300 ${
+              localSettings.on ? "bg-green-500" : "bg-gray-300"
+            }`}
+          >
+            <div
+              className={`bg-white w-6 h-6 rounded-full shadow-md transform duration-300 ${
+                localSettings.on ? "translate-x-6" : "translate-x-0"
+              }`}
+            />
+          </button>
+
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             Target Language
           </label>
           <select

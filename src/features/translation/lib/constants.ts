@@ -8,10 +8,6 @@ export const SUPPORTED_TRANSLATIONS: Record<
   TranslateSupportedLang,
   SupportedTranslation
 > = {
-  // ru_legacy: {
-  //   necessary_models: ["Xenova/opus-mt-ja-en", "Xenova/opus-mt-en-ru"],
-  //   pattern: "Xenova/opus-mt-ja-en -> Xenova/opus-mt-en-ru",
-  // },
   ru: {
     necessary_models: ["Xenova/nllb-200-distilled-600M"],
     pattern: "Xenova/nllb-200-distilled-600M",
@@ -29,6 +25,7 @@ export const SUPPORTED_TRANSLATIONS: Record<
 export const DEFAULT_TRANSLATION_SETTINGS: TranslationSettingsContextType = {
   settings: {
     language: "en",
+    on: false,
   },
   resetToDefaults: () => {},
   updateSettings: () => {},
