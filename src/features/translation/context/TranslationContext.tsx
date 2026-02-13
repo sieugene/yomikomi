@@ -32,7 +32,7 @@ export const TranslationSettingsProvider: React.FC<{
       script.type = "module";
 
       script.textContent = `
-      import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js";
+      import { pipeline, env } from "/transformers/transformers.min.js";
       window.__transformers = { pipeline, env };
       window.dispatchEvent(new Event("transformers-ready"));
     `;

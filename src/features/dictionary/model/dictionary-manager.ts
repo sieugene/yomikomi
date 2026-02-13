@@ -245,7 +245,7 @@ export class DictionaryManager extends BaseStoreManager<StoredDictionary> {
     }
 
     const metadata: DictionaryMetadata = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: file.name,
       language: templateId ? template?.language || "unknown" : "custom",
       size: file.size,
