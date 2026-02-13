@@ -12,7 +12,13 @@ export const loadTranslationConfig = async (
   const config = SUPPORTED_TRANSLATIONS[language];
   const modelsPromises = config.necessary_models.map(
     (modelName) => async () => {
-      const model = await pipeline("translation", modelName);
+      const model = await pipeline("translation", modelName, {
+        device: "webgpu",
+        session_options: {
+          enableCpuMemArena: true,
+          executionMode: "parallel",
+        },
+      });
       return { model, modelName };
     },
   );

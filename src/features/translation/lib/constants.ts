@@ -8,7 +8,7 @@ export const SUPPORTED_TRANSLATIONS: Record<
   TranslateSupportedLang,
   SupportedTranslation
 > = {
-  // ru_legacy: {
+  // ru: {
   //   necessary_models: ["Xenova/opus-mt-ja-en", "Xenova/opus-mt-en-ru"],
   //   pattern: "Xenova/opus-mt-ja-en -> Xenova/opus-mt-en-ru",
   // },
