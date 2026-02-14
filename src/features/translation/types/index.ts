@@ -1,7 +1,12 @@
-import type { TranslationPipeline } from "@huggingface/transformers";
-import type { pipeline } from "@huggingface/transformers";
-export type PipelineTransformers = typeof pipeline
+import type { TranslationPipeline } from "@xenova/transformers";
+import type { pipeline, env } from "@xenova/transformers";
+export type PipelineTransformers = typeof pipeline;
+export type EnvTransformers = typeof env;
 export type TranslateSupportedLang = "ru" | "en";
+export type TransformesCDN = {
+  pipeline: PipelineTransformers;
+  env: EnvTransformers;
+};
 
 export type SupportedTranslation = {
   necessary_models: string[];
@@ -19,7 +24,7 @@ export type TranslateConfig = {
 
 export type TranslationSettings = {
   language: TranslateSupportedLang;
-  on: boolean
+  on: boolean;
 };
 
 export type TranslationSettingsContextType = {

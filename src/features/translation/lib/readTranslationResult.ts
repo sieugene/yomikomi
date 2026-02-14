@@ -1,7 +1,7 @@
 import {
   TranslationOutput,
   TranslationSingle,
-} from "@huggingface/transformers";
+} from "@xenova/transformers";
 
 export const readTranslationResult = (
   result: TranslationOutput | TranslationOutput[],

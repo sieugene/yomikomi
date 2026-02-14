@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslationSettings } from "../context/TranslationContext";
 import { readTranslationResult } from "../lib/readTranslationResult";
-import { TextGenerationConfig } from "@huggingface/transformers";
+import type { TextGenerationConfig } from "@xenova/transformers";
 
 export const useTranslation = () => {
   const [isLoading, setIsLoading] = useState(false);

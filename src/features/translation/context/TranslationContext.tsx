@@ -4,7 +4,7 @@ import useSWR from "swr";
 import { DEFAULT_TRANSLATION_SETTINGS } from "../lib/constants";
 import { loadTranslationConfig } from "../lib/loadTranslationConfig";
 import {
-  PipelineTransformers,
+  TransformesCDN,
   TranslationSettings,
   TranslationSettingsContextType,
 } from "../types/index";
@@ -59,16 +59,18 @@ export const TranslationSettingsProvider: React.FC<{
         const config = await loadTranslationConfig(
           (
             window as unknown as {
-              __transformers: { pipeline: PipelineTransformers };
+              __transformers: TransformesCDN;
             }
-          ).__transformers.pipeline,
+          ).__transformers,
           settings.language,
         );
         toast.success("Translation models loaded");
         return config;
       } catch (error) {
         console.error("Failed to load translation models:", error);
-        toast.error("Failed to load translation models");
+        toast.error("Failed to load translation models", {
+          description: (error as {message: string})?.message || "unknown error"
+        });
       }
     },
   );
