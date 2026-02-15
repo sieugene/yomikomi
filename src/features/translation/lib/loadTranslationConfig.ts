@@ -7,7 +7,7 @@ export const loadTranslationConfig = async (
 ): Promise<TranslateConfig> => {
   cdn.env.allowRemoteModels = false;
   cdn.env.allowLocalModels = true;
-  cdn.env.localModelPath = "./models/";
+  cdn.env.localModelPath = "/models";
   cdn.env.backends.onnx.wasm.numThreads = 1; 
 
   const config = SUPPORTED_TRANSLATIONS[language];
