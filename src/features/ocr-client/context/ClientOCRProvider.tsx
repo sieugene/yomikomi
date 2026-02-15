@@ -73,10 +73,14 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
 
   const startDownload = async () => {
     try {
-      await Promise.all([
-        loadScript(OCR_ENGINE.GUTENYE),
-        loadScript(OCR_ENGINE.TESSERACT),
-      ]);
+      const targets = Object.values(OCR_ENGINE).map((model) => async () => {
+        await new Promise((r) => setTimeout(r, 3000));
+        await loadScript(model);
+        await new Promise((r) => setTimeout(r, 3000));
+      });
+      for (const load of targets) {
+        await load();
+      }
     } catch (err) {
       console.error(err);
     } finally {
