@@ -10,11 +10,11 @@ export const SUPPORTED_TRANSLATIONS: Record<
   TranslateSupportedLang,
   SupportedTranslation
 > = {
-  // ru: {
-  //   necessary_models: ["Xenova/opus-mt-ja-en", "Xenova/opus-mt-en-ru"],
-  //   pattern: "Xenova/opus-mt-ja-en -> Xenova/opus-mt-en-ru",
-  // },
   ru: {
+    necessary_models: ["Xenova/opus-mt-ja-en", "Xenova/opus-mt-en-ru"],
+    pattern: "Xenova/opus-mt-ja-en -> Xenova/opus-mt-en-ru",
+  },
+  ru_large: {
     necessary_models: ["Xenova/nllb-200-distilled-600M"],
     pattern: "Xenova/nllb-200-distilled-600M",
     models_options: {

@@ -1,5 +1,5 @@
 import type { TranslationPipeline } from "@xenova/transformers";
-export type TranslateSupportedLang = "ru" | "en";
+export type TranslateSupportedLang = "ru" | "en" | "ru_large";
 
 export type SupportedTranslation = {
   necessary_models: string[];
