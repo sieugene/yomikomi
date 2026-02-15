@@ -1,13 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
-import { DEFAULT_TRANSLATION_SETTINGS } from "../lib/constants";
+import {
+  DEFAULT_TRANSLATION_SETTINGS,
+  TRANSFORMERS_CDN,
+} from "../lib/constants";
 import { loadTranslationConfig } from "../lib/loadTranslationConfig";
 import {
-  TransformesCDN,
   TranslationSettings,
   TranslationSettingsContextType,
 } from "../types/index";
+import Script from "next/script";
 
 const TRANSLATION_SETTINGS_STORAGE_KEY = "translation-settings";
 
@@ -22,32 +25,6 @@ export const TranslationSettingsProvider: React.FC<{
   const [settings, setSettings] = useState<TranslationSettings>(
     DEFAULT_TRANSLATION_SETTINGS.settings,
   );
-  useSWR(settings.on && `translate-lib`, async () => {
-    if (!settings.on) return;
-    let transformersPromise: Promise<void> | null = null;
-
-    if (transformersPromise) return transformersPromise;
-    transformersPromise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.type = "module";
-
-      script.textContent = `
-      import { pipeline, env } from "/transformers/transformers.min.js";
-      window.__transformers = { pipeline, env };
-      window.dispatchEvent(new Event("transformers-ready"));
-    `;
-
-      script.onerror = reject;
-
-      document.body.appendChild(script);
-      window.addEventListener("transformers-ready", () => resolve(), {
-        once: true,
-      });
-    });
-
-    await transformersPromise;
-    setCdnLoaded(true);
-  });
 
   const { data: translateConfigData, isLoading } = useSWR(
     settings.on &&
@@ -56,12 +33,11 @@ export const TranslationSettingsProvider: React.FC<{
       `translation-config-${settings.language}`,
     async () => {
       try {
+        toast.info(
+          "Translation models are starting to load. This may temporarily freeze the page.",
+        );
         const config = await loadTranslationConfig(
-          (
-            window as unknown as {
-              __transformers: TransformesCDN;
-            }
-          ).__transformers,
+          window.__transformers,
           settings.language,
         );
         toast.success("Translation models loaded");
@@ -69,7 +45,8 @@ export const TranslationSettingsProvider: React.FC<{
       } catch (error) {
         console.error("Failed to load translation models:", error);
         toast.error("Failed to load translation models", {
-          description: (error as {message: string})?.message || "unknown error"
+          description:
+            (error as { message: string })?.message || "unknown error",
         });
       }
     },
@@ -116,6 +93,17 @@ export const TranslationSettingsProvider: React.FC<{
 
   return (
     <>
+      {settings.on && (
+        <Script
+          type="module"
+          src={TRANSFORMERS_CDN}
+          strategy="afterInteractive"
+          onLoad={() => {
+            setCdnLoaded(true);
+          }}
+        />
+      )}
+
       <TranslationSettingsContext.Provider
         value={{
           translateConfig: translateConfigData || null,

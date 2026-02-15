@@ -4,6 +4,8 @@ import {
   TranslationSettingsContextType,
 } from "../types";
 
+export const TRANSFORMERS_CDN = "/transformers/transformers-adapter.js";
+
 export const SUPPORTED_TRANSLATIONS: Record<
   TranslateSupportedLang,
   SupportedTranslation

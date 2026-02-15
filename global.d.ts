@@ -1,5 +1,13 @@
 import Tesseract from "tesseract.js";
 
+import type { pipeline, env } from "@xenova/transformers";
+export type PipelineTransformers = typeof pipeline;
+export type EnvTransformers = typeof env;
+export type TransformesCDN = {
+  pipeline: PipelineTransformers;
+  env: EnvTransformers;
+};
+
 export {};
 
 declare global {
@@ -20,9 +28,7 @@ declare global {
   type GutenyeOCRResult = OCRBox[];
 
   type GutenyeOCR = {
-    detect: (
-      image: File | string
-    ) => Promise<GutenyeOCRResult>;
+    detect: (image: File | string) => Promise<GutenyeOCRResult>;
   };
   // Extend the Window interface
   interface Window {
@@ -33,5 +39,6 @@ declare global {
         create: (options: GutenyeOCRCreateOptions) => Promise<GutenyeOCR>;
       };
     };
+    __transformers: TransformesCDN;
   }
 }
