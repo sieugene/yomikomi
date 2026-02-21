@@ -56,7 +56,7 @@ export function adaptGutenyeOCR(
 
     return {
       id: idx,
-      text: item.text,
+      text: item.text.replace(/[\r\n\s]+/g, ""),
       confidence: item.mean,
       bbox: {
         x_min,
