@@ -324,4 +324,4 @@ pnpm lint   # Run before committing
 ## License
 
 MIT
-opyright (c) 2026 sieugene
+Copyright (c) 2026 sieugene
