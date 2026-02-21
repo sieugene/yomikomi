@@ -18,7 +18,7 @@ export const useOcr = () => {
     try {
       console.log("Processing with Tesseract...");
 
-      const worker = tesseractWorker;
+      const worker = await tesseractWorker?.load();
       if (!tesseractWorker) {
         throw new Error("tesseractWorker is not inited!");
       }
@@ -49,7 +49,7 @@ export const useOcr = () => {
 
   const processWithGutenye = async (imageFile: File) => {
     try {
-      const ocr = gutenyeOCR;
+      const ocr = await gutenyeOCR?.load();
 
       if (!ocr) {
         throw new Error("gutenyeOCR is not inited");

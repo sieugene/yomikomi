@@ -15,6 +15,12 @@ export const useTranslation = () => {
       }
       const { models, config } = translateConfig;
       const pattern = config.pattern?.split(" -> ");
+      // Wait before starting so setIsLoading(true) is applied and loaders render correctly
+      await new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(true)
+        }, 1000);
+      })
       const result = await pattern?.reduce(
         async (prevTextPromise, _, index) => {
           const prevText = await prevTextPromise;

@@ -1,4 +1,3 @@
-import { useClientOCR } from "@/features/ocr-client/context/ClientOCRProvider";
 import { useOCRSettings } from "@/features/ocr-settings/context/OCRSettingsContext";
 import { useOcr } from "@/features/ocr/hooks/useOcr";
 import { OCRResponse } from "@/features/ocr/types";
@@ -6,18 +5,16 @@ import React, { createContext, ReactNode, useContext } from "react";
 
 interface OCRCaptureContextType {
   performOCR: (file: File) => Promise<OCRResponse>;
-  isReady: boolean;
 }
 
 const OCRCaptureContext = createContext<OCRCaptureContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const OCRCaptureProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const { ocrProcess } = useOcr();
-  const { ocrReady } = useClientOCR();
   const { settings } = useOCRSettings();
 
   const performOCR = async (file: File): Promise<OCRResponse> => {
@@ -33,7 +30,6 @@ export const OCRCaptureProvider: React.FC<{ children: ReactNode }> = ({
 
   const value: OCRCaptureContextType = {
     performOCR,
-    isReady: settings.isClientSide ? ocrReady : !!settings.apiEndpoint,
   };
 
   return (

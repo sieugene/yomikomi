@@ -15,15 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/ui/sheet";
-import {
-  BookOpen,
-  Camera,
-  Home,
-  Import,
-  Menu,
-  Scan,
-  Settings,
-} from "lucide-react";
+import { AppWindowIcon, Home, Menu, Scan, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -43,40 +35,10 @@ const navItems: NavItem[] = [
     isActive: (pathname) => pathname === ROUTES.home,
   },
   {
-    label: "Anki Import",
-    href: ROUTES.ankiImport,
-    icon: Import,
-    isActive: (pathname) => pathname === ROUTES.ankiImport,
-  },
-  {
-    label: "Albums",
-    href: ROUTES.albums,
-    icon: Scan,
-    isActive: (pathname) => pathname === ROUTES.albums,
-  },
-  {
-    label: "Dictionary",
-    href: ROUTES.dict,
-    icon: BookOpen,
-    isActive: (pathname) => pathname === ROUTES.dict,
-  },
-  {
-    label: "OCR Capture",
-    href: ROUTES.ocrCapture,
-    icon: Camera,
-    isActive: (pathname) => pathname === ROUTES.ocrCapture,
-  },
-  {
-    label: "Reader",
-    href: ROUTES.simpleReaderRoot,
-    icon: Settings,
-    isActive: (pathname) => pathname.includes(ROUTES.simpleReaderRoot),
-  },
-  {
-    label: "Favorites",
-    href: ROUTES.favorites,
-    icon: Settings,
-    isActive: (pathname) => pathname.includes(ROUTES.favorites),
+    label: "App",
+    href: ROUTES.app,
+    icon: AppWindowIcon,
+    isActive: (pathname) => pathname === ROUTES.app,
   },
   {
     label: "Settings",
