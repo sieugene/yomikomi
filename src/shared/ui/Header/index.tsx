@@ -125,7 +125,7 @@ export function Header() {
                 <span className="sr-only">Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="pr-0">
+            <SheetContent side="right" className="pr-0 z-[100]">
               <SheetHeader>
                 <SheetTitle className="flex items-center space-x-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
