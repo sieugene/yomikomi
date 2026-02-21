@@ -389,7 +389,6 @@ export const OCRAlbumProvider: React.FC<{ children: React.ReactNode }> = ({
       };
       await db?.updateImage(failedImage);
 
-      toast.error("Failed to reanalyze image");
       throw error;
     }
   };

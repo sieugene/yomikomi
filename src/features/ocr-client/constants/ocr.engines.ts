@@ -7,18 +7,18 @@ const GUTENYE_OPTIONS: GutenyeOCRCreateOptions = {
 };
 
 export enum OCR_ENGINE {
-  "TESSERACT" = "TESSERACT",
   "GUTENYE" = "GUTENYE",
+  "TESSERACT" = "TESSERACT",
 }
 
 export const OCR_ENGINES = {
-  [OCR_ENGINE.TESSERACT]: {
-    name: "tesseract",
-    cdn: "/tesseract/tesseract.min.js",
-  },
   [OCR_ENGINE.GUTENYE]: {
     name: "gutenye",
     cdn: "/ocr/ocr-browser.umd.js",
     options: GUTENYE_OPTIONS,
+  },
+  [OCR_ENGINE.TESSERACT]: {
+    name: "tesseract",
+    cdn: "/tesseract/tesseract.min.js",
   },
 };

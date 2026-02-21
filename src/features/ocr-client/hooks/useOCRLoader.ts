@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { OCR_ENGINE, OCR_ENGINES } from "../constants/ocr.engines";
+import { toast } from "sonner";
 
 export const useOCRLoader = () => {
   const [tesseractWorker, setTesseractWorker] =
@@ -23,11 +24,15 @@ export const useOCRLoader = () => {
     try {
       console.log("Gutenye OCR instance creation started");
       const ocr = await window.GutenyeOCR.default.create(
-        OCR_ENGINES.GUTENYE.options
+        OCR_ENGINES.GUTENYE.options,
       );
       console.log("Gutenye OCR instance created successfully");
       setGutenyeOCR(ocr);
     } catch (error) {
+      toast.error(
+        (error as { message: string })?.message ||
+          "Error creating Gutenye OCR instance",
+      );
       console.error("Error creating Gutenye OCR instance:", error);
       return null;
     }
