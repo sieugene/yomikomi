@@ -2,6 +2,8 @@
 
 > **A toolkit for Japanese learners** — dictionary, OCR, translator, and Anki right in your browser. No extensions. No servers. No data sent anywhere.
 
+**[🇯🇵 日本語版 README はこちら](README-ja.md)**
+
 ---
 
 ## What is this?
