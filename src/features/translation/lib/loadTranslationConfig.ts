@@ -5,9 +5,8 @@ export const loadTranslationConfig = async (
   cdn: typeof window.__transformers,
   language: TranslateSupportedLang,
 ): Promise<TranslateConfig> => {
-  cdn.env.allowRemoteModels = false;
-  cdn.env.allowLocalModels = true;
-  cdn.env.localModelPath = "./models/";
+  cdn.env.allowRemoteModels = true;
+  cdn.env.allowLocalModels = false;
   cdn.env.backends.onnx.wasm.numThreads = 1; 
 
   const config = SUPPORTED_TRANSLATIONS[language];
@@ -17,7 +16,6 @@ export const loadTranslationConfig = async (
     await new Promise((r) => setTimeout(r, 3000));
     const model = await cdn.pipeline("translation", modelName, {
       quantized: true,
-      local_files_only: true,
     });
     await new Promise((r) => setTimeout(r, 3000));
     return { model, modelName };
