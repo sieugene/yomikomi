@@ -2,6 +2,7 @@ import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
 
 export const ROUTES = {
   home: "/",
+  app: "/app",
   albums: "/app/albums",
   album: ({ albumId, page }: ALBUM_PAGE_PARAMS) =>
     `/app/album/${albumId}/${page}`,
