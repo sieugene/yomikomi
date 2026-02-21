@@ -1,49 +1,42 @@
-import { useMemo, useState } from "react";
-import { OCR_ENGINE, OCR_ENGINES } from "../constants/ocr.engines";
+import { useRef } from "react";
 import { toast } from "sonner";
+import { OCR_ENGINES } from "../constants/ocr.engines";
+import { OCRContextProps } from "../types";
 
 export const useOCRLoader = () => {
-  const [tesseractWorker, setTesseractWorker] =
-    useState<Tesseract.Worker | null>(null);
-  const [gutenyeOCR, setGutenyeOCR] = useState<GutenyeOCR | null>(null);
-  const createTesseractWorker = async (lang: string = "jpn") => {
-    try {
-      console.log("Tesseract worker creation started");
-      const worker = await window.Tesseract.createWorker(lang, 1, {
-        logger: (m) => console.log("Tesseract:", m),
-      });
-      console.log("Tesseract worker created successfully");
-      setTesseractWorker(worker);
-    } catch (error) {
-      console.error("Error creating Tesseract worker:", error);
-      return null;
-    }
+  const tesseractRef = useRef<Tesseract.Worker | null>(null);
+  const tesseractPromise = useRef<Promise<typeof tesseractRef.current> | null>(
+    null,
+  );
+
+  const loadTesseractWorker = async (lang = "jpn") =>
+    tesseractRef.current ??
+    (tesseractPromise.current ??= window.Tesseract.createWorker(lang, 1).then(
+      (w) => (tesseractRef.current = w),
+      () => null,
+    ));
+
+  const gutenyeRef = useRef<GutenyeOCR | null>(null);
+  const gutenyePromise = useRef<Promise<typeof gutenyeRef.current> | null>(
+    null,
+  );
+
+  const loadGutenyeOCR = async () =>
+    gutenyeRef.current ??
+    (gutenyePromise.current ??= window.GutenyeOCR.default
+      .create(OCR_ENGINES.GUTENYE.options)
+      .then(
+        (o) => (gutenyeRef.current = o),
+        (e) => {
+          toast.error(e?.message || "Error creating Gutenye OCR instance");
+          return null;
+        },
+      ));
+
+  return {
+    tesseractWorker: useRef<OCRContextProps["tesseractWorker"]>({
+      load: loadTesseractWorker,
+    }),
+    gutenyeOCR: useRef<OCRContextProps["gutenyeOCR"]>({ load: loadGutenyeOCR }),
   };
-
-  const createGutenyeOCR = async () => {
-    try {
-      console.log("Gutenye OCR instance creation started");
-      const ocr = await window.GutenyeOCR.default.create(
-        OCR_ENGINES.GUTENYE.options,
-      );
-      console.log("Gutenye OCR instance created successfully");
-      setGutenyeOCR(ocr);
-    } catch (error) {
-      toast.error(
-        (error as { message: string })?.message ||
-          "Error creating Gutenye OCR instance",
-      );
-      console.error("Error creating Gutenye OCR instance:", error);
-      return null;
-    }
-  };
-
-  const loaders = useMemo(() => {
-    return {
-      [OCR_ENGINE.GUTENYE]: createGutenyeOCR,
-      [OCR_ENGINE.TESSERACT]: createTesseractWorker,
-    };
-  }, []);
-
-  return { loaders, tesseractWorker, gutenyeOCR };
 };
