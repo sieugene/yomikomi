@@ -1,3 +1,6 @@
+import { useFuriganaMode } from "@/entities/Furigana/hooks/useFuriganaMode";
+import { FuriganaModeToggle } from "@/entities/Furigana/ui/FuriganaModeToggle";
+import { FuriganaText } from "@/entities/Furigana/ui/FuriganaText";
 import { DisplayToken } from "@/features/tokenizer/hooks/useDictTokenizer";
 import { useTokenizer } from "@/features/tokenizer/hooks/useTokenizer";
 import { IpadicFeatures } from "kuromoji";
@@ -17,7 +20,7 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
   onWordClick,
   selectedWordId,
   className = "",
-  tokensFooterContent
+  tokensFooterContent,
 }) => {
   const { tokenizeText, isReady, tokenizer } = useTokenizer();
 
@@ -25,12 +28,8 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
     sentence.length && isReady && !!tokenizer?.tokenize
       ? ["tokenize", sentence, tokenizer]
       : null,
-    async () => {
-      const result = await tokenizeText(sentence);
-
-      return result;
-    },
-    { revalidateOnFocus: false }
+    async () => tokenizeText(sentence),
+    { revalidateOnFocus: false },
   );
 
   if (!isReady || isLoading) {
@@ -64,41 +63,37 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
 type TokensProps = {
   tokens: DisplayToken[];
 } & InteractiveSentenceProps;
+
 const Tokens: FC<TokensProps> = ({
   tokens,
   className,
   onWordClick,
   selectedWordId,
   sentence,
-  tokensFooterContent
+  tokensFooterContent,
 }) => {
+  const { furiganaMode, handleModeChange } = useFuriganaMode();
+
   const dictCount = tokens.filter((t) => t.source === "dict").length;
   const kuromojiCount = tokens.length - dictCount;
 
   return (
     <div className={`p-4 bg-white rounded-lg border ${className}`}>
-      <div className="flex flex-wrap gap-1">
-        {tokens && tokens.length > 0 ? (
-          tokens.map((token, index) => (
-            <span
-              key={index}
-              onClick={() => onWordClick(token, token.word_id)}
-              className={`cursor-pointer px-1 py-0.5 rounded transition-all duration-200 border-b-2 ${
-                selectedWordId === token.word_id
-                  ? "bg-blue-200 border-blue-500 text-blue-900"
-                  : token.source === "dict"
-                  ? "border-green-500 hover:bg-green-100"
-                  : "border-blue-500 hover:bg-blue-100"
-              }`}
-              title={`${token.basic_form || token.surface_form} (unknown)`}
-            >
-              {token.surface_form}
-            </span>
-          ))
-        ) : (
-          <span className="text-gray-500">{sentence}</span>
-        )}
+      <div className="flex items-center justify-between mb-3">
+        <FuriganaModeToggle mode={furiganaMode} onChange={handleModeChange} />
+        <div className="text-xs text-gray-400">{tokens.length} tokens</div>
       </div>
+
+      {tokens && tokens.length > 0 ? (
+        <FuriganaText
+          tokens={tokens}
+          mode={furiganaMode}
+          selectedWordId={selectedWordId}
+          onWordClick={onWordClick}
+        />
+      ) : (
+        <span className="text-gray-500">{sentence}</span>
+      )}
 
       {tokens && tokens.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
@@ -106,6 +101,7 @@ const Tokens: FC<TokensProps> = ({
           {tokens.length}
         </div>
       )}
+
       {tokensFooterContent && tokensFooterContent}
     </div>
   );
