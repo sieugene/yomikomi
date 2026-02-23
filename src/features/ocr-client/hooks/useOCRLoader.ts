@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { toast } from "sonner";
 import { OCR_ENGINES } from "../constants/ocr.engines";
 import { OCRContextProps } from "../types";
+import { isMemoryErrorMessage } from "@/shared/lib/isMemoryErrorMessage";
 
 export const useOCRLoader = () => {
   const tesseractRef = useRef<Tesseract.Worker | null>(null);
@@ -20,6 +21,7 @@ export const useOCRLoader = () => {
   const gutenyePromise = useRef<Promise<typeof gutenyeRef.current> | null>(
     null,
   );
+  
 
   const loadGutenyeOCR = async () =>
     gutenyeRef.current ??
@@ -28,8 +30,12 @@ export const useOCRLoader = () => {
       .then(
         (o) => (gutenyeRef.current = o),
         (e) => {
-          toast.error(e?.message || "Error creating Gutenye OCR instance");
-          return null;
+          const messageError =
+            `${isMemoryErrorMessage(e?.message)}` ||
+            "Error creating Gutenye OCR instance";
+          toast.error(messageError);
+          gutenyePromise.current = null;
+          throw new Error(messageError);
         },
       ));
 

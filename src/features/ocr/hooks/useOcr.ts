@@ -67,7 +67,7 @@ export const useOcr = () => {
 
       return results;
     } catch (error) {
-      console.error("Gutenye OCR Error:", error);
+      throw new Error((error as {message: string})?.message || "Gutenye OCR Error")
     }
   };
 
