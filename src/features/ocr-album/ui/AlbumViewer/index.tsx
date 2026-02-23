@@ -57,7 +57,7 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
     },
   );
 
-  const isLoading =  albumLoading || !isDbReady;
+  const isLoading = albumLoading || !isDbReady;
   const totalPages = useMemo(() => images?.length || 0, [images]);
   const pageData = useMemo(() => images?.[page - 1], [images, page]);
   const prevPage = page > 1 ? page - 1 : null;
@@ -81,7 +81,9 @@ export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
       toast.success("Image reanalyzed successfully");
     } catch (error) {
       console.error("Reanalyze failed:", error);
-      toast.error("Failed to reanalyze image");
+      toast.error("Failed to reanalyze image", {
+        description: (error as { message: string })?.message || "unknown error",
+      });
     } finally {
       setIsReanalyzing(false);
     }
