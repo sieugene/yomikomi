@@ -2,7 +2,7 @@ import { AppContextLayout } from "@/layouts/app-context.layout";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Yomimoki - App",
+  title: "App",
 };
 
 export default function RootLayout({
