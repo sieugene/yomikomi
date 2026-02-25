@@ -17,32 +17,25 @@ export const useOCRLoader = () => {
       () => null,
     ));
 
-  const gutenyeRef = useRef<GutenyeOCR | null>(null);
-  const gutenyePromise = useRef<Promise<typeof gutenyeRef.current> | null>(
-    null,
-  );
-  
 
   const loadGutenyeOCR = async () =>
-    gutenyeRef.current ??
-    (gutenyePromise.current ??= window.GutenyeOCR.default
-      .create(OCR_ENGINES.GUTENYE.options)
-      .then(
-        (o) => (gutenyeRef.current = o),
-        (e) => {
-          const messageError =
-            `${isMemoryErrorMessage(e?.message)}` ||
-            "Error creating Gutenye OCR instance";
-          toast.error(messageError);
-          gutenyePromise.current = null;
-          throw new Error(messageError);
-        },
-      ));
+    window.GutenyeOCR.default.create(OCR_ENGINES.GUTENYE.options).then(
+      (o) => {
+        return o;
+      },
+      (e) => {
+        const messageError =
+          `${isMemoryErrorMessage(e?.message)}` ||
+          "Error creating Gutenye OCR instance";
+        toast.error(messageError);
+        throw new Error(messageError);
+      },
+    );
 
   return {
     tesseractWorker: useRef<OCRContextProps["tesseractWorker"]>({
       load: loadTesseractWorker,
     }),
-    gutenyeOCR: useRef<OCRContextProps["gutenyeOCR"]>({ load: loadGutenyeOCR }),
+    gutenyeOCR: loadGutenyeOCR,
   };
 };

@@ -3,7 +3,7 @@ export interface OCRContextProps {
     load: () => Promise<Tesseract.Worker | null>;
   };
   gutenyeOCR: null | {
-    load: () => Promise<GutenyeOCR | null>;
+    load: () => GutenyeOCR | null;
   };
   isAllowed: boolean;
 }
