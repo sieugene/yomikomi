@@ -1,21 +1,27 @@
-import Link from "next/link";
+import { Routes } from "@/shared/routes";
+import { LangParams } from "@/shared/types";
 import {
+  ArrowRight,
   BookOpen,
+  Code,
   Database,
+  Download,
+  ExternalLink,
+  Globe,
   Image,
   Lock,
-  Zap,
-  Download,
   Search,
-  Globe,
-  Code,
   Settings,
-  ArrowRight,
-  ExternalLink,
+  Zap,
 } from "lucide-react";
-import { ROUTES } from "@/shared/routes";
+import Link from "next/link";
+import { FC } from "react";
 
-export const HomePage = () => {
+type Props = LangParams;
+
+export const HomePage: FC<Props> = ({ lang }) => {
+  const { routes: ROUTES } = new Routes(lang);
+
   const features = [
     {
       icon: <Database className="w-8 h-8" />,
@@ -332,4 +338,3 @@ export const HomePage = () => {
     </div>
   );
 };
-

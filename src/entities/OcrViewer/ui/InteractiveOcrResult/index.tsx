@@ -1,4 +1,5 @@
 import { OCRResponse, TextBlock } from "@/features/ocr/types";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import {
   BookOpenTextIcon,
   Copy,
@@ -6,13 +7,12 @@ import {
   Info,
   RotateCcw,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useDownloadText } from "../../hooks/useDownloadText";
 import { useInteractiveOcr } from "../../hooks/useInteractiveOcr";
 import { useOcrCopy } from "../../hooks/useOcrCopy";
 import { ImageWithTextOverlays } from "../ImageWithTextOverlays";
-import Link from "next/link";
-import { ROUTES } from "@/shared/routes";
 
 type Props = {
   imageUrl: string;
@@ -20,6 +20,8 @@ type Props = {
 };
 
 export const InteractiveOcrResult: React.FC<Props> = ({ imageUrl, result }) => {
+  const { routes: ROUTES } = useClientRoutes();
+
   const { handleTextBlockClick, selectedTextBlock, handleReset } =
     useInteractiveOcr();
   const { handleCopyFullText } = useOcrCopy();
@@ -28,7 +30,7 @@ export const InteractiveOcrResult: React.FC<Props> = ({ imageUrl, result }) => {
 
   const selectedTextId = useMemo(
     () => selectedTextBlock?.id,
-    [selectedTextBlock]
+    [selectedTextBlock],
   );
 
   // Auto-hide info after 3 seconds

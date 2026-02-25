@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/shared/ui/sonner";
 import { PAGE_METADA } from "@/shared/metadata/page.metadata";
+import { APP_LANG, LangParams } from "@/shared/types";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<LangParams[]> {
   return [{ lang: "en" }, { lang: "ja" }];
 }
 
@@ -23,7 +24,7 @@ export async function generateMetadata({
   params,
 }: LayoutProps<"/[lang]">): Promise<Metadata> {
   const { lang } = await params;
-  return PAGE_METADA[(lang as "en" | "jp")] ?? PAGE_METADA.en;
+  return PAGE_METADA[lang as APP_LANG] ?? PAGE_METADA.en;
 }
 
 export default async function RootLayout({

@@ -1,20 +1,32 @@
 import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
+import { BindLang, RouteValue } from "./types";
+import { bindLang } from "./bindLang";
+import { APP_LANG } from '../types';
 
-
-// TODO support a locales!
-export const ROUTES = {
-  home: "/en",
-  app: "/en/app",
-  albums: "/en/app/albums",
+const ROUTES = {
+  home: "",
+  app: "/app",
+  albums: "/app/albums",
   album: ({ albumId, page }: ALBUM_PAGE_PARAMS) =>
-    `/en/app/album/${albumId}/${page}`,
+    `/app/album/${albumId}/${page}`,
   simpleReader: (sentence: string) =>
-    "/en/app/simple-reader?sentence=" + encodeURIComponent(sentence),
-  simpleReaderRoot: "/en/app/simple-reader",
-  dict: "/en/app/dict",
-  ocrCapture: "/en/app/ocr-capture",
-  settings: "/en/app/settings",
-  ankiImport: "/en/app/anki-import",
-  favorites: "/en/app/favorites",
-  translator: "/en/app/translator",
-};
+    "/app/simple-reader?sentence=" + encodeURIComponent(sentence),
+  simpleReaderRoot: "/app/simple-reader",
+  dict: "/app/dict",
+  ocrCapture: "/app/ocr-capture",
+  settings: "/app/settings",
+  ankiImport: "/app/anki-import",
+  favorites: "/app/favorites",
+  translator: "/app/translator",
+} as const;
+
+export class Routes {
+  readonly routes: BindLang<typeof ROUTES>;
+
+  constructor(lang: APP_LANG) {
+    this.routes = bindLang(
+      ROUTES as Record<string, RouteValue>,
+      lang,
+    ) as BindLang<typeof ROUTES>;
+  }
+}

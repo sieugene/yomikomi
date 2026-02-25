@@ -10,70 +10,71 @@ import {
   Heart,
   ArrowRightLeft,
 } from "lucide-react";
-import { Card, CardDescription, CardHeader, CardTitle } from '@/shared/ui/card';
-import { ROUTES } from '@/shared/routes';
-
-
-const appSections = [
-  {
-    title: "Albums",
-    description: "Browse and manage your albums",
-    icon: BookOpen,
-    href: ROUTES.albums,
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    title: "Reader",
-    description: "Simple text reading interface",
-    icon: BookMarked,
-    href: ROUTES.simpleReaderRoot,
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    title: "Translator",
-    description: "AI-powered Japanese translation",
-    icon: ArrowRightLeft,
-    href: ROUTES.translator,
-    color: "from-violet-500 to-cyan-500",
-  },
-  {
-    title: "Dictionary",
-    description: "Search and translate words",
-    icon: Languages,
-    href: ROUTES.dict,
-    color: "from-green-500 to-emerald-500",
-  },
-  {
-    title: "OCR Capture",
-    description: "Extract text from images",
-    icon: Image,
-    href: ROUTES.ocrCapture,
-    color: "from-orange-500 to-red-500",
-  },
-  {
-    title: "Favorites",
-    description: "Saved words and phrases",
-    icon: Heart,
-    href: ROUTES.favorites,
-    color: "from-rose-500 to-pink-500",
-  },
-  {
-    title: "Anki Import",
-    description: "Import decks from Anki",
-    icon: FileInput,
-    href: ROUTES.ankiImport,
-    color: "from-indigo-500 to-purple-500",
-  },
-  {
-    title: "Settings",
-    description: "Configure your application",
-    icon: Settings,
-    href: ROUTES.settings,
-    color: "from-gray-500 to-slate-500",
-  },
-];
+import { Card, CardDescription, CardHeader, CardTitle } from "@/shared/ui/card";
+import { useClientRoutes } from '@/shared/hooks/useClientRoutes';
 
 export default function Page() {
+  useClientRoutes()
+  const { routes: ROUTES } = useClientRoutes()
+  const appSections = [
+    {
+      title: "Albums",
+      description: "Browse and manage your albums",
+      icon: BookOpen,
+      href: ROUTES.albums,
+      color: "from-blue-500 to-cyan-500",
+    },
+    {
+      title: "Reader",
+      description: "Simple text reading interface",
+      icon: BookMarked,
+      href: ROUTES.simpleReaderRoot,
+      color: "from-purple-500 to-pink-500",
+    },
+    {
+      title: "Translator",
+      description: "AI-powered Japanese translation",
+      icon: ArrowRightLeft,
+      href: ROUTES.translator,
+      color: "from-violet-500 to-cyan-500",
+    },
+    {
+      title: "Dictionary",
+      description: "Search and translate words",
+      icon: Languages,
+      href: ROUTES.dict,
+      color: "from-green-500 to-emerald-500",
+    },
+    {
+      title: "OCR Capture",
+      description: "Extract text from images",
+      icon: Image,
+      href: ROUTES.ocrCapture,
+      color: "from-orange-500 to-red-500",
+    },
+    {
+      title: "Favorites",
+      description: "Saved words and phrases",
+      icon: Heart,
+      href: ROUTES.favorites,
+      color: "from-rose-500 to-pink-500",
+    },
+    {
+      title: "Anki Import",
+      description: "Import decks from Anki",
+      icon: FileInput,
+      href: ROUTES.ankiImport,
+      color: "from-indigo-500 to-purple-500",
+    },
+    {
+      title: "Settings",
+      description: "Configure your application",
+      icon: Settings,
+      href: ROUTES.settings,
+      color: "from-gray-500 to-slate-500",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">

@@ -1,5 +1,7 @@
-export const PAGE_METADA = {
-  jp: {
+import { Metadata } from "next";
+import { APP_LANG } from "./../types/index";
+export const PAGE_METADA: { [key in APP_LANG]: Metadata } = {
+  ja: {
     title: {
       default: "Yomikomi — 日本語学習ツール",
       template: "%s | Yomikomi",
@@ -22,7 +24,7 @@ export const PAGE_METADA = {
     openGraph: {
       title: "Yomikomi — 日本語学習ツール",
       description:
-        "OCR・辞書・翻訳・AkniがブラウザだけでOK。拡張機能不要、iPhoneでも動作。",
+        "OCR・辞書・翻訳・AnkiがブラウザだけでOK。拡張機能不要、iPhoneでも動作。",
       url: "https://github.com/sieugene/yomikomi",
       siteName: "Yomikomi",
       locale: "ja_JP",
@@ -31,10 +33,10 @@ export const PAGE_METADA = {
     },
 
     alternates: {
-      canonical: "https://github.com/sieugene/yomikomi",
+      canonical: "https://yomikomi.vercel.app/en/app",
       languages: {
-        en: "https://github.com/sieugene/yomikomi/en",
-        ja: "https://github.com/sieugene/yomikomi/ja",
+        en: "https://yomikomi.vercel.app/en/app",
+        ja: "https://yomikomi.vercel.app/ja/app",
       },
     },
 
@@ -86,7 +88,7 @@ export const PAGE_METADA = {
       },
     },
     alternates: {
-      canonical: "https://yomikomi.vercel.app/app",
+      canonical: "https://yomikomi.vercel.app/ja/app",
     },
   },
 };

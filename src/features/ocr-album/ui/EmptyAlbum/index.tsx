@@ -1,10 +1,9 @@
 "use client";
 
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import { Home, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { FC, useState } from "react";
-
 
 interface Props {
   albumId: string;
@@ -19,6 +18,8 @@ export const EmptyAlbum: FC<Props> = ({
   onAddImage,
   onDeleteAlbum,
 }) => {
+  const { routes: ROUTES } = useClientRoutes();
+
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleFileAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,10 +31,12 @@ export const EmptyAlbum: FC<Props> = ({
   };
 
   const handleDeleteClick = async () => {
-    if (!window.confirm(`Delete album "${albumName}"? This cannot be undone.`)) {
+    if (
+      !window.confirm(`Delete album "${albumName}"? This cannot be undone.`)
+    ) {
       return;
     }
-    
+
     setIsDeleting(true);
     try {
       await onDeleteAlbum();
@@ -131,7 +134,8 @@ export const EmptyAlbum: FC<Props> = ({
           {/* Help Text */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <p className="text-sm text-blue-800">
-              💡 <strong>Tip:</strong> You can upload multiple images at once from the albums page, or add them one by one here.
+              💡 <strong>Tip:</strong> You can upload multiple images at once
+              from the albums page, or add them one by one here.
             </p>
           </div>
         </div>

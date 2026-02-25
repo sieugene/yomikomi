@@ -1,4 +1,4 @@
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import { ChevronLeft, ChevronRight, Grid3x3 } from "lucide-react";
 import Link from "next/link";
 import { FC } from "react";
@@ -15,6 +15,8 @@ export const MobileNavigation: FC<MobileNavigationProps> = ({
   currentPage,
   totalPages,
 }) => {
+  const { routes: ROUTES } = useClientRoutes();
+
   const prevPage = currentPage > 1 ? currentPage - 1 : null;
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
 

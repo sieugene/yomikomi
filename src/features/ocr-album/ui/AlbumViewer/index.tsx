@@ -3,7 +3,7 @@
 import { OcrViewer } from "@/entities/OcrViewer/ui";
 import { MobileNavigation } from "@/entities/OcrViewer/ui/MobileNavigation";
 import { OCRCapture } from "@/features/ocr-capture/ui/OCRCapture";
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import { ALBUM_PAGE_PARAMS } from "@/views/album/types";
 import {
   AlertCircle,
@@ -18,13 +18,15 @@ import { FC, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR, { mutate } from "swr";
 import { useOCRAlbum } from "../../context/OCRAlbumContext";
+import { getAlbumImageStatus } from "../../lib/getStatus";
 import { EmptyAlbum } from "../EmptyAlbum";
 import { ImageActionPanel } from "../ImageActionPanel";
-import { getAlbumImageStatus } from "../../lib/getStatus";
 
 type Props = ALBUM_PAGE_PARAMS;
 
 export const AlbumViewer: FC<Props> = ({ albumId, page }) => {
+  const { routes: ROUTES } = useClientRoutes();
+
   const router = useRouter();
   const {
     getAlbumImages,

@@ -1,12 +1,14 @@
 import { AlbumList } from "@/features/ocr-album/ui/AlbumList";
 import { BatchUpload } from "@/features/ocr-album/ui/BatchUpload";
 import { ProgressTracker } from "@/features/ocr-album/ui/ProgressTracker";
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import { redirect } from "next/navigation";
 
 import React from "react";
 
 export const OCRPage: React.FC = () => {
+  const { routes: ROUTES } = useClientRoutes();
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

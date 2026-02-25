@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import { Button } from "@/shared/ui/button";
 import {
   NavigationMenu,
@@ -27,28 +27,30 @@ interface NavItem {
   isActive?: (pathname: string) => boolean;
 }
 
-const navItems: NavItem[] = [
-  {
-    label: "Home",
-    href: ROUTES.home,
-    icon: Home,
-    isActive: (pathname) => pathname === ROUTES.home,
-  },
-  {
-    label: "App",
-    href: ROUTES.app,
-    icon: AppWindowIcon,
-    isActive: (pathname) => pathname === ROUTES.app,
-  },
-  {
-    label: "Settings",
-    href: ROUTES.settings,
-    icon: Settings,
-    isActive: (pathname) => pathname === ROUTES.settings,
-  },
-];
-
 export function Header() {
+  const { routes: ROUTES } = useClientRoutes();
+
+  const navItems: NavItem[] = [
+    {
+      label: "Home",
+      href: ROUTES.home,
+      icon: Home,
+      isActive: (pathname) => pathname === ROUTES.home,
+    },
+    {
+      label: "App",
+      href: ROUTES.app,
+      icon: AppWindowIcon,
+      isActive: (pathname) => pathname === ROUTES.app,
+    },
+    {
+      label: "Settings",
+      href: ROUTES.settings,
+      icon: Settings,
+      isActive: (pathname) => pathname === ROUTES.settings,
+    },
+  ];
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 

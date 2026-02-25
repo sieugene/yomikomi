@@ -2,7 +2,7 @@
 
 import { useAppSettings } from "@/application/client/settings/providers/ApplicationSettingsContext";
 import { useFavoriteWords } from "@/features/favorite-words/hooks/useFavoriteWords";
-import { ROUTES } from "@/shared/routes";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 import {
   BookOpen,
   Calendar,
@@ -17,6 +17,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const FavoritesPage = () => {
+  const { routes: ROUTES } = useClientRoutes();
+
   const { wordsList, removeWord, updateNotes, clearAll } = useFavoriteWords();
   const [searchQuery, setSearchQuery] = useState("");
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
