@@ -41,11 +41,11 @@ export function adaptTesseractResult(
   };
 }
 
-export function adaptGutenyeOCR(
-  raw: GutenyeOCRResult,
+export function adaptPaddleOCR(
+  raw: OCROutput,
   imageInfo: ImageInfo
 ): OCRResponse {
-  const text_blocks: TextBlock[] = raw.map((item, idx) => {
+  const text_blocks: TextBlock[] = raw.src.map((item, idx) => {
     const xs = item.box.map((p) => p[0]);
     const ys = item.box.map((p) => p[1]);
 

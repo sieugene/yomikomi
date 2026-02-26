@@ -10,7 +10,7 @@ import { OCRContextProps } from "../types";
 
 const OCRContext = createContext<OCRContextProps>({
   tesseractWorker: null,
-  gutenyeOCR: null,
+  paddleOcr: null,
   isAllowed: false,
 });
 
@@ -18,7 +18,7 @@ export const useClientOCR = () => useContext(OCRContext);
 
 export function ClientOCRProvider({ children }: { children: ReactNode }) {
   const { settings } = useOCRSettings();
-  const { gutenyeOCR, tesseractWorker } = useOCRLoader();
+  const { paddleOcr, tesseractWorker } = useOCRLoader();
   const isAllowed = useMemo(
     () => settings.isClientSide,
     [settings.isClientSide],
@@ -33,7 +33,7 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
     <OCRContext.Provider
       value={{
         tesseractWorker: tesseractWorker.current,
-        gutenyeOCR,
+        paddleOcr,
         isAllowed,
       }}
     >
