@@ -1,21 +1,30 @@
-const GUTENYE_OPTIONS: GutenyeOCRCreateOptions = {
-  models: {
-    detectionPath: "/ocr/multilingual_det_infer_dynamic.onnx",
-    recognitionPath: "/ocr/japan_rec_infer.onnx",
-    dictionaryPath: "/ocr/japan_keys.txt",
-  },
-};
+import type { PaddleOcrInitOptions } from "@oovz/esearch-ocr";
 
+const PADDLE_OCR_OPTIONS = async (
+  ortOnnxruntimeWebInstance: object,
+): Promise<PaddleOcrInitOptions> => {
+  const dicResponse = await fetch("/ocr/japan_dict.txt");
+  const decodeDic = await dicResponse.text();
+  return {
+    ort: ortOnnxruntimeWebInstance,
+    det: { input: "/ocr/ppocr_v5_mobile_det.onnx" },
+    rec: {
+      input: "/ocr/japan_rec.onnx",
+      decodeDic,
+      optimize: { space: false },
+    },
+  };
+};
 export enum OCR_ENGINE {
-  "GUTENYE" = "GUTENYE",
+  "PADDLEOCR" = "PADDLEOCR",
   "TESSERACT" = "TESSERACT",
 }
 
 export const OCR_ENGINES = {
-  [OCR_ENGINE.GUTENYE]: {
-    name: "gutenye",
+  [OCR_ENGINE.PADDLEOCR]: {
+    name: "paddleocr",
     cdn: "/ocr/ocr-browser.umd.js",
-    options: GUTENYE_OPTIONS,
+    options: PADDLE_OCR_OPTIONS,
   },
   [OCR_ENGINE.TESSERACT]: {
     name: "tesseract",

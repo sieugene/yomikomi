@@ -8,7 +8,7 @@ export const DEFAULT_OCR_SETTINGS: OCRSettings = {
   retryAttempts: 3,
   batchSize: 5,
   isClientSide: true,
-  clientEngine: OCR_ENGINE.GUTENYE,
+  clientEngine: OCR_ENGINE.PADDLEOCR,
   textOrientation: TEXT_ORIENTATION.AUTO,
   japaneseVerticalMode: false,
 };

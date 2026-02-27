@@ -47,7 +47,7 @@ export const useOcr = () => {
     }
   };
 
-  const processWithGutenye = async (imageFile: File) => {
+  const processWithPaddleOcr = async (imageFile: File) => {
     try {
       const ocr = await paddleOcr?.load();
 
@@ -71,7 +71,7 @@ export const useOcr = () => {
       return results;
     } catch (error) {
       throw new Error(
-        (error as { message: string })?.message || "Gutenye OCR Error",
+        (error as { message: string })?.message || "PaddleOcr Error",
       );
     }
   };
@@ -95,8 +95,8 @@ export const useOcr = () => {
           height,
           format: file.type,
         });
-      } else if (settings.clientEngine === OCR_ENGINE.GUTENYE) {
-        // Gutenye: apply all processing in one pass
+      } else if (settings.clientEngine === OCR_ENGINE.PADDLEOCR) {
+        // PaddleOcr: apply all processing in one pass
         const isVertical =
           settings.textOrientation === TEXT_ORIENTATION.VERTICAL ||
           settings.japaneseVerticalMode;
@@ -111,8 +111,8 @@ export const useOcr = () => {
         console.log("Image processed:");
 
         const { width, height } = await getImageDimensions(optimizedFile);
-        const response = await processWithGutenye(optimizedFile);
-        if (!response) throw new Error("GUTENYE processing failed");
+        const response = await processWithPaddleOcr(optimizedFile);
+        if (!response) throw new Error("PaddleOcr processing failed");
 
         rawResult = adaptPaddleOCR(response, {
           width,

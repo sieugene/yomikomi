@@ -215,7 +215,7 @@ export const OCRSettingsPanel: React.FC<OCRSettingsPanelProps> = ({
                 className="text-black w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={OCR_ENGINE.TESSERACT}>Tesseract</option>
-                <option value={OCR_ENGINE.GUTENYE}>Gutenye</option>
+                <option value={OCR_ENGINE.PADDLEOCR}>PaddleOcr</option>
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 Select OCR engine to run in browser

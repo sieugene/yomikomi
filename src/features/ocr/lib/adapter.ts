@@ -1,4 +1,5 @@
 import { ImageInfo, OCRResponse, TextBlock } from "@/features/ocr/types";
+import type { OCROutput } from '@oovz/esearch-ocr';
 import type { RecognizeResult } from "tesseract.js";
 
 export function adaptTesseractResult(
