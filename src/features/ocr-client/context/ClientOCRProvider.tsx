@@ -24,11 +24,6 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
     [settings.isClientSide],
   );
 
-  const scripts = Object.values(OCR_ENGINES).map((a) => ({
-    name: a.name,
-    src: a.cdn,
-  }));
-
   return (
     <OCRContext.Provider
       value={{
@@ -37,10 +32,12 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
         isAllowed,
       }}
     >
-      {isAllowed &&
-        scripts.map(({ src }) => (
-          <Script key={src} src={src} strategy="afterInteractive" />
-        ))}
+      {isAllowed && (
+        <Script
+          src={OCR_ENGINES["TESSERACT"].cdn}
+          strategy="afterInteractive"
+        />
+      )}
 
       {children}
     </OCRContext.Provider>

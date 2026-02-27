@@ -62,11 +62,8 @@ export const useOcr = () => {
         reader.readAsDataURL(imageFile);
       });
 
-      // const results = await ocr.ocr(imageData, {
-      //   angle: true,
-      //   layout: true,
-      // });
       const results = await ocr.ocr(imageData);
+      // const results = await ocr.ocr(imageData);
 
       return results;
     } catch (error) {
