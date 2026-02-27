@@ -28,7 +28,7 @@ Yomikomi は日本語を読む際の典型的な手間を解決するウェブ�
 
 ### 🔍 OCR
 - **クライアントサイド OCR** — 画像はデバイス外に出ません
-  - Gutenye OCR / PaddleOcr（ONNX、推奨）
+  - PaddleOcr（ONNX、推奨）
   - Tesseract.js
 - **サーバーサイド OCR** — PaddleOCR または YomiToku を動かした独自の Docker コンテナに接続
 - アルバム：ページを一括アップロードして全ページを処理し、辞書ルックアップ付きで閲覧
@@ -117,7 +117,7 @@ LIMIT ?;
 
 デフォルトでは OCR は完全にブラウザ上で動作します。画像はどこにも送信されません。
 
-**Gutenye OCR**（推奨）— 日本語に特化した高速・高精度エンジン：
+**PaddleOcr（ONNX、推奨）**（推奨）— 日本語に特化した高速・高精度エンジン：
 - モデル：`/public/ocr/` 内の ONNX ファイル
 - 初回使用時に自動ロード
 
@@ -196,7 +196,7 @@ GET  /health               # サーバーの状態確認
 
 ### iOS / iPhone
 iOS にはブラウザのメモリ制限と WebGPU サポートの問題があります。重い翻訳モデル使用時にクラッシュが発生する場合があります。
-クライアントサイド OCR（Gutenye）は安定して動作しますが、メモリに関する問題が起きることがあります。
+クライアントサイド Paddleocrは安定して動作しますが、メモリに関する問題が起きることがあります。
 
 **ヒント：** Safari の「共有」→「ホーム画面に追加」でサイトを追加すると、ブラウザ UI なしでフルスクリーン表示されます。
 
@@ -227,7 +227,7 @@ SSR の影響で、Next.js での WASM の扱いは一筋縄ではいきませ�
 
 **@xenova/transformers** はカスタムアダプター（`/public/transformers/transformers-adapter.js`）を通じて接続し、`strategy="afterInteractive"` の `<Script>` タグとして注入します。これにより SSR の問題を回避し、`window.__transformers` はクライアント側でのみ利用可能になります。
 
-**Gutenye OCR**（ONNX Runtime Web）も同じパターンに従い、Script タグでロードし、モデルファイルは `/public/ocr/` に配置します。
+**PaddleOcr**（ONNX Runtime Web）も同じパターンに従い、Script タグでロードし、モデルファイルは `/public/ocr/` に配置します。
 
 **基本方針：** 重い WASM 依存関係はすべてコンテキストプロバイダーの背後に隔離し、クライアント側でのみ遅延ロードします。SSR 中には何も実行されません。
 
@@ -251,7 +251,7 @@ src/
 │   ├── ocr/                # OCR ロジックとアダプター
 │   ├── ocr-album/          # アルバム + バッチ処理
 │   ├── ocr-capture/        # エリア選択 + OCR
-│   ├── ocr-client/         # クライアント OCR エンジン（Gutenye・Tesseract）
+│   ├── ocr-client/         # クライアント OCR エンジン（PaddleOcr・Tesseract）
 │   ├── ocr-settings/       # OCR 設定
 │   ├── translation/        # 翻訳（Transformers.js）
 │   ├── tokenizer/          # Kuromoji + 辞書補完
@@ -296,7 +296,7 @@ server/                     # Python FastAPI OCR サーバー
 ```
 画像ファイル
     │
-    ├─ isClientSide=true ──► Gutenye OCR (ONNX) ──► adaptGutenyeOCR()
+    ├─ isClientSide=true ──► PaddleOcr (ONNX) ──► adaptPaddleOCR()
     │                    └─► Tesseract.js        ──► adaptTesseractResult()
     │
     └─ isClientSide=false ─► fetch → Docker API  ──► OCRResponse (native format)

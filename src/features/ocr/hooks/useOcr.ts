@@ -4,16 +4,16 @@ import { getImageDimensions } from "@/features/ocr-client/lib/getImageDimensions
 import { OCRSettings, TEXT_ORIENTATION } from "@/features/ocr-settings/types";
 import { PSM } from "tesseract.js";
 import { OCRApi } from "../api/ocrApi";
-import { adaptGutenyeOCR, adaptTesseractResult } from "../lib/adapter";
+import { adaptPaddleOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRResponse } from "../types";
 import { rotateImage } from "@/features/ocr-client/lib/ImageProcessOptions";
 
 export const useOcr = () => {
-  const { tesseractWorker, gutenyeOCR } = useClientOCR();
+  const { tesseractWorker, paddleOcr } = useClientOCR();
 
   const processWithTesseract = async (
     imageFile: File,
-    settings: OCRSettings
+    settings: OCRSettings,
   ) => {
     try {
       console.log("Processing with Tesseract...");
@@ -47,12 +47,12 @@ export const useOcr = () => {
     }
   };
 
-  const processWithGutenye = async (imageFile: File) => {
+  const processWithPaddleOcr = async (imageFile: File) => {
     try {
-      const ocr = await gutenyeOCR?.load();
+      const ocr = await paddleOcr?.load();
 
       if (!ocr) {
-        throw new Error("gutenyeOCR is not inited");
+        throw new Error("paddleOcr is not inited");
       }
 
       const reader = new FileReader();
@@ -62,18 +62,23 @@ export const useOcr = () => {
         reader.readAsDataURL(imageFile);
       });
 
-      const results = await ocr!.detect(imageData);
-      console.log("Gutenye Results:", results);
+      // const results = await ocr.ocr(imageData, {
+      //   angle: true,
+      //   layout: true,
+      // });
+      const results = await ocr.ocr(imageData);
 
       return results;
     } catch (error) {
-      throw new Error((error as {message: string})?.message || "Gutenye OCR Error")
+      throw new Error(
+        (error as { message: string })?.message || "PaddleOcr Error",
+      );
     }
   };
 
   const ocrProcess = async (
     file: File,
-    settings: OCRSettings
+    settings: OCRSettings,
   ): Promise<{ result: OCRResponse; resizedFile: File }> => {
     let rawResult: OCRResponse;
     let processedFile = file;
@@ -90,15 +95,15 @@ export const useOcr = () => {
           height,
           format: file.type,
         });
-      } else if (settings.clientEngine === OCR_ENGINE.GUTENYE) {
-        // Gutenye: apply all processing in one pass
+      } else if (settings.clientEngine === OCR_ENGINE.PADDLEOCR) {
+        // PaddleOcr: apply all processing in one pass
         const isVertical =
           settings.textOrientation === TEXT_ORIENTATION.VERTICAL ||
           settings.japaneseVerticalMode;
 
         const { rotatedFile: optimizedFile } = await rotateImage(
           file,
-          isVertical ? -90 : 0
+          isVertical ? -90 : 0,
         );
 
         processedFile = optimizedFile;
@@ -106,10 +111,10 @@ export const useOcr = () => {
         console.log("Image processed:");
 
         const { width, height } = await getImageDimensions(optimizedFile);
-        const response = await processWithGutenye(optimizedFile);
-        if (!response) throw new Error("GUTENYE processing failed");
+        const response = await processWithPaddleOcr(optimizedFile);
+        if (!response) throw new Error("PaddleOcr processing failed");
 
-        rawResult = adaptGutenyeOCR(response, {
+        rawResult = adaptPaddleOCR(response, {
           width,
           height,
           format: optimizedFile.type,
@@ -123,7 +128,7 @@ export const useOcr = () => {
       rawResult = await OCRApi.performOCRWithPositions(
         file,
         settings.apiEndpoint,
-        settings.bearerToken
+        settings.bearerToken,
       );
     }
 

@@ -2,11 +2,9 @@ import { LangParams } from "@/shared/types";
 import { HomePage } from "@/views/home";
 
 type Props = {
-  params: LangParams;
+  params: Promise<LangParams>;
 };
 
-export default function Page({ params }: Props) {
-  const { lang } = params;
-
-  return <HomePage lang={lang} />;
+export default async function Page({ params }: Props) {
+  return <HomePage lang={(await params)?.lang || "en"} />;
 }

@@ -1,8 +1,9 @@
+import * as ocr from "@oovz/esearch-ocr";
+import * as ort from "onnxruntime-web";
 import { useRef } from "react";
-import { toast } from "sonner";
-import { OCR_ENGINES } from "../constants/ocr.engines";
 import { OCRContextProps } from "../types";
-import { isMemoryErrorMessage } from "@/shared/lib/isMemoryErrorMessage";
+import type { PaddleOcrInstance } from "@oovz/esearch-ocr";
+import { OCR_ENGINE, OCR_ENGINES } from "../constants/ocr.engines";
 
 export const useOCRLoader = () => {
   const tesseractRef = useRef<Tesseract.Worker | null>(null);
@@ -17,33 +18,18 @@ export const useOCRLoader = () => {
       () => null,
     ));
 
-  const loadGutenyeOCR = async () => {
-    debugger
-    if (window.GutenyeOCR.instance) return window.GutenyeOCR.instance;
-    const instance = await window.GutenyeOCR.default
-      .create(OCR_ENGINES.GUTENYE.options)
-      .then(
-        (o) => {
-          return o;
-        },
-        (e) => {
-          const messageError =
-            `${isMemoryErrorMessage(e?.message)}` ||
-            "Error creating Gutenye OCR instance";
-          toast.error(messageError);
-          throw new Error(messageError);
-        },
-      );
-    window.GutenyeOCR.instance = instance;
-    return instance;
+  const loadPaddleOCR = async (): Promise<PaddleOcrInstance> => {
+    const initOptions = await OCR_ENGINES[OCR_ENGINE.PADDLEOCR].options(ort);
+
+    return ocr.init(initOptions);
   };
 
   return {
     tesseractWorker: useRef<OCRContextProps["tesseractWorker"]>({
       load: loadTesseractWorker,
     }),
-    gutenyeOCR: {
-      load: loadGutenyeOCR,
+    paddleOcr: {
+      load: loadPaddleOCR,
     },
   };
 };

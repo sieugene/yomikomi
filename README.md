@@ -30,7 +30,7 @@ The idea is similar to the [Yomitan](https://github.com/themoeway/yomitan) brows
 
 ### 🔍 OCR
 - **Client-side OCR** — images never leave your device
-  - Gutenye OCR / PaddleOcr (ONNX, recommended)
+  - PaddleOcr (ONNX, recommended)
   - Tesseract.js
 - **Server-side OCR** — connect your own Docker container with PaddleOCR or YomiToku
 - Albums: upload a batch of pages, process them all, browse with dictionary lookup
@@ -119,7 +119,7 @@ You can write any search logic — by reading, by kanji, partial match, etc.
 
 By default, OCR runs entirely in the browser. Images are never sent anywhere.
 
-**Gutenye OCR** (recommended) — fast and accurate for Japanese:
+**PaddleOcr** (recommended) — fast and accurate for Japanese:
 - Models: ONNX files in `/public/ocr/`
 - Loaded automatically on first use
 
@@ -198,7 +198,7 @@ Models run locally via WebAssembly ([@xenova/transformers](https://github.com/xe
 
 ### iOS / iPhone
 iOS has browser memory limits and WebGPU support issues. Crashes may occur when using heavy translation models. 
-Client-side OCR (Gutenye) works stably, but can have some memory issues.
+Client-side OCR (PaddleOcr) works stably, but can have some memory issues.
 
 **Tip:** Add the site to your Home Screen via Safari → Share → Add to Home Screen. The app opens fullscreen without the browser UI.
 
@@ -229,7 +229,7 @@ Working with WASM in Next.js is non-trivial due to SSR. Here's how each dependen
 
 **@xenova/transformers** is connected through a custom adapter (`/public/transformers/transformers-adapter.js`) and injected as a `<Script>` tag with `strategy="afterInteractive"`. This sidesteps SSR issues and makes `window.__transformers` available only on the client.
 
-**Gutenye OCR** (ONNX Runtime Web) follows the same pattern — loaded via Script tag, with model files in `/public/ocr/`.
+**PaddleOcr** (ONNX Runtime Web) follows the same pattern — loaded via Script tag, with model files in `/public/ocr/`.
 
 **General principle:** all heavy WASM dependencies are isolated behind context providers and loaded lazily on the client only. Nothing runs during SSR.
 
@@ -253,7 +253,7 @@ src/
 │   ├── ocr/                # OCR logic and adapters
 │   ├── ocr-album/          # Albums + batch processing
 │   ├── ocr-capture/        # Area selection + OCR
-│   ├── ocr-client/         # Client OCR engines (Gutenye, Tesseract)
+│   ├── ocr-client/         # Client OCR engines (PaddleOcr, Tesseract)
 │   ├── ocr-settings/       # OCR settings
 │   ├── translation/        # Translator (Transformers.js)
 │   ├── tokenizer/          # Kuromoji + dictionary enrichment
@@ -298,7 +298,7 @@ Everything is stored locally in the browser:
 ```
 Image file
     │
-    ├─ isClientSide=true ──► Gutenye OCR (ONNX) ──► adaptGutenyeOCR()
+    ├─ isClientSide=true ──► PaddleOcr (ONNX) ──► adaptPaddleOCR()
     │                    └─► Tesseract.js        ──► adaptTesseractResult()
     │
     └─ isClientSide=false ─► fetch → Docker API  ──► OCRResponse (native format)
