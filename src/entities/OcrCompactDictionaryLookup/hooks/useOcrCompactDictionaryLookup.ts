@@ -1,8 +1,8 @@
 import { useDictionaryLookupStore } from "@/entities/DictionaryLookup/hooks/useDictionaryLookupStore";
-import { useStoreDictionarySearchSettings } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
+import { useStoreDictionarySearch } from "@/features/dictionary-search/context/DictionarySearchContext";
 
 export const useOcrCompactDictionaryLookup = () => {
-  const { deepSearchMode } = useStoreDictionarySearchSettings();
+  const { deepSearchMode } = useStoreDictionarySearch();
   const {
     clear,
     loading,

@@ -1,6 +1,5 @@
 import React from "react";
 
-// TODO
 import { DictionaryManagementSystem } from "@/entities/DictionaryManagementSystem/ui";
 import { DictionaryLookup } from "@/entities/DictionaryLookup/ui";
 

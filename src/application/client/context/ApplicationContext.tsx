@@ -1,5 +1,5 @@
 import { CoreParserContext } from "@/features/AnkiParser/context/CoreParserContext";
-import { DictionarySearchSettingsProvider } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
+import { DictionarySearchSettingsProvider } from "@/features/dictionary-search/context/DictionarySearchContext";
 import { OCRAlbumProvider } from "@/features/ocr-album/context/OCRAlbumContext";
 import { OCRCaptureProvider } from "@/features/ocr-capture";
 import { ClientOCRProvider } from "@/features/ocr-client/context/ClientOCRProvider";

@@ -1,4 +1,4 @@
-import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore";
+import { useStoreDictionarySearch } from "@/features/dictionary-search/context/DictionarySearchContext";
 import { DictionaryEntry } from "@/features/dictionary/types";
 import { IpadicFeatures } from "kuromoji";
 
@@ -29,7 +29,7 @@ export type DisplayToken = IpadicFeatures & {
 // merge
 function mergeTokensAsIpadic(
   tokens: IpadicFeatures[],
-  dictionaryEntries: DictionaryEntry[]
+  dictionaryEntries: DictionaryEntry[],
 ): DisplayToken[] {
   const wordMap = new Map<string, DictionaryEntry>();
   dictionaryEntries.forEach((entry) => wordMap.set(entry.word, entry));
@@ -78,15 +78,16 @@ function mergeTokensAsIpadic(
 }
 
 export const useDictTokenizer = () => {
-  const { coordinator, loading } = useSearchCore();
+  const { getCore, loading } = useStoreDictionarySearch();
 
   const onFill = async (tokens: IpadicFeatures[]): Promise<DisplayToken[]> => {
+    const core = await getCore()
     const by_basic = tokens.map((t) => t.basic_form);
     const combinations = uniqueArray(generateTokenCombinations(by_basic));
-    if (!coordinator) {
+    if (!core.coordinator) {
       throw new Error("Dictionary coordinator not initialized");
     }
-    const foundEntries = await coordinator.checkTokensAsync(combinations);
+    const foundEntries = await core.coordinator.checkTokensAsync(combinations);
     return mergeTokensAsIpadic(tokens, foundEntries);
   };
 

@@ -1,4 +1,4 @@
-import { DictionarySearchSettingsProvider } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
+import { DictionarySearchSettingsProvider } from "@/features/dictionary-search/context/DictionarySearchContext";
 import React from "react";
 import { DictionarySystemProvider } from "./DictionarySystemProvider";
 

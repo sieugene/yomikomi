@@ -12,23 +12,28 @@ export const useDictionaries = () => {
     async () => {
       const dictionaries = await manager?.getDictionaries();
       return dictionaries;
-    }
+    },
   );
+
+  const activeDictionaries =
+    data?.filter((d) => d.status === "active")?.length || 0;
+
   return {
     data: data || [],
     ...swr,
+    activeDictionaries,
   };
 };
 
 export const useDictionariesSize = () => {
-  const { data,isLoading } = useDictionaries();
+  const { data, isLoading } = useDictionaries();
   const totalSizeBytes = useMemo(
     () => data?.reduce((total, dict) => total + dict.size, 0),
-    [data]
+    [data],
   );
   const formattedTotalSize = useMemo(
     () => formatFileSize(totalSizeBytes),
-    [totalSizeBytes]
+    [totalSizeBytes],
   );
   return {
     isLoading,
@@ -44,7 +49,7 @@ export const useDictionaryById = (id: DictionaryMetadata["id"]) => {
 
 type UseGetStoredDictionaryReturn = {
   getStoredDictionary: (
-    id: DictionaryMetadata["id"]
+    id: DictionaryMetadata["id"],
   ) => Promise<StoredDictionary | null>;
 };
 export const useGetStoredDictionary = (): UseGetStoredDictionaryReturn => {

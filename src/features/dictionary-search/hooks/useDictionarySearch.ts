@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { useStoreDictionarySearchSettings } from "../context/DictionarySearchSettingsContext";
+import { useStoreDictionarySearch } from "../context/DictionarySearchContext";
 import { SEARCH_LIMITS } from "../lib/constants";
 import { SearchOptions, SearchResult } from "../types";
-import { useSearchCore } from "./useSearchCore";
 import { useSWRCache } from "@/shared/hooks/useSWRCache";
 
 export type PerfrormSearchResult = {
@@ -19,7 +18,7 @@ export type PerfrormSearchResult = {
 };
 
 function groupResults(
-  searchResults: SearchResult[]
+  searchResults: SearchResult[],
 ): PerfrormSearchResult["groupedResults"] {
   const groups = new Map<string, SearchResult[]>();
 
@@ -55,22 +54,20 @@ const GET_KEY = (token: string, deepMode: boolean) =>
 export const useDictionarySearch = () => {
   const { getCache, setCache } = useSWRCache<PerfrormSearchResult>();
 
-  const { deepSearchMode } = useStoreDictionarySearchSettings();
-  const { inited, coordinator } = useSearchCore();
+  const { deepSearchMode, getCore } = useStoreDictionarySearch();
   const [lazyPerfomedResults, setLazyPerfomedResults] =
     useState<PerfrormSearchResult>(DEFAULT_PERFORMED_RESULT);
 
-  const searchSingleToken = (token: string, options: SearchOptions) => {
-    if (!inited) {
+  const searchSingleToken = async (token: string, options: SearchOptions) => {
+    const core = await getCore();
+    if (!core.coordinator) {
       console.warn("Search coordinator not initialized");
       return [];
     }
-    return coordinator!.searchSingleToken(token, options);
+    return core.coordinator!.searchSingleToken(token, options);
   };
 
   const performSearch = async (token: string) => {
-    if (!inited) throw new Error("Dictionary system not ready");
-
     setLazyPerfomedResults(DEFAULT_PERFORMED_RESULT);
 
     const searchOptions: SearchOptions = {
@@ -88,7 +85,7 @@ export const useDictionarySearch = () => {
     }
 
     const searchStartTime = performance.now();
-    const tasks = searchSingleToken(token, searchOptions);
+    const tasks = await searchSingleToken(token, searchOptions);
 
     let collectedResults: SearchResult[] = [];
 

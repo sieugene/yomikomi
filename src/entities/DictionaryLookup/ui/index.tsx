@@ -1,12 +1,12 @@
 import { InteractiveSentence } from "@/entities/DictionaryLookup/ui/InteractiveSentence";
+import { useStoreDictionarySearch } from "@/features/dictionary-search/context/DictionarySearchContext";
+import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
 import useClickOutside from "@/shared/hooks/useClickOutside";
 import { AlertCircle, Database } from "lucide-react";
 import React, { useRef } from "react";
 import { useDictionaryLookupStore } from "../hooks/useDictionaryLookupStore";
 import { SearchResultsPanel } from "./SearchResultsPanel";
-import { useSearchCore } from "@/features/dictionary-search/hooks/useSearchCore";
-import { DictionaryLookupSettings } from "@/features/dictionary-search/ui/DictionarySearchSettings";
-import { useStoreDictionarySearchSettings } from "@/features/dictionary-search/context/DictionarySearchSettingsContext";
+import { useDictionaries } from "@/features/dictionary/hooks";
 
 interface Props {
   sentence: string;
@@ -17,8 +17,9 @@ export const DictionaryLookup: React.FC<Props> = ({
   sentence,
   baseBottom = 0,
 }) => {
-  const { engineCount, inited } = useSearchCore();
-  const { deepSearchMode } = useStoreDictionarySearchSettings();
+  const { deepSearchMode, loading: isCoreLoading } = useStoreDictionarySearch();
+  const { activeDictionaries } = useDictionaries();
+
   const {
     clear,
     loading,
@@ -35,7 +36,7 @@ export const DictionaryLookup: React.FC<Props> = ({
     clear();
   });
 
-  if (!inited) {
+  if (isCoreLoading) {
     return (
       <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <div className="flex items-center">
@@ -48,7 +49,7 @@ export const DictionaryLookup: React.FC<Props> = ({
     );
   }
 
-  if (engineCount === 0) {
+  if (activeDictionaries === 0) {
     return (
       <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
         <div className="text-center">

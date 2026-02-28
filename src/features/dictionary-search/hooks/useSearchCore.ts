@@ -1,93 +1,75 @@
 import {
   useDictionaries,
-  useDictionaryManager,
   useGetStoredDictionary,
   useGetTemplate,
 } from "@/features/dictionary/hooks";
-import useSWR from "swr";
+import { useRef } from "react";
+import { SearchCore } from "../context/DictionarySearchContext";
 import { DictionarySearchCoordinator } from "../model/search-coordinator";
 
-type UseSearchCoreReturn = {
-  engineCount: number;
-  coordinator: DictionarySearchCoordinator | null;
-  loading: boolean;
-  inited: boolean;
-};
-export const useSearchCore = (): UseSearchCoreReturn => {
-  const { loading: managerIsLoading, manager } = useDictionaryManager();
-  const { data: dictionaries, isLoading: dictionariesIsLoading } =
-    useDictionaries();
+export const useSearchCore = () => {
+  const { data: dictionaries } = useDictionaries();
   const { getStoredDictionary } = useGetStoredDictionary();
   const { getTemplate } = useGetTemplate();
-  const loading = managerIsLoading || dictionariesIsLoading;
 
-  const { isLoading: initLoading, data } = useSWR<
-    Pick<UseSearchCoreReturn, "engineCount" | "coordinator">
-  >(
-    dictionaries.length > 0 && !loading && manager
-      ? ["dictionary-engines", dictionaries, manager.id]
-      : null,
-    async () => {
-      console.log("Initializing dictionary search engines...");
-      const coordinator = new DictionarySearchCoordinator();
+  const core = useRef<SearchCore | null>(null);
 
-      const activeDictionaries = dictionaries.filter(
-        (d) => d.status === "active",
-      );
+  const getCore = async (): Promise<SearchCore> => {
+    if (core.current) return core.current;
 
-      console.log(`Found ${activeDictionaries.length} active dictionaries`);
+    console.log("Initializing dictionary search engines...");
+    const coordinator = new DictionarySearchCoordinator();
 
-      const initPromises = activeDictionaries.map(async (dict) => {
-        try {
-          const storedDict = await getStoredDictionary(dict.id);
-          if (!storedDict) {
-            console.warn(`Dictionary ${dict.name} not found in storage`);
-            return;
-          }
+    const activeDictionaries = dictionaries.filter(
+      (d) => d.status === "active",
+    );
 
-          const arrayBuffer = await storedDict.content.arrayBuffer();
-          const config =
-            dict.customParser || getTemplate(dict.parserTemplate)?.config;
+    console.log(`Found ${activeDictionaries.length} active dictionaries`);
 
-          if (!config) {
-            console.warn(`No config found for dictionary ${dict.name}`);
-            return;
-          }
-
-          const template = getTemplate(dict.parserTemplate);
-          const dictionaryType =
-            template?.dictionaryType || dict.dictionaryType || "standard";
-
-          await coordinator.addEngine(
-            dict.id,
-            arrayBuffer,
-            config,
-            dict.name,
-            dictionaryType,
-          );
-          console.log(`Initialized ${dictionaryType} engine for ${dict.name}`);
-        } catch (err) {
-          console.error(`Failed to initialize engine for ${dict.name}:`, err);
+    const initPromises = activeDictionaries.map(async (dict) => {
+      try {
+        const storedDict = await getStoredDictionary(dict.id);
+        if (!storedDict) {
+          console.warn(`Dictionary ${dict.name} not found in storage`);
+          return;
         }
-      });
 
-      await Promise.all(initPromises);
+        const arrayBuffer = await storedDict.content.arrayBuffer();
+        const config =
+          dict.customParser || getTemplate(dict.parserTemplate)?.config;
 
-      const engineCount = coordinator.getActiveEngineCount();
-      console.log(
-        `Dictionary search system initialized with ${engineCount} engines`,
-      );
-      return { engineCount, coordinator };
-    },
-    {
-      revalidateOnFocus: false,
-    },
-  );
+        if (!config) {
+          console.warn(`No config found for dictionary ${dict.name}`);
+          return;
+        }
 
-  return {
-    loading: initLoading || loading,
-    coordinator: data?.coordinator || null,
-    engineCount: data?.engineCount || 0,
-    inited: !!data,
+        const template = getTemplate(dict.parserTemplate);
+        const dictionaryType =
+          template?.dictionaryType || dict.dictionaryType || "standard";
+
+        await coordinator.addEngine(
+          dict.id,
+          arrayBuffer,
+          config,
+          dict.name,
+          dictionaryType,
+        );
+        console.log(`Initialized ${dictionaryType} engine for ${dict.name}`);
+      } catch (err) {
+        console.error(`Failed to initialize engine for ${dict.name}:`, err);
+      }
+    });
+
+    await Promise.all(initPromises);
+
+    const engineCount = coordinator.getActiveEngineCount();
+    console.log(
+      `Dictionary search system initialized with ${engineCount} engines`,
+    );
+
+    const data: SearchCore = { engineCount, coordinator };
+    core.current = data;
+    return data;
   };
+  return { getCore };
 };
