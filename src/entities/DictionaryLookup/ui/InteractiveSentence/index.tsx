@@ -42,22 +42,23 @@ export const InteractiveSentence: React.FC<InteractiveSentenceProps> = ({
     );
   }
 
-  return (
-    <>
-      {data && data.length ? (
-        <Tokens
-          tokens={data}
-          onWordClick={onWordClick}
-          sentence={sentence}
-          className={className}
-          selectedWordId={selectedWordId}
-          tokensFooterContent={tokensFooterContent}
-        />
-      ) : (
-        "Tokens not found or sentence is empty."
-      )}
-    </>
-  );
+  if (data && data.length) {
+    return (
+      <Tokens
+        tokens={data}
+        onWordClick={onWordClick}
+        sentence={sentence}
+        className={className}
+        selectedWordId={selectedWordId}
+        tokensFooterContent={tokensFooterContent}
+      />
+    );
+  }
+  if (sentence.length) {
+    return <p>Tokens not found</p>;
+  }
+
+  return null;
 };
 
 type TokensProps = {

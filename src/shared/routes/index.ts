@@ -6,6 +6,8 @@ import { APP_LANG } from '../types';
 const ROUTES = {
   home: "",
   app: "/app",
+  about: "/about",
+  guide: "/guide",
   albums: "/app/albums",
   album: ({ albumId, page }: ALBUM_PAGE_PARAMS) =>
     `/app/album/${albumId}/${page}`,

@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Globe,
   Image,
+  Info,
   Lock,
   Search,
   Settings,
@@ -98,7 +99,7 @@ export const HomePage: FC<Props> = ({ lang }) => {
           <div className="text-center">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-8">
               <Zap className="w-4 h-4 mr-2" />
-              100% Client-Side • Privacy First • Open Source
+              100% Client-Side · Privacy First · Open Source
             </div>
 
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
@@ -114,7 +115,7 @@ export const HomePage: FC<Props> = ({ lang }) => {
                 {" "}
                 Everything runs in your browser
               </span>{" "}
-              - complete privacy guaranteed.
+              — complete privacy guaranteed.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -124,6 +125,20 @@ export const HomePage: FC<Props> = ({ lang }) => {
               >
                 <BookOpen className="w-5 h-5 mr-2" />
                 Get Started
+              </Link>
+              <Link
+                href={ROUTES.about}
+                className="inline-flex items-center px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200"
+              >
+                <Info className="w-5 h-5 mr-2" />
+                About the Project
+              </Link>
+              <Link
+                href={ROUTES.guide}
+                className="inline-flex items-center px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-green-300 hover:bg-green-50 hover:text-green-700 transition-all duration-200"
+              >
+                How to Use
+                <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
               <a
                 href="https://github.com/sieugene/yomikomi/tree/main"
@@ -192,7 +207,7 @@ export const HomePage: FC<Props> = ({ lang }) => {
               </h4>
               <p className="text-yellow-700 text-sm mb-3">
                 For backend OCR, {"you'll"} need to deploy the backend
-                application. Instructions are in development - check the GitHub
+                application. Instructions are in development — check the GitHub
                 repository for current setup details.
               </p>
               <a
@@ -317,20 +332,27 @@ export const HomePage: FC<Props> = ({ lang }) => {
             minutes.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
             <Link
-              href="/dict"
+              href={ROUTES.dict}
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg"
             >
               <Database className="w-5 h-5 mr-2" />
               Setup Dictionary
             </Link>
             <Link
-              href="/simple-reader"
+              href={ROUTES.about}
+              className="inline-flex items-center px-8 py-4 bg-indigo-50 text-indigo-700 font-semibold rounded-xl border-2 border-indigo-200 hover:bg-indigo-100 transition-colors"
+            >
+              <Info className="w-5 h-5 mr-2" />
+              About the Project
+            </Link>
+            <Link
+              href={ROUTES.guide}
               className="inline-flex items-center px-8 py-4 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors"
             >
               <Search className="w-5 h-5 mr-2" />
-              Try Text Reader
+              How to Use
             </Link>
           </div>
         </div>
