@@ -12,12 +12,11 @@ import { useOCRAlbum } from "../../context/OCRAlbumContext";
 import { Album, OCRAlbumAlbum, Status } from "../../types";
 import { getProcessedProgress, getProgressLineWidth } from "../../lib";
 import { getAlbumStatus } from "../../lib/getStatus";
+import { Button } from "@/shared/ui/button";
+import { useClientRoutes } from "@/shared/hooks/useClientRoutes";
 
-interface AlbumListProps {
-  onAlbumSelect: (album: OCRAlbumAlbum) => void;
-}
-
-export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
+export const AlbumList = () => {
+  const { routes } = useClientRoutes();
   const {
     albums,
     deleteAlbum,
@@ -145,14 +144,15 @@ export const AlbumList: React.FC<AlbumListProps> = ({ onAlbumSelect }) => {
                     </button>
                   )}
 
-                  <button
-                    onClick={() => onAlbumSelect?.(album)}
-                    className="flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors"
-                    title="View album details"
-                  >
-                    <Image className="w-3 h-3 mr-1" />
-                    View
-                  </button>
+                  <a href={routes.album({ albumId: album.id, page: 1 })}>
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
+                      title="View album details"
+                    >
+                      <Image className="w-3 h-3 mr-1" />
+                      View
+                    </Button>
+                  </a>
 
                   <button
                     onClick={() => handleDelete(album)}

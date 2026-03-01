@@ -80,6 +80,28 @@ export const dictionary = {
     ],
     ctaText: "Ready to start extracting Japanese text?",
     ctaButton: "Go to Albums",
+    examplesSection: {
+      title: "What it looks like in action",
+      subtitle:
+        "Real examples: book pages with lookup & translation, vertical text, precise area selection",
+      examples: [
+        {
+          title: "Book Page Example",
+          description:
+            "Instant word lookup + built-in translation from scanned book or manga page",
+        },
+        {
+          title: "Vertical Japanese Text",
+          description:
+            "Full support for traditional vertical writing — scan manga, light novels, old books",
+        },
+        {
+          title: "Area Selection Tool",
+          description:
+            "Manually select any region for better OCR when the full page is noisy or misrecognized",
+        },
+      ],
+    },
   },
   ja: {
     backToOcr: "OCRツールに戻る",
@@ -162,5 +184,63 @@ export const dictionary = {
     ],
     ctaText: "日本語テキストの抽出を始める準備はできましたか？",
     ctaButton: "OCRツールへ",
+    examplesSection: {
+      title: "実際の画面イメージ",
+      subtitle:
+        "実際の使用例：本のページでの単語検索＋翻訳、縦書きテキスト、エリア選択",
+      examples: [
+        {
+          title: "本のページの例",
+          description:
+            "スキャンした本やマンガのページから即座に単語検索＋翻訳機能",
+        },
+        {
+          title: "縦書き日本語テキスト",
+          description:
+            "伝統的な縦書き完全対応 — マンガ、ライトノベル、古い書籍のスキャン",
+        },
+        {
+          title: "エリア選択ツール",
+          description:
+            "全体認識が悪い場合やノイズが多い時に、任意の領域だけを正確にOCR",
+        },
+      ],
+    },
   },
 };
+
+export const gallery_info = [
+  {
+    img: "/examples/example_1.png",
+    title: {
+      en: "Book Page Example",
+      ja: "本のページの例",
+    },
+    description: {
+      en: "Word lookup + instant translation",
+      ja: "単語検索＋即時翻訳",
+    },
+  },
+  {
+    img: "/examples/example_2.png",
+    title: {
+      en: "Vertical Text",
+      ja: "縦書きテキスト",
+    },
+    description: {
+      en: "Scan traditional vertical Japanese text (manga, light novels)",
+      ja: "縦書きの日本語テキストをスキャン（マンガ・ライトノベル対応）",
+    },
+  },
+  {
+    img: "/examples/example_3.png",
+    title: {
+      en: "Area Selection",
+      ja: "エリア選択",
+    },
+    description: {
+      en: "Select any region for precise OCR when full page fails",
+      ja: "特定の領域だけを正確にOCR（全体認識が悪いときに便利）",
+    },
+  },
+];

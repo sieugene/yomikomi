@@ -14,10 +14,11 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
-import { dictionary } from "./dictionary";
+import { dictionary, gallery_info } from "./dictionary";
 import { APP_LANG } from "@/shared/types";
 import { Routes } from "@/shared/routes";
 import { LanguageToggle } from "@/features/language-toggle/ui";
+import { GalleryGrid } from "@/shared/ui/Gallery";
 
 export const GuidePage = ({ lang }: { lang: APP_LANG }) => {
   const t = dictionary[lang] || dictionary.en;
@@ -112,6 +113,25 @@ export const GuidePage = ({ lang }: { lang: APP_LANG }) => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto px-5 sm:px-8 mt-16">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-4">
+              {t.examplesSection.title}
+            </h2>
+            <p className="text-center text-gray-600 mb-10 max-w-3xl mx-auto">
+              {t.examplesSection.subtitle}
+            </p>
+
+            <GalleryGrid
+              items={gallery_info.map((a) => {
+                return {
+                  img: a.img,
+                  title: a.title[lang] || "",
+                  description: a.description[lang] || "",
+                };
+              })}
+            />
           </div>
 
           <div className="mt-10 text-center">

@@ -72,11 +72,7 @@ export const OCRPage = () => {
           <BatchUpload />
         </div>
 
-        <AlbumList
-          onAlbumSelect={(album) => {
-            window.location.href = `/album/${album.id}/1`;
-          }}
-        />
+        <AlbumList />
 
         <div className="mt-8 p-6 bg-white border border-gray-200 rounded-lg">
           <div className="text-center">
