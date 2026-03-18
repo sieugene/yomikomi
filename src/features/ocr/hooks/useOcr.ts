@@ -7,6 +7,7 @@ import { OCRApi } from "../api/ocrApi";
 import { adaptPaddleOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRResponse } from "../types";
 import { rotateImage } from "@/features/ocr-client/lib/ImageProcessOptions";
+import { OcrClientWorkerEngineProxy } from '@/features/ocr-client/model/ocr-client-worker-engine-proxy.ts';
 
 export const useOcr = () => {
   const { tesseractWorker, paddleOcr } = useClientOCR();
@@ -49,6 +50,10 @@ export const useOcr = () => {
 
   const processWithPaddleOcr = async (imageFile: File) => {
     try {
+      const worker = new OcrClientWorkerEngineProxy()
+      const test = await worker.process("test")
+      debugger 
+      return null
       const ocr = await paddleOcr?.load();
 
       if (!ocr) {
