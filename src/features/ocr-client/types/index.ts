@@ -1,10 +1,10 @@
-import type { PaddleOcrInstance } from '@oovz/esearch-ocr';
+import type { PaddleOcrInstance } from "@oovz/esearch-ocr";
 
 export interface OCRContextProps {
-  tesseractWorker: null | {
+  tesseractWorker: {
     load: () => Promise<Tesseract.Worker | null>;
   };
-  paddleOcr: null | {
+  paddleOcr: {
     load: () => Promise<PaddleOcrInstance | null>;
   };
   isAllowed: boolean;

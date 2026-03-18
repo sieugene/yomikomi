@@ -9,8 +9,12 @@ import { useOCRLoader } from "../hooks/useOCRLoader";
 import { OCRContextProps } from "../types";
 
 const OCRContext = createContext<OCRContextProps>({
-  tesseractWorker: null,
-  paddleOcr: null,
+  tesseractWorker: {
+    load: async () => null,
+  },
+  paddleOcr: {
+    load: async () => null,
+  },
   isAllowed: false,
 });
 
@@ -27,7 +31,7 @@ export function ClientOCRProvider({ children }: { children: ReactNode }) {
   return (
     <OCRContext.Provider
       value={{
-        tesseractWorker: tesseractWorker.current,
+        tesseractWorker,
         paddleOcr,
         isAllowed,
       }}
