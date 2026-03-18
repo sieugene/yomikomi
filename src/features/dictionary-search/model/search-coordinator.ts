@@ -3,10 +3,10 @@ import {
   DictionaryParserConfig,
 } from "@/features/dictionary/types";
 import { SearchOptions } from "../types";
-import { WorkerEngineProxy } from "./worker-engine-proxy.ts";
+import { DictionaryWorkerEngineProxy } from "./dictionary-worker-engine-proxy.ts";
 
 export class DictionarySearchCoordinator {
-  private proxy = new WorkerEngineProxy();
+  private proxy = new DictionaryWorkerEngineProxy();
   private engines = new Map<string, { type: "standard" | "kanji" }>();
 
   async addEngine(

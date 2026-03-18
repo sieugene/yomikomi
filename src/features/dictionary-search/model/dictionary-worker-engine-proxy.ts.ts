@@ -16,7 +16,7 @@ type PendingRequest<T> = {
   reject: (reason: Error) => void;
 };
 
-export class WorkerEngineProxy {
+export class DictionaryWorkerEngineProxy {
   private worker: Worker;
   private pending = new Map<
     string,
