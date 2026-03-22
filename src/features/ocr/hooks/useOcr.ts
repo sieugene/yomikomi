@@ -7,6 +7,8 @@ import { OCRApi } from "../api/ocrApi";
 import { adaptPaddleOCR, adaptTesseractResult } from "../lib/adapter";
 import { OCRResponse } from "../types";
 import { rotateImage } from "@/features/ocr-client/lib/ImageProcessOptions";
+import { toast } from "sonner";
+import { recognizeErrReason } from "../lib/recognizeErrReason";
 
 export const useOcr = () => {
   const { tesseractWorker, paddleOcr } = useClientOCR();
@@ -47,7 +49,10 @@ export const useOcr = () => {
     }
   };
 
-  const processWithPaddleOcr = async (imageFile: File) => {
+  const processWithPaddleOcr = async (
+    imageFile: File,
+    settings: OCRSettings,
+  ) => {
     try {
       const ocr = await paddleOcr?.load();
 
@@ -63,13 +68,21 @@ export const useOcr = () => {
       });
 
       const results = await ocr.ocr(imageData);
-      // const results = await ocr.ocr(imageData);
 
       return results;
     } catch (error) {
-      throw new Error(
-        (error as { message: string })?.message || "PaddleOcr Error",
-      );
+      const errMsg =
+        (error as { message: string })?.message || "PaddleOcr Error";
+      const { isMemoryErr } = recognizeErrReason(errMsg);
+      if (isMemoryErr) {
+        toast.warning(
+          "Out of memory — please reload the page or restart your browser. \nTrying process using Tesseract as a fallback...",
+        );
+        await processWithTesseract(imageFile, settings);
+        return;
+      }
+
+      throw new Error(errMsg);
     }
   };
 
@@ -108,7 +121,7 @@ export const useOcr = () => {
         console.log("Image processed:");
 
         const { width, height } = await getImageDimensions(optimizedFile);
-        const response = await processWithPaddleOcr(optimizedFile);
+        const response = await processWithPaddleOcr(optimizedFile, settings);
         if (!response) throw new Error("PaddleOcr processing failed");
 
         rawResult = adaptPaddleOCR(response, {
