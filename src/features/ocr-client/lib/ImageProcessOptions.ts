@@ -1,68 +1,57 @@
-/**
- * Rotate image by 0°, 90°, 180°, 270°
- * Preserves original quality and metadata
- */
 export const rotateImage = (
   file: File,
-  angle: number
+  angle: number,
+  maxSize = 1280,
 ): Promise<{ rotatedFile: File; isReversed: boolean }> => {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
+    createImageBitmap(file)
+      .then((bitmap) => {
+        try {
+          const normalizedAngle = ((angle % 360) + 360) % 360;
+          const is90or270 = normalizedAngle === 90 || normalizedAngle === 270;
 
-    reader.onload = (e) => {
-      if (!e.target?.result) return reject(new Error("Failed to read file"));
-      img.src = e.target.result as string;
-    };
+          const rawW = is90or270 ? bitmap.height : bitmap.width;
+          const rawH = is90or270 ? bitmap.width : bitmap.height;
 
-    reader.onerror = () => reject(new Error("FileReader error"));
+          const scale = Math.min(1, maxSize / Math.max(rawW, rawH));
+          const w = Math.floor(rawW * scale);
+          const h = Math.floor(rawH * scale);
 
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d", { alpha: true });
-        if (!ctx) return reject(new Error("Cannot get canvas context"));
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
 
-        // Normalize angle
-        const normalizedAngle = ((angle % 360) + 360) % 360;
-        const is90or270 = normalizedAngle === 90 || normalizedAngle === 270;
+          const ctx = canvas.getContext("2d", { alpha: true });
+          if (!ctx) return reject(new Error("Cannot get canvas context"));
 
-        // Set canvas size
-        canvas.width = is90or270 ? img.height : img.width;
-        canvas.height = is90or270 ? img.width : img.height;
+          ctx.translate(w / 2, h / 2);
+          ctx.scale(scale, scale);
+          ctx.rotate((normalizedAngle * Math.PI) / 180);
+          ctx.drawImage(bitmap, -bitmap.width / 2, -bitmap.height / 2);
+          bitmap.close();
 
-        // Center rotation
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((normalizedAngle * Math.PI) / 180);
-        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+          const outputFormat = file.type || "image/png";
+          const extension = outputFormat.split("/")[1] || "png";
+          const newFileName = file.name.replace(/\.[^/.]+$/, `.${extension}`);
 
-        // Output format = original
-        const outputFormat = file.type || "image/png";
-        const extension = outputFormat.split("/")[1] || "png";
-        const newFileName = file.name.replace(/\.[^/.]+$/, `.${extension}`);
-
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error("toBlob failed"));
-
-            const rotatedFile = new File([blob], newFileName, {
-              type: outputFormat,
-              lastModified: Date.now(),
-            });
-
-            const isReversed = normalizedAngle === 90 || normalizedAngle === 270;
-
-            resolve({ rotatedFile, isReversed });
-          },
-          outputFormat,
-          1.0 // MAX QUALITY
-        );
-      } catch (error) {
-        reject(error);
-      }
-    };
-
-    img.onerror = () => reject(new Error("Image load failed"));
-    reader.readAsDataURL(file);
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) return reject(new Error("toBlob failed"));
+              resolve({
+                rotatedFile: new File([blob], newFileName, {
+                  type: outputFormat,
+                  lastModified: Date.now(),
+                }),
+                isReversed: normalizedAngle === 90 || normalizedAngle === 270,
+              });
+            },
+            outputFormat,
+            0.92,
+          );
+        } catch (error) {
+          reject(error);
+        }
+      })
+      .catch(() => reject(new Error("Image load failed")));
   });
 };

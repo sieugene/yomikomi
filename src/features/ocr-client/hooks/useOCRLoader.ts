@@ -5,6 +5,9 @@ import { OCR_ENGINE, OCR_ENGINES } from "../constants/ocr.engines";
 import { OCRContextProps } from "../types";
 import type { PaddleOcrInstance } from "@oovz/esearch-ocr";
 
+ort.env.wasm.numThreads = 1
+ort.env.webgpu.powerPreference = "low-power"
+
 export const useOCRLoader = () => {
   const tesseractRef = useRef<Tesseract.Worker | null>(null);
   const tesseractPromise = useRef<Promise<typeof tesseractRef.current> | null>(
